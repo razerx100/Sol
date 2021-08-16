@@ -6,7 +6,10 @@ Engine::Engine() {
 
 int Engine::Run() {
 	while (true) {
-		m_window->Update();
+
+		if (auto ecode = m_window->Update())
+			return *ecode;
+
 		m_pipelineManager->Render();
 	}
 }

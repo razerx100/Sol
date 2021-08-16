@@ -18,7 +18,7 @@ add_executable(${PROJECT_NAME}
     ${SRC}
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 

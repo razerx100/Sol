@@ -1,10 +1,12 @@
 #include <Engine.hpp>
-#include <exception>
+#include <Exception.hpp>
 
 int main() {
 	try {
 		return Engine().Run();
 	}
-	catch (std::exception& e) {}
+	catch (const Exception& e) {}
+	catch (const std::exception& e) {}
+	catch (...) {}
 	return -1;
 }
