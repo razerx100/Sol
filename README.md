@@ -5,5 +5,5 @@ Game Engine which can statically link to different 3D engines. (Currently can on
 Put desired engine's static lib in /libs directory, then run the Setup script to build the project.
 
 ## Requirements
-cmake 3.11+
-C++20 Standard supported Compiler
+cmake 3.11+.\
+C++20 Standard supported Compiler.

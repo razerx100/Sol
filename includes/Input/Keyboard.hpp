@@ -2,9 +2,49 @@
 #define __KEYBOARD_HPP__
 #include <optional>
 
-// Need to add keycodes
 enum SKeyCodes {
-	Default
+	Default,
+	BackSpace,
+	Tab,
+	Enter,
+	Shift,
+	Ctrl,
+	Alt,
+	CapsLock,
+	Esc,
+	SpaceBar,
+	PageUp,
+	PageDown,
+	End,
+	Home,
+	LeftArrow,
+	UpArrow,
+	RightArrow,
+	DownArrow,
+	PrintScreen,
+	Ins,
+	Del,
+	Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
+	A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+	Super,
+	ZeroNumpad, OneNumpad, TwoNumpad, ThreeNumpad, FourNumpad, FiveNumpad, SixNumpad,
+	SevenNumpad, EightNumpad, NineNumpad,
+	Multiply, Divide, Add, Subtract, Decimal,
+	F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+	NumLock, ScrollLock,
+	ShiftLeft, ShiftRight,
+	CtrlLeft, CtrlRight,
+	AltLeft, AltRight,
+	SemiColonUS,
+	Plus,
+	Comma,
+	Dash,
+	Point,
+	SlashUS,
+	TildeUS,
+	BraceStartUS, BraceEndUS,
+	BackSlashUS,
+	QuoteUS
 };
 
 class Keyboard {
