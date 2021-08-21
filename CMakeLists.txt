@@ -12,15 +12,24 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 
-file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp)
+if(IMGUIFLAG STREQUAL "ENABLE")
+    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp ImGui/*.cpp ImGui/*.h)
+else()
+    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp)
+endif()
 
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME} WIN32
     ${SRC}
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/ includes/Input/ external/Luna/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
+
+if(IMGUIFLAG STREQUAL "ENABLE")
+    target_include_directories(${PROJECT_NAME} PRIVATE ImGui/includes/)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _IMGUI)
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/libs/*.lib
@@ -34,6 +43,7 @@ endif()
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot)
+    target_link_options(${PROJECT_NAME} PRIVATE /subsystem:windows /ENTRY:mainCRTStartup)
 endif()
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

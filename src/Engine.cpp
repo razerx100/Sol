@@ -1,27 +1,24 @@
 #include <Engine.hpp>
+#include <InputManager.hpp>
+#include <WinWindow.hpp>
+
+std::unique_ptr<Window> Window::s_instance;
+std::unique_ptr<PipelineManager> PipelineManager::s_instance;
 
 Engine::Engine() {
-	// Initialize the members
+	InputManager inputManager;
+	Window::Init(std::make_unique<WinWindow>(1920, 1080, "Sol"));
+	m_windowRef = Window::GetRef();
+	App::Init();
+	m_appRef = App::GetRef();
 }
 
 int Engine::Run() {
 	while (true) {
-
-		if (auto ecode = m_window->Update())
+		if (auto ecode = m_windowRef->Update())
 			return *ecode;
 
-		m_pipelineManager->Render();
+		m_appRef->Update();
+		//m_pipelineManagerRef->Render();
 	}
-}
-
-Window* Engine::GetWindowRef() const noexcept {
-	return m_window.get();
-}
-
-PipelineManager* Engine::GetPipelineManagerRef() const noexcept {
-	return m_pipelineManager.get();
-}
-
-App* Engine::GetAppRef() const noexcept {
-	return m_app.get();
 }

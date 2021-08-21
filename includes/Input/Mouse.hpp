@@ -1,6 +1,8 @@
 #ifndef __MOUSE_HPP__
 #define __MOUSE_HPP__
 #include <optional>
+#include <queue>
+#include <memory>
 
 class Mouse {
 public:
@@ -10,9 +12,9 @@ public:
 	};
 
 	struct MouseData {
-		bool leftPressed;
-		bool rightPressed;
-		bool middlePressed;
+		bool leftPressed = false;
+		bool rightPressed = false;
+		bool middlePressed = false;
 		int x;
 		int y;
 	};
@@ -81,22 +83,58 @@ public:
 	};
 
 public:
-	virtual ~Mouse() = default;
+	Mouse();
 
-	virtual std::pair<int, int> GetPos() const noexcept = 0;
-	virtual int GetPosX() const noexcept = 0;
-	virtual int GetPosY() const noexcept = 0;
-	virtual std::optional<Event> Read() noexcept = 0;
-	virtual std::optional<RawDelta> ReadRawDelta() noexcept = 0;
+	Mouse(const Mouse&) = delete;
+	Mouse& operator=(const Mouse&) = delete;
 
-	virtual bool IsInWindow() const noexcept = 0;
-	virtual bool IsLeftPressed() const noexcept = 0;
-	virtual bool IsMiddlePressed() const noexcept = 0;
-	virtual bool IsRightPressed() const noexcept = 0;
-	virtual bool IsBufferEmpty() const noexcept = 0;
-	virtual bool IsRawEnabled() const noexcept = 0;
+	std::pair<int, int> GetPos() const noexcept;
+	int GetPosX() const noexcept;
+	int GetPosY() const noexcept;
+	std::optional<Event> Read() noexcept;
+	std::optional<RawDelta> ReadRawDelta() noexcept;
 
-	virtual void EnableRaw() noexcept = 0;
-	virtual void DisableRaw() noexcept = 0;
+	bool IsInWindow() const noexcept;
+	bool IsLeftPressed() const noexcept;
+	bool IsMiddlePressed() const noexcept;
+	bool IsRightPressed() const noexcept;
+	bool IsBufferEmpty() const noexcept;
+	bool IsRawEnabled() const noexcept;
+
+	void Flush() noexcept;
+	void EnableRaw() noexcept;
+	void DisableRaw() noexcept;
+
+	static void Init();
+	static Mouse* GetRef() noexcept;
+
+	void OnMouseMove(int x, int y) noexcept;
+	void OnMouseLeave() noexcept;
+	void OnMouseEnter() noexcept;
+	void OnLeftPress() noexcept;
+	void OnMiddlePress() noexcept;
+	void OnRightPress() noexcept;
+	void OnLeftRelease() noexcept;
+	void OnMiddleRelease() noexcept;
+	void OnRightRelease() noexcept;
+	void OnWheelUp() noexcept;
+	void OnWheelDown() noexcept;
+	void OnMouseRawDelta(int dx, int dy) noexcept;
+	void OnWheelDelta(int delta) noexcept;
+
+private:
+	void TrimBuffer() noexcept;
+	void TrimRawDeltaBuffer() noexcept;
+
+private:
+	static constexpr unsigned int s_bufferSize = 16u;
+	bool m_inWindow;
+	int m_wheelDeltaCarry;
+	bool m_rawEnabled;
+	MouseData m_mouseData;
+
+	std::queue<Event> m_buffer;
+	std::queue<RawDelta> m_rawDeltaBuffer;
+	static std::unique_ptr<Mouse> s_instance;
 };
 #endif

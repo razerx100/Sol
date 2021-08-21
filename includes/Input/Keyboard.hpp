@@ -1,6 +1,9 @@
 #ifndef __KEYBOARD_HPP__
 #define __KEYBOARD_HPP__
 #include <optional>
+#include <queue>
+#include <bitset>
+#include <memory>
 
 enum SKeyCodes {
 	Default,
@@ -38,14 +41,16 @@ enum SKeyCodes {
 	SemiColonUS,
 	Plus,
 	Comma,
-	Dash,
-	Point,
+	Hyphen,
+	Period,
 	SlashUS,
 	TildeUS,
 	BraceStartUS, BraceEndUS,
 	BackSlashUS,
 	QuoteUS
 };
+
+SKeyCodes GetSKeyCodes(std::uint16_t nativeKeycode);
 
 class Keyboard {
 public:
@@ -81,10 +86,49 @@ public:
 	};
 
 public:
-	virtual ~Keyboard() = default;
+	Keyboard()
+		: m_autoRepeatEnabled(false) {}
 
-	virtual bool IsKeyPressed(SKeyCodes keycode) const noexcept = 0;
-	virtual std::optional<Event> ReadKey() noexcept = 0;
-	virtual std::optional<char> ReadChar() noexcept = 0;
+	Keyboard(const Keyboard&) = delete;
+	Keyboard& operator=(const Keyboard&) = delete;
+
+	// key events
+	bool IsKeyPressed(SKeyCodes keycode) const noexcept;
+	std::optional<Event> ReadKey() noexcept;
+	bool IsKeyEmpty() const noexcept;
+	void FlushKey() noexcept;
+
+	// char events
+	std::optional<char> ReadChar() noexcept;
+	bool IsCharEmpty() const noexcept;
+	void FlushChar() noexcept;
+	void Flush() noexcept;
+
+	// auto-repeat control
+	void EnableAutoRepeat() noexcept;
+	void DisableAutoRepeat() noexcept;
+	bool IsAutoRepeatEnabled() const noexcept;
+
+	static void Init();
+	static Keyboard* GetRef() noexcept;
+
+	void OnKeyPressed(std::uint16_t keycode) noexcept;
+	void OnKeyReleased(std::uint16_t keycode) noexcept;
+	void OnChar(char character) noexcept;
+	void ClearState() noexcept;
+
+private:
+	template<typename T>
+	static void TrimBuffer(std::queue<T>& buffer) noexcept;
+
+private:
+	static constexpr unsigned int s_nKeys = 256u;
+	static constexpr unsigned int s_bufferSize = 16u;
+	bool m_autoRepeatEnabled;
+	std::bitset<s_nKeys> m_keystates;
+	std::queue<Event> m_keyBuffer;
+	std::queue<char> m_charBuffer;
+
+	static std::unique_ptr<Keyboard> s_instance;
 };
 #endif
