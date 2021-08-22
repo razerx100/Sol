@@ -5,11 +5,11 @@ Game Engine which can statically link to different 3D engines. (Currently can on
 ImGui
 
 ## Instructions
-Put desired engine module's static lib in ***libs*** directory, then run the appropriate Setup script to build the project with or without common ImGui files.\
+Put desired engine module's static lib in ***libs*** directory, then run the appropriate Setup script to build the project with or without common ImGui files.
 
 ### Window icon
 #### Win32
-To change the window icon put any desired icon with .ico extension in ***icon*** directory and name it Sol.ico. Or change the window icon name in ***src/resource.rc*** to match your icon name. 
+To change the window icon, put any icon with .ico extension in ***icon*** directory and name it Sol.ico. Or change the default window icon name in ***src/resource.rc*** to match your icon name.
 
 ## Requirements
 cmake 3.11+.\
