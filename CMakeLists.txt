@@ -20,7 +20,6 @@ endif()
 
 add_executable(${PROJECT_NAME} WIN32
     ${SRC}
-    src/resource.rc
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/ includes/Input/ external/Luna/)
