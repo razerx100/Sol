@@ -7,8 +7,8 @@ ImGui
 ## Instructions
 Put desired engine module's static lib in ***libs*** directory, then run the appropriate Setup script to build the project with or without common ImGui files.
 
-#### Window icon
-Use the ***Window::SetIcon()*** to set the window Icon path.
+#### Executable icon
+To change the executable icon for Windows, add the path to the icon in ***icon/win32ExecutableIcon.rc***.
 
 ## Requirements
 cmake 3.11+.\

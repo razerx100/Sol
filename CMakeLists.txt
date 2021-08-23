@@ -18,9 +18,16 @@ else()
     file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp)
 endif()
 
-add_executable(${PROJECT_NAME} WIN32
-    ${SRC}
-)
+if(MSVC)
+    add_executable(${PROJECT_NAME} WIN32
+        ${SRC}
+        icon/win32ExecutableIcon.rc
+    )
+else()
+    add_executable(${PROJECT_NAME}
+        ${SRC}
+    )
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/ includes/Input/ external/Luna/)
 
