@@ -2,6 +2,7 @@
 #include <InputManager.hpp>
 #include <WinWindow.hpp>
 #include <resource.hpp>
+#include <Exception.hpp>
 
 std::unique_ptr<Window> Window::s_instance;
 std::unique_ptr<PipelineManager> PipelineManager::s_instance;
