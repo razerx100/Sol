@@ -10,7 +10,7 @@ Engine::Engine() {
 	InputManager inputManager;
 	Window::Init(std::make_unique<WinWindow>(1920, 1080, "Sol"));
 	m_windowRef = Window::GetRef();
-	m_windowRef->SetIcon("icon\\Sol.ico");
+	m_windowRef->SetWindowIcon("icon\\Sol.ico");
 	App::Init();
 	m_appRef = App::GetRef();
 }
