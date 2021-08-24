@@ -2,11 +2,7 @@
 #include <Keyboard.hpp>
 #include <Window.hpp>
 
-std::unique_ptr<App> App::s_instance;
-
-App::App() {
-
-}
+App::App() {}
 
 void App::Update() {
 	if (Keyboard::GetRef()->IsKeyPressed(Enter) && Keyboard::GetRef()->IsKeyPressed(Alt))

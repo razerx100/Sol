@@ -1,7 +1,5 @@
 #include<Keyboard.hpp>
 
-std::unique_ptr<Keyboard> Keyboard::s_instance;
-
 bool Keyboard::IsKeyPressed(SKeyCodes keycode) const noexcept {
 	return m_keystates[keycode];
 }

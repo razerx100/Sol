@@ -1,7 +1,5 @@
 #include <Mouse.hpp>
 
-std::unique_ptr<Mouse> Mouse::s_instance;
-
 Mouse::Mouse()
 	:
 	m_inWindow(false),
