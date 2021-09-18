@@ -87,11 +87,3 @@ void Keyboard::TrimBuffer(std::queue<T>& buffer) noexcept {
 	while (buffer.size() > s_bufferSize)
 		buffer.pop();
 }
-
-void Keyboard::Init() {
-	s_instance = std::make_unique<Keyboard>();
-}
-
-Keyboard* Keyboard::GetRef() noexcept {
-	return s_instance.get();
-}

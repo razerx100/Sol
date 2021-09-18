@@ -29,7 +29,7 @@ else()
     )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/ includes/Input/ external/Luna/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ includes/Graphics/ includes/Exceptions/ includes/Input/ external/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
@@ -51,6 +51,9 @@ endif()
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot)
     target_link_options(${PROJECT_NAME} PRIVATE /subsystem:windows /ENTRY:mainCRTStartup)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+	d3d12.lib dxgi.lib dxguid.lib uuid.lib d3dcompiler.lib
+    )
 endif()
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

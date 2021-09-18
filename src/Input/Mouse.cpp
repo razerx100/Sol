@@ -175,11 +175,3 @@ std::optional<Mouse::RawDelta> Mouse::ReadRawDelta() noexcept {
 
 	return d;
 }
-
-void Mouse::Init() {
-	s_instance = std::make_unique<Mouse>();
-}
-
-Mouse* Mouse::GetRef() noexcept {
-	return s_instance.get();
-}

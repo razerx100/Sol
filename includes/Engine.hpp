@@ -12,8 +12,8 @@ public:
 	int Run();
 
 private:
-	Window* m_windowRef;
-	PipelineManager* m_pipelineManagerRef;
-	App* m_appRef;
+	Window* m_pWindowRef;
+	PipelineManager* m_pPipelineManagerRef;
+	App* m_pAppRef;
 };
 #endif
