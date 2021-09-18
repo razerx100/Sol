@@ -4,12 +4,14 @@
 Exception::Exception(int line, const char* file) noexcept
 		: m_line(line), m_file(file) {}
 
-const char* Exception::what() const noexcept {
+void Exception::GenerateWhatBuffer() noexcept {
 	std::ostringstream oss;
 	oss << GetType() << "\n"
 		<< GetOriginString();
 	m_whatBuffer = oss.str();
+}
 
+const char* Exception::what() const noexcept {
 	return m_whatBuffer.c_str();
 }
 
@@ -37,15 +39,19 @@ GenericException::GenericException(
 	int line, const char* file,
 	const std::string& errorText
 ) noexcept
-	: m_errorText(errorText), Exception(line, file) {}
+	: Exception(line, file), m_errorText(errorText) {
+	GenerateWhatBuffer();
+}
 
-const char* GenericException::what() const noexcept {
+void GenericException::GenerateWhatBuffer() noexcept {
 	std::ostringstream oss;
 	oss << GetType() << "\n"
 		<< m_errorText << "\n"
 		<< GetOriginString();
 	m_whatBuffer = oss.str();
+}
 
+const char* GenericException::what() const noexcept {
 	return m_whatBuffer.c_str();
 }
 
