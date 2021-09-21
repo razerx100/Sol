@@ -1,14 +1,12 @@
 #include <App.hpp>
-#include <Keyboard.hpp>
+#include <IKeyboard.hpp>
 #include <Window.hpp>
-
-App::App() {}
 
 void App::Update() {
 	if (
-		Keyboard::GetRef()->IsKeyPressed(Enter)
+		GetKeyboardInstance()->IsKeyPressed(Enter)
 		&&
-		Keyboard::GetRef()->IsKeyPressed(Alt)
+		GetKeyboardInstance()->IsKeyPressed(Alt)
 		)
-		Window::GetRef()->SetTitle("Key Binding Works");
+		GetWindowInstance()->SetTitle("Key Binding Works");
 }

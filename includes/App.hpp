@@ -1,12 +1,15 @@
 #ifndef __APP_HPP__
 #define __APP_HPP__
 #include <memory>
-#include <GenericSingleton.hpp>
 
-class App : public GenericSingleton<App> {
+class App {
 public:
-	App();
+	App() = default;
 
 	void Update();
 };
+
+App* GetAppInstance() noexcept;
+void InitAppInstance() noexcept;
+
 #endif

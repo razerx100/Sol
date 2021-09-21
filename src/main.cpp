@@ -1,5 +1,6 @@
 #include <Engine.hpp>
 #include <Exception.hpp>
+#include <ExceptionMessageBox.hpp>
 
 int main() {
 	try {
