@@ -10,8 +10,19 @@ Engine::Engine() {
 	m_pWindowRef = GetWindowInstance();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
 
+	InitGraphicsEngineInstance(m_pWindowRef->GetWindowHandle());
+	m_pGraphicsRef = GetGraphicsEngineInstance();
+
 	InitAppInstance();
 	m_pAppRef = GetAppInstance();
+}
+
+Engine::~Engine() {
+	CleanUpAppInstance();
+	CleanUpGraphicsEngineInstance();
+	CleanUpWindowInstance();
+	CleanUpKeyboardInstance();
+	CleanUpMouseInstance();
 }
 
 int Engine::Run() {
@@ -20,5 +31,6 @@ int Engine::Run() {
 			return ecode;
 
 		m_pAppRef->Update();
+		m_pGraphicsRef->Render();
 	}
 }

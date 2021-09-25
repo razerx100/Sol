@@ -1,6 +1,6 @@
 #ifndef __APP_HPP__
 #define __APP_HPP__
-#include <memory>
+#include <cstdint>
 
 class App {
 public:
@@ -10,6 +10,7 @@ public:
 };
 
 App* GetAppInstance() noexcept;
-void InitAppInstance() noexcept;
+void InitAppInstance();
+void CleanUpAppInstance();
 
 #endif

@@ -1,11 +1,17 @@
 #include <App.hpp>
 
-static std::unique_ptr<App> sApp;
+static App* s_pApp = nullptr;
 
 App* GetAppInstance() noexcept {
-	return sApp.get();
+	return s_pApp;
 }
 
-void InitAppInstance() noexcept {
-	sApp = std::make_unique<App>();
+void InitAppInstance() {
+	if (!s_pApp)
+		s_pApp = new App();
+}
+
+void CleanUpAppInstance() {
+	if (s_pApp)
+		delete s_pApp;
 }
