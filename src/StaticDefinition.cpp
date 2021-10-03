@@ -11,7 +11,7 @@ void InitAppInstance() {
 		s_pApp = new App();
 }
 
-void CleanUpAppInstance() {
+void CleanUpAppInstance() noexcept {
 	if (s_pApp)
 		delete s_pApp;
 }

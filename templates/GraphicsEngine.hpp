@@ -21,6 +21,6 @@ public:
 
 __declspec(dllimport) GraphicsEngine* _cdecl GetGraphicsEngineInstance() noexcept;
 __declspec(dllimport) void _cdecl InitGraphicsEngineInstance(void* windowHandle);
-__declspec(dllimport) void _cdecl CleanUpGraphicsEngineInstance();
+__declspec(dllimport) void _cdecl CleanUpGraphicsEngineInstance() noexcept;
 
 #endif

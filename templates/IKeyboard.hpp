@@ -115,6 +115,6 @@ public:
 
 PLUTO_DLL IKeyboard* _cdecl GetKeyboardInstance() noexcept;
 PLUTO_DLL void _cdecl InitKeyboardInstance();
-PLUTO_DLL void _cdecl CleanUpKeyboardInstance();
+PLUTO_DLL void _cdecl CleanUpKeyboardInstance() noexcept;
 
 #endif

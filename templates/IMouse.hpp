@@ -118,6 +118,6 @@ public:
 
 PLUTO_DLL IMouse* _cdecl GetMouseInstance() noexcept;
 PLUTO_DLL void _cdecl InitMouseInstance();
-PLUTO_DLL void _cdecl CleanUpMouseInstance();
+PLUTO_DLL void _cdecl CleanUpMouseInstance() noexcept;
 
 #endif

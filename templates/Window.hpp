@@ -22,6 +22,6 @@ __declspec(dllimport) Window* _cdecl GetWindowInstance() noexcept;
 __declspec(dllimport) void _cdecl InitWindowInstance(
 	int width, int height, const char* name
 );
-__declspec(dllimport) void _cdecl CleanUpWindowInstance();
+__declspec(dllimport) void _cdecl CleanUpWindowInstance() noexcept;
 
 #endif

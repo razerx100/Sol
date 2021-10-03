@@ -17,7 +17,7 @@ Engine::Engine() {
 	m_pAppRef = GetAppInstance();
 }
 
-Engine::~Engine() {
+Engine::~Engine() noexcept {
 	CleanUpAppInstance();
 	CleanUpGraphicsEngineInstance();
 	CleanUpWindowInstance();

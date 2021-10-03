@@ -7,7 +7,7 @@
 class Engine {
 public:
 	Engine();
-	~Engine();
+	~Engine() noexcept;
 
 	int Run();
 

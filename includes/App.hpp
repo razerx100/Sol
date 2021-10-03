@@ -11,6 +11,5 @@ public:
 
 App* GetAppInstance() noexcept;
 void InitAppInstance();
-void CleanUpAppInstance();
-
+void CleanUpAppInstance() noexcept;
 #endif
