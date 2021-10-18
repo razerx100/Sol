@@ -1,12 +1,14 @@
 #include <App.hpp>
-#include <IKeyboard.hpp>
 #include <Window.hpp>
+#include <InputManager.hpp>
+#include <string>
 
 void App::Update() {
-	if (
-		GetKeyboardInstance()->IsKeyPressed(Enter)
-		&&
-		GetKeyboardInstance()->IsKeyPressed(Alt)
-		)
-		GetWindowInstance()->SetTitle("Key Binding Works");
+	std::string pointer = std::to_string(
+		GetInputManagerInstance()->GetMouseByIndex()->GetPosX()
+	) + " " + std::to_string(
+		GetInputManagerInstance()->GetMouseByIndex()->GetPosY()
+	);
+
+	GetWindowInstance()->SetTitle(pointer.c_str());
 }

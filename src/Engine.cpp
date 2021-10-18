@@ -1,11 +1,11 @@
 #include <Engine.hpp>
 #include <Exception.hpp>
-#include <IKeyboard.hpp>
-#include <IMouse.hpp>
+#include <InputManager.hpp>
 
 Engine::Engine() {
-	InitKeyboardInstance();
-	InitMouseInstance();
+	InitInputManagerInstance();
+	GetInputManagerInstance()->AddDeviceSupport(DeviceType::KeyboardDev);
+	GetInputManagerInstance()->AddDeviceSupport(DeviceType::MouseDev);
 	InitWindowInstance(1920, 1080, "Sol");
 	m_pWindowRef = GetWindowInstance();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
@@ -21,8 +21,7 @@ Engine::~Engine() noexcept {
 	CleanUpAppInstance();
 	CleanUpGraphicsEngineInstance();
 	CleanUpWindowInstance();
-	CleanUpKeyboardInstance();
-	CleanUpMouseInstance();
+	CleanUpInputManagerInstance();
 }
 
 int Engine::Run() {
