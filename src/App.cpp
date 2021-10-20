@@ -4,11 +4,13 @@
 #include <string>
 
 void App::Update() {
-	std::string pointer = std::to_string(
-		GetInputManagerInstance()->GetMouseByIndex()->GetPosX()
-	) + " " + std::to_string(
-		GetInputManagerInstance()->GetMouseByIndex()->GetPosY()
-	);
+	IKeyboard* pKeyboardRef = GetInputManagerInstance()->GetKeyboardByIndex();
 
-	GetWindowInstance()->SetTitle(pointer.c_str());
+	if(pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))
+		GetWindowInstance()->SetTitle("Alt + D");
+
+	IMouse* pMouseRef = GetInputManagerInstance()->GetMouseByIndex();
+
+	if(pMouseRef->AreButtonsPressed(2, MouseButtons::Right, MouseButtons::Left))
+		GetWindowInstance()->SetTitle("Left + Right");
 }

@@ -4,8 +4,8 @@
 
 Engine::Engine() {
 	InitInputManagerInstance();
-	GetInputManagerInstance()->AddDeviceSupport(DeviceType::KeyboardDev);
-	GetInputManagerInstance()->AddDeviceSupport(DeviceType::MouseDev);
+	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Keyboard);
+	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Mouse);
 	InitWindowInstance(1920, 1080, "Sol");
 	m_pWindowRef = GetWindowInstance();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
