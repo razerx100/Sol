@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.21)
 
 project(Sol
     LANGUAGES CXX
@@ -8,9 +8,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
+if(PROJECT_IS_TOP_LEVEL)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
+endif()
 
 if(IMGUIFLAG STREQUAL "ENABLE")
     file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp templates/*.hpp ImGui/*.cpp ImGui/*.h)
@@ -38,8 +40,8 @@ if(IMGUIFLAG STREQUAL "ENABLE")
     target_compile_definitions(${PROJECT_NAME} PRIVATE _IMGUI)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    ${PROJECT_SOURCE_DIR}/libs/*.lib
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    ${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:DEBUG>:Debug>$<$<CONFIG:RELEASE>:Release>/*.lib
 )
 
 if(MSVC)
@@ -52,5 +54,33 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot)
     target_link_options(${PROJECT_NAME} PRIVATE /subsystem:windows /ENTRY:mainCRTStartup)
 endif()
+
+include(FetchContent)
+
+FetchContent_Declare(
+    InputManager
+    GIT_REPOSITORY https://github.com/razerx100/Pluto.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(InputManager)
+
+FetchContent_Declare(
+    GraphicsEngine
+    GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(GraphicsEngine)
+
+FetchContent_Declare(
+    RenderWindow
+    GIT_REPOSITORY https://github.com/razerx100/Luna.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(RenderWindow)
+
+add_dependencies(${PROJECT_NAME} ${INPUT_MANAGER} ${GRAPHICS_ENGINE} ${RENDER_WINDOW})
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

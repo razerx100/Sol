@@ -11,6 +11,8 @@ void App::Update() {
 
 	IMouse* pMouseRef = GetInputManagerInstance()->GetMouseByIndex();
 
-	if(pMouseRef->AreButtonsPressed(2, MouseButtons::Right, MouseButtons::Left))
+	if(pMouseRef->IsButtonPressed(MouseButtons::Right))
 		GetWindowInstance()->SetTitle("Left + Right");
+
+	//GetWindowInstance()->SetTitle("Yolo");
 }

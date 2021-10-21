@@ -18,10 +18,10 @@ public:
 	virtual void* GetWindowHandle() const noexcept = 0;
 };
 
-__declspec(dllimport) Window* _cdecl GetWindowInstance() noexcept;
-__declspec(dllimport) void _cdecl InitWindowInstance(
+__declspec(dllimport) Window* __cdecl GetWindowInstance() noexcept;
+__declspec(dllimport) void __cdecl InitWindowInstance(
 	int width, int height, const char* name
 );
-__declspec(dllimport) void _cdecl CleanUpWindowInstance() noexcept;
+__declspec(dllimport) void __cdecl CleanUpWindowInstance() noexcept;
 
 #endif
