@@ -6,6 +6,7 @@ Engine::Engine() {
 	InitInputManagerInstance();
 	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Keyboard);
 	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Mouse);
+	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Gamepad);
 	InitWindowInstance(1920, 1080, "Sol");
 	m_pWindowRef = GetWindowInstance();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
