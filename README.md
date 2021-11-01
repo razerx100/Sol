@@ -2,9 +2,9 @@
 Manager/executable module which dynamically links to different modules. Modules must have required interfaces implemented.
 
 # Dependencies
-1. Pluto.
-2. GaiaX.
-3. Luna
+1. [Pluto](https://github.com/razerx100/Pluto).
+2. [GaiaX](https://github.com/razerx100/GaiaX).
+3. [Luna](https://github.com/razerx100/Luna).
 
 ## Third party library Used
 ImGui
