@@ -23,6 +23,6 @@ void App::Update() {
 			" Y: " + std::to_string(e.GetASData().yDirection)
 			).c_str());
 
-	if (pGamepadRef->IsButtonPressed(XBoxButton::START))
-		GetWindowInstance()->SetTitle("Back");
+	if (pGamepadRef->AreButtonsPressed(2, XBoxButton::START, XBoxButton::X))
+		GetWindowInstance()->SetTitle("Start + A");
 }
