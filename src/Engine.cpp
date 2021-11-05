@@ -11,7 +11,7 @@ Engine::Engine() {
 	m_pWindowRef = GetWindowInstance();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
 
-	InitGraphicsEngineInstance(m_pWindowRef->GetWindowHandle());
+	InitGraphicsEngineInstance(m_pWindowRef->GetWindowHandle(), 1920u, 1080u);
 	m_pGraphicsRef = GetGraphicsEngineInstance();
 
 	InitAppInstance();

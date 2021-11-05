@@ -2,6 +2,11 @@
 #include <Window.hpp>
 #include <InputManager.hpp>
 #include <string>
+#include <GraphicsEngine.hpp>
+
+App::App() {
+	GetGraphicsEngineInstance()->SetBackgroundColor(Color(0.1f, 0.1f, 0.1f, 0.1f));
+}
 
 void App::Update() {
 	IKeyboard* pKeyboardRef = GetInputManagerInstance()->GetKeyboardByIndex();

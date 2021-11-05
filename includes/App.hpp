@@ -4,7 +4,7 @@
 
 class App {
 public:
-	App() = default;
+	App();
 
 	void Update();
 };
