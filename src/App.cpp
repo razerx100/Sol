@@ -4,9 +4,7 @@
 #include <string>
 #include <GraphicsEngine.hpp>
 
-App::App() {
-	GetGraphicsEngineInstance()->SetBackgroundColor(Color(0.1f, 0.1f, 0.1f, 0.1f));
-}
+App::App() {}
 
 void App::Update() {
 	IKeyboard* pKeyboardRef = GetInputManagerInstance()->GetKeyboardByIndex();

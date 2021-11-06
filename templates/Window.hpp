@@ -16,6 +16,7 @@ public:
 
 	virtual bool IsCursorEnabled() const noexcept = 0;
 	virtual void* GetWindowHandle() const noexcept = 0;
+	virtual void* GetModuleInstance() const noexcept = 0;
 };
 
 __declspec(dllimport) Window* __cdecl GetWindowInstance() noexcept;
