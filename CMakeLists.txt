@@ -54,28 +54,38 @@ endif()
 include(FetchContent)
 
 FetchContent_Declare(
-    InputManager
+    ${INPUT_MANAGER}
     GIT_REPOSITORY https://github.com/razerx100/Pluto.git
     GIT_TAG master
 )
 
-FetchContent_MakeAvailable(InputManager)
+FetchContent_MakeAvailable(${INPUT_MANAGER})
+
+if(GRAPHICS_ENGINE STREQUAL "GaiaX")
+    FetchContent_Declare(
+        ${GRAPHICS_ENGINE}
+        GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
+        GIT_TAG master
+    )
+
+    FetchContent_MakeAvailable(${GRAPHICS_ENGINE})
+elseif(GRAPHICS_ENGINE STREQUAL "Terra")
+    FetchContent_Declare(
+        ${GRAPHICS_ENGINE}
+        GIT_REPOSITORY https://github.com/razerx100/Terra.git
+        GIT_TAG master
+    )
+
+    FetchContent_MakeAvailable(${GRAPHICS_ENGINE})
+endif()
 
 FetchContent_Declare(
-    GraphicsEngine
-    GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
-    GIT_TAG master
-)
-
-FetchContent_MakeAvailable(GraphicsEngine)
-
-FetchContent_Declare(
-    RenderWindow
+    ${RENDER_WINDOW}
     GIT_REPOSITORY https://github.com/razerx100/Luna.git
     GIT_TAG master
 )
 
-FetchContent_MakeAvailable(RenderWindow)
+FetchContent_MakeAvailable(${RENDER_WINDOW})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:DEBUG>:Debug>$<$<CONFIG:RELEASE>:Release>/InputManager.lib

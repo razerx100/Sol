@@ -2,16 +2,18 @@
 #include <Exception.hpp>
 #include <InputManager.hpp>
 
-Engine::Engine() {
+Engine::Engine()
+	: m_appName("Sol") {
 	InitInputManagerInstance();
 	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Keyboard);
 	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Mouse);
 	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Gamepad);
-	InitWindowInstance(1920, 1080, "Sol");
+	InitWindowInstance(1920, 1080, m_appName.c_str());
 	m_pWindowRef = GetWindowInstance();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
 
 	InitGraphicsEngineInstance(
+		m_appName.c_str(),
 		m_pWindowRef->GetWindowHandle(),
 		m_pWindowRef->GetModuleInstance(),
 		1920u, 1080u
