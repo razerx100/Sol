@@ -10,7 +10,7 @@ Manager module/executable which dynamically links to different modules to form a
 ImGui
 
 ## Instructions
-Run the appropriate Setup script to configure the project with or without ImGui. Use the ones with VK suffix for using Vulkan renderer or Dx12 suffix for Directx12 renderer. Otherwise, either renderer's dll can be built seperately and put alongside with the executable. One still needs to be chosen for the import library's static linking (or import library binary maybe be provide instead to link with).
+Run the appropriate Setup script to configure the project with or without ImGui. Use the ones with VK suffix for using Vulkan renderer or Dx12 suffix for Directx12 renderer. Otherwise, either renderer's dll can be built seperately and put alongside with the executable. One still needs to be chosen for the import library's static linking (or import library binary maybe be provide instead to link with). The setup scripts use the ***Visual Studio 17 2022*** generator for project generation. But ***Visual Studio 16 2019*** generator should work as well.
 
 #### Executable icon
 To change the executable icon for Windows, add the path to the icon in ***icon/win32ExecutableIcon.rc***.
