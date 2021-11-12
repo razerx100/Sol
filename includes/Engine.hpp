@@ -1,7 +1,7 @@
 #ifndef __ENGINE_HPP__
 #define __ENGINE_HPP__
 #include <Window.hpp>
-#include <App.hpp>
+#include <IApp.hpp>
 #include <GraphicsEngine.hpp>
 #include <string>
 
@@ -15,7 +15,7 @@ public:
 private:
 	Window* m_pWindowRef;
 	GraphicsEngine* m_pGraphicsRef;
-	App* m_pAppRef;
+	IApp* m_pAppRef;
 
 	const std::string m_appName;
 };

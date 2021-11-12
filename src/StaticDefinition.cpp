@@ -1,8 +1,8 @@
 #include <App.hpp>
 
-static App* s_pApp = nullptr;
+static IApp* s_pApp = nullptr;
 
-App* GetAppInstance() noexcept {
+IApp* GetAppInstance() noexcept {
 	return s_pApp;
 }
 

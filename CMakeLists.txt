@@ -20,7 +20,7 @@ else()
     file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp templates/*.hpp)
 endif()
 
-if(MSVC)
+if(PLATFORM STREQUAL "WINDOWS")
     add_executable(${PROJECT_NAME} WIN32
         ${SRC}
         icon/win32ExecutableIcon.rc
@@ -31,7 +31,7 @@ else()
     )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ templates/ includes/Graphics/ includes/Exceptions/ includes/Input/ external/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ templates/ includes/Impl/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
@@ -48,6 +48,9 @@ endif()
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot)
+endif()
+
+if(PLATFORM STREQUAL "WINDOWS")
     target_link_options(${PROJECT_NAME} PRIVATE /subsystem:windows /ENTRY:mainCRTStartup)
 endif()
 
@@ -79,13 +82,15 @@ elseif(GRAPHICS_ENGINE STREQUAL "Terra")
     FetchContent_MakeAvailable(${GRAPHICS_ENGINE})
 endif()
 
-FetchContent_Declare(
-    ${RENDER_WINDOW}
-    GIT_REPOSITORY https://github.com/razerx100/Luna.git
-    GIT_TAG master
-)
+if(PLATFORM STREQUAL "WINDOWS")
+    FetchContent_Declare(
+        ${RENDER_WINDOW}
+        GIT_REPOSITORY https://github.com/razerx100/Luna.git
+        GIT_TAG master
+    )
 
-FetchContent_MakeAvailable(${RENDER_WINDOW})
+    FetchContent_MakeAvailable(${RENDER_WINDOW})
+endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:DEBUG>:Debug>$<$<CONFIG:RELEASE>:Release>/InputManager.lib
