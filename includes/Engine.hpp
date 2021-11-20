@@ -12,6 +12,8 @@ public:
 
 	int Run();
 
+	void WaitForAsyncTasks();
+
 private:
 	Window* m_pWindowRef;
 	GraphicsEngine* m_pGraphicsRef;

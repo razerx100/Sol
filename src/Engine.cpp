@@ -39,4 +39,10 @@ int Engine::Run() {
 		m_pAppRef->Update();
 		m_pGraphicsRef->Render();
 	}
+
+	WaitForAsyncTasks();
+}
+
+void Engine::WaitForAsyncTasks() {
+	m_pGraphicsRef->WaitForAsyncTasks();
 }
