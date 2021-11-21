@@ -32,15 +32,20 @@ Engine::~Engine() noexcept {
 }
 
 int Engine::Run() {
+	int errorCode = -1;
 	while (true) {
-		if (int ecode = m_pWindowRef->Update(); !ecode)
-			return ecode;
+		if (int ecode = m_pWindowRef->Update(); !ecode) {
+			errorCode = ecode;
+			break;
+		}
 
 		m_pAppRef->Update();
 		m_pGraphicsRef->Render();
 	}
 
 	WaitForAsyncTasks();
+
+	return errorCode;
 }
 
 void Engine::WaitForAsyncTasks() {
