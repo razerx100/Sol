@@ -39,8 +39,10 @@ int Engine::Run() {
 			break;
 		}
 
-		m_pAppRef->Update();
-		m_pGraphicsRef->Render();
+		if(!m_pWindowRef->IsMinimized()) {
+			m_pAppRef->Update();
+			m_pGraphicsRef->Render();
+		}
 	}
 
 	WaitForAsyncTasks();
