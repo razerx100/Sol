@@ -12,6 +12,8 @@ void InitAppInstance() {
 }
 
 void CleanUpAppInstance() noexcept {
-	if (s_pApp)
+	if (s_pApp) {
 		delete s_pApp;
+		s_pApp = nullptr;
+	}
 }
