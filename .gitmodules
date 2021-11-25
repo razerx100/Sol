@@ -1,0 +1,3 @@
+[submodule "DirectXMath"]
+	path = DirectXMath
+	url = https://github.com/razerx100/DirectXMath.git

@@ -15,9 +15,9 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 if(IMGUIFLAG STREQUAL "ENABLE")
-    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp templates/*.hpp ImGui/*.cpp ImGui/*.h)
+    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp ImGui/*.cpp ImGui/*.h)
 else()
-    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp templates/*.hpp)
+    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp)
 endif()
 
 if(PLATFORM STREQUAL "WINDOWS")
@@ -31,7 +31,11 @@ else()
     )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ templates/ includes/Impl/)
+add_subdirectory(DirectXMath)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC DirectXMath)
+
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ includes/Impl/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
