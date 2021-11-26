@@ -7,12 +7,16 @@ class IModel {
 public:
 	virtual ~IModel() = default;
 
+	virtual void SetSolidColor(const DirectX::XMVECTORF32& color) noexcept = 0;
+
 	virtual void GetVertices(
-		DirectX::XMFLOAT3* vertices, std::uint32_t vertexCount
+		DirectX::XMFLOAT3* vertices, std::uint32_t& vertexCount
 	) const noexcept = 0;
 	virtual void GetIndices(
-		std::uint16_t* indices, std::uint32_t indexCount
+		std::uint16_t* indices, std::uint32_t& indexCount
 	) const noexcept = 0;
+
 	virtual DirectX::XMMATRIX GetTransform() const noexcept = 0;
+	virtual DirectX::XMVECTORF32 GetSolidColor() const noexcept = 0;
 };
 #endif

@@ -4,7 +4,9 @@
 #include <string>
 #include <GraphicsEngine.hpp>
 
-App::App() {}
+App::App() {
+	GetGraphicsEngineInstance()->SubmitModels(&m_triangle, 1u);
+}
 
 void App::Update() {
 	IKeyboard* pKeyboardRef = GetInputManagerInstance()->GetKeyboardByIndex();
