@@ -6,9 +6,11 @@ Manager module/executable which dynamically links to different modules to form a
 2. [GaiaX](https://github.com/razerx100/GaiaX) or [Terra](https://github.com/razerx100/Terra).
 3. [Luna](https://github.com/razerx100/Luna).
 
-## Third party library Used
+## Library used
+1. [Ceres](https://github.com/razerx100/Ceres).
+
+## Third party library used
 1. [ImGui](https://github.com/ocornut/imgui).
-2. [DirectXMath](https://github.com/microsoft/DirectXMath).
 
 ## Instructions
 Run the appropriate Setup script to configure the project with or without ImGui. Use the ones with VK suffix for using Vulkan renderer or Dx12 suffix for Directx12 renderer. Otherwise, either renderer's dll can be built seperately and put alongside with the executable. One still needs to be chosen for the import library's static linking (or import library binary maybe be provide instead to link with). The setup scripts use the ***Visual Studio 17 2022*** generator for project generation. But ***Visual Studio 16 2019*** generator should work as well.

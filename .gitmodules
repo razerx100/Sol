@@ -1,3 +1,4 @@
-[submodule "DirectXMath"]
-	path = DirectXMath
-	url = https://github.com/razerx100/DirectXMath.git
+
+[submodule "Ceres"]
+	path = Ceres
+	url = https://github.com/razerx100/Ceres.git
