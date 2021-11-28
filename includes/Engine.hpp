@@ -3,6 +3,7 @@
 #include <Window.hpp>
 #include <IApp.hpp>
 #include <GraphicsEngine.hpp>
+#include <IModel.hpp>
 #include <string>
 
 class Engine {

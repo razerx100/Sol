@@ -31,9 +31,9 @@ else()
     )
 endif()
 
-add_subdirectory(DirectXMath)
+add_subdirectory(Ceres)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC DirectXMath)
+target_link_libraries(${PROJECT_NAME} PUBLIC Ceres)
 
 target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ includes/Impl/)
 

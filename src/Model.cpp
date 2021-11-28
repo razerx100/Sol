@@ -2,7 +2,7 @@
 #include <Model.hpp>
 
 void Model::GetVertices(
-	DirectX::XMFLOAT3* vertices, std::uint32_t& vertexCount
+	float* vertices, std::uint32_t& vertexCount
 ) const noexcept {
 	if (vertices)
 		std::memcpy(vertices, m_vertices.data(), vertexCount);
@@ -19,14 +19,17 @@ void Model::GetIndices(
 		indexCount = static_cast<std::uint32_t>(m_indices.size());
 }
 
-DirectX::XMMATRIX Model::GetTransform() const noexcept {
-	return m_transform;
+void Model::GetTransform(float* matrix) const noexcept {
+
 }
 
-DirectX::XMVECTORF32 Model::GetSolidColor() const noexcept {
-	return m_solidColor;
+void Model::GetSolidColor(float* colorVector) const noexcept {
+	std::memcpy(colorVector, &m_solidColor.F32.x, 16u);
 }
 
-void Model::SetSolidColor(const DirectX::XMVECTORF32& color) noexcept {
-	m_solidColor = color;
+void Model::SetSolidColor(const float* const colorVector) noexcept {
+	m_solidColor.F32.x = colorVector[0];
+	m_solidColor.F32.y = colorVector[1];
+	m_solidColor.F32.z = colorVector[2];
+	m_solidColor.F32.w = colorVector[3];
 }

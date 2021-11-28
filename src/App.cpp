@@ -3,6 +3,7 @@
 #include <InputManager.hpp>
 #include <string>
 #include <GraphicsEngine.hpp>
+#include <IModel.hpp>
 
 App::App() {
 	GetGraphicsEngineInstance()->SubmitModels(&m_triangle, 1u);
