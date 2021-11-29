@@ -24,7 +24,7 @@ void Model::GetTransform(float* matrix) const noexcept {
 }
 
 void Model::GetSolidColor(float* colorVector) const noexcept {
-	std::memcpy(colorVector, &m_solidColor.F32.x, 16u);
+	std::memcpy(colorVector, &m_solidColor.F32.x, 4u * 4u);
 }
 
 void Model::SetSolidColor(const float* const colorVector) noexcept {

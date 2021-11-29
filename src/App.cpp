@@ -3,10 +3,11 @@
 #include <InputManager.hpp>
 #include <string>
 #include <GraphicsEngine.hpp>
-#include <IModel.hpp>
+#include <CRSColor.hpp>
 
 App::App() {
 	GetGraphicsEngineInstance()->SubmitModels(&m_triangle, 1u);
+	GetGraphicsEngineInstance()->SetBackgroundColor(Ceres::Color::Fuchsia);
 }
 
 void App::Update() {

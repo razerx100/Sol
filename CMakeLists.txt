@@ -31,7 +31,10 @@ else()
     )
 endif()
 
-add_subdirectory(Ceres)
+if(NOT CERES_ADDED)
+    add_subdirectory(Ceres)
+    set(CERES_ADDED "TRUE")
+endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Ceres)
 
