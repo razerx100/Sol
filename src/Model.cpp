@@ -2,10 +2,10 @@
 #include <Model.hpp>
 
 void Model::GetVertices(
-	float* vertices, std::uint32_t& vertexCount
+	Ceres::Float32_3* vertices, std::uint32_t& vertexCount
 ) const noexcept {
 	if (vertices)
-		std::memcpy(vertices, m_vertices.data(), vertexCount);
+		std::memcpy(vertices, m_vertices.data(), vertexCount * sizeof(Ceres::Float32_3));
 	else
 		vertexCount = static_cast<std::uint32_t>(m_vertices.size());
 }
@@ -19,17 +19,14 @@ void Model::GetIndices(
 		indexCount = static_cast<std::uint32_t>(m_indices.size());
 }
 
-void Model::GetTransform(float* matrix) const noexcept {
-
+void Model::GetTransform(Ceres::Matrix& transform) const noexcept {
+	transform = m_transform;
 }
 
-void Model::GetSolidColor(float* colorVector) const noexcept {
-	std::memcpy(colorVector, &m_solidColor.F32.x, 4u * 4u);
+void Model::GetSolidColor(Ceres::VectorF32& colorVector) const noexcept {
+	colorVector = m_solidColor;
 }
 
-void Model::SetSolidColor(const float* const colorVector) noexcept {
-	m_solidColor.F32.x = colorVector[0];
-	m_solidColor.F32.y = colorVector[1];
-	m_solidColor.F32.z = colorVector[2];
-	m_solidColor.F32.w = colorVector[3];
+void Model::SetSolidColor(const Ceres::VectorF32& colorVector) noexcept {
+	m_solidColor = colorVector;
 }
