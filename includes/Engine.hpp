@@ -1,8 +1,6 @@
 #ifndef __ENGINE_HPP__
 #define __ENGINE_HPP__
-#include <Window.hpp>
-#include <IApp.hpp>
-#include <GraphicsEngine.hpp>
+#include <InstanceManager.hpp>
 #include <string>
 
 class Engine {

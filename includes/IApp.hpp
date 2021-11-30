@@ -9,7 +9,5 @@ public:
 	virtual void Update() = 0;
 };
 
-IApp* GetAppInstance() noexcept;
-void InitAppInstance();
-void CleanUpAppInstance() noexcept;
+IApp* CreateAppInstance();
 #endif

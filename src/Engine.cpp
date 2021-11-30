@@ -1,15 +1,14 @@
 #include <Engine.hpp>
 #include <Exception.hpp>
-#include <InputManager.hpp>
 
 Engine::Engine()
 	: m_appName("Sol") {
-	InitInputManagerInstance();
-	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Keyboard);
-	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Mouse);
-	GetInputManagerInstance()->AddDeviceSupport(DeviceType::Gamepad);
-	InitWindowInstance(1920, 1080, m_appName.c_str());
-	m_pWindowRef = GetWindowInstance();
+	IOInst::Init();
+	IOInst::GetRef()->AddDeviceSupport(DeviceType::Keyboard);
+	IOInst::GetRef()->AddDeviceSupport(DeviceType::Mouse);
+	IOInst::GetRef()->AddDeviceSupport(DeviceType::Gamepad);
+	WindowInst::Init(1920, 1080, IOInst::GetRef(), m_appName.c_str());
+	m_pWindowRef = WindowInst::GetRef();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
 
 	InitGraphicsEngineInstance(
@@ -19,16 +18,17 @@ Engine::Engine()
 		1920u, 1080u
 	);
 	m_pGraphicsRef = GetGraphicsEngineInstance();
+	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
 
-	InitAppInstance();
-	m_pAppRef = GetAppInstance();
+	AppInst::Init();
+	m_pAppRef = AppInst::GetRef();
 }
 
 Engine::~Engine() noexcept {
-	CleanUpAppInstance();
+	AppInst::CleanUp();
 	CleanUpGraphicsEngineInstance();
-	CleanUpWindowInstance();
-	CleanUpInputManagerInstance();
+	WindowInst::CleanUp();
+	IOInst::CleanUp();
 }
 
 int Engine::Run() {

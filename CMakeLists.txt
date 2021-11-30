@@ -38,7 +38,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Ceres)
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ includes/Impl/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ templates/modules/ includes/Impl/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
@@ -64,12 +64,12 @@ endif()
 include(FetchContent)
 
 FetchContent_Declare(
-    ${INPUT_MANAGER}
+    Pluto
     GIT_REPOSITORY https://github.com/razerx100/Pluto.git
     GIT_TAG master
 )
 
-FetchContent_MakeAvailable(${INPUT_MANAGER})
+FetchContent_MakeAvailable(Pluto)
 
 if(GRAPHICS_ENGINE STREQUAL "GaiaX")
     FetchContent_Declare(
@@ -89,22 +89,16 @@ elseif(GRAPHICS_ENGINE STREQUAL "Terra")
     FetchContent_MakeAvailable(${GRAPHICS_ENGINE})
 endif()
 
-if(PLATFORM STREQUAL "WINDOWS")
-    FetchContent_Declare(
-        ${RENDER_WINDOW}
-        GIT_REPOSITORY https://github.com/razerx100/Luna.git
-        GIT_TAG master
-    )
-
-    FetchContent_MakeAvailable(${RENDER_WINDOW})
-endif()
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    ${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:DEBUG>:Debug>$<$<CONFIG:RELEASE>:Release>/InputManager.lib
-    ${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:DEBUG>:Debug>$<$<CONFIG:RELEASE>:Release>/GraphicsEngine.lib
-    ${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:DEBUG>:Debug>$<$<CONFIG:RELEASE>:Release>/RenderWindow.lib
+FetchContent_Declare(
+    Luna
+    GIT_REPOSITORY https://github.com/razerx100/Luna.git
+    GIT_TAG master
 )
 
-add_dependencies(${PROJECT_NAME} ${INPUT_MANAGER} ${GRAPHICS_ENGINE} ${RENDER_WINDOW})
+FetchContent_MakeAvailable(${RENDER_WINDOW})
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    Pluto ${GRAPHICS_ENGINE} Luna
+)
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
