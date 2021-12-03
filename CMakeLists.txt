@@ -71,23 +71,21 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Pluto)
 
-if(GRAPHICS_ENGINE STREQUAL "GaiaX")
-    FetchContent_Declare(
-        ${GRAPHICS_ENGINE}
-        GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
-        GIT_TAG master
-    )
+FetchContent_Declare(
+    GaiaX
+    GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
+    GIT_TAG master
+)
 
-    FetchContent_MakeAvailable(${GRAPHICS_ENGINE})
-elseif(GRAPHICS_ENGINE STREQUAL "Terra")
-    FetchContent_Declare(
-        ${GRAPHICS_ENGINE}
-        GIT_REPOSITORY https://github.com/razerx100/Terra.git
-        GIT_TAG master
-    )
+FetchContent_MakeAvailable(GaiaX)
 
-    FetchContent_MakeAvailable(${GRAPHICS_ENGINE})
-endif()
+FetchContent_Declare(
+    Terra
+    GIT_REPOSITORY https://github.com/razerx100/Terra.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(Terra)
 
 FetchContent_Declare(
     Luna
@@ -95,10 +93,10 @@ FetchContent_Declare(
     GIT_TAG master
 )
 
-FetchContent_MakeAvailable(${RENDER_WINDOW})
+FetchContent_MakeAvailable(Luna)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    Pluto ${GRAPHICS_ENGINE} Luna
+    Pluto GaiaX Terra Luna
 )
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

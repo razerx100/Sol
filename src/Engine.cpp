@@ -11,13 +11,14 @@ Engine::Engine()
 	m_pWindowRef = WindowInst::GetRef();
 	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
 
-	InitGraphicsEngineInstance(
+	RendererInst::Init(
 		m_appName.c_str(),
 		m_pWindowRef->GetWindowHandle(),
 		m_pWindowRef->GetModuleInstance(),
-		1920u, 1080u
+		1920u, 1080u,
+		RendererType::Terra
 	);
-	m_pGraphicsRef = GetGraphicsEngineInstance();
+	m_pGraphicsRef = RendererInst::GetRef();
 	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
 
 	AppInst::Init();
@@ -26,7 +27,7 @@ Engine::Engine()
 
 Engine::~Engine() noexcept {
 	AppInst::CleanUp();
-	CleanUpGraphicsEngineInstance();
+	RendererInst::CleanUp();
 	WindowInst::CleanUp();
 	IOInst::CleanUp();
 }

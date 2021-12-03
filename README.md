@@ -3,8 +3,9 @@ Manager module/executable which dynamically links to different modules to form a
 
 # Dependencies
 1. [Pluto](https://github.com/razerx100/Pluto).
-2. [GaiaX](https://github.com/razerx100/GaiaX) or [Terra](https://github.com/razerx100/Terra).
-3. [Luna](https://github.com/razerx100/Luna).
+2. [GaiaX](https://github.com/razerx100/GaiaX).
+3. [Terra](https://github.com/razerx100/Terra).
+4. [Luna](https://github.com/razerx100/Luna).
 
 ## Library used
 1. [Ceres](https://github.com/razerx100/Ceres).
@@ -13,7 +14,7 @@ Manager module/executable which dynamically links to different modules to form a
 1. [ImGui](https://github.com/ocornut/imgui).
 
 ## Instructions
-Run the appropriate Setup script to configure the project with or without ImGui. Use the ones with VK suffix for using Vulkan renderer or Dx12 suffix for Directx12 renderer. Otherwise, either renderer's dll can be built seperately and put alongside with the executable. One still needs to be chosen for the import library's static linking (or import library binary maybe be provide instead to link with). The setup scripts use the ***Visual Studio 17 2022*** generator for project generation. But ***Visual Studio 16 2019*** generator should work as well.
+Run the appropriate Setup script to configure the project with or without ImGui. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation. But ***Visual Studio 16 2019*** generator should work as well.
 
 #### Executable icon
 To change the executable icon for Windows, add the path to the icon in ***icon/win32ExecutableIcon.rc***.

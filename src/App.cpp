@@ -5,7 +5,7 @@
 #include <string>
 
 App::App() {
-	GetGraphicsEngineInstance()->SubmitModels(&m_triangle, 1u);
+	RendererInst::GetRef()->SubmitModels(&m_triangle, 1u);
 }
 
 void App::Update() {

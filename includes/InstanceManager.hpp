@@ -8,7 +8,7 @@
 
 class AppInst : public _ObjectManager<IApp> {
 public:
-	static void Init() noexcept;
+	static void Init();
 };
 
 enum class IOType {
@@ -17,7 +17,7 @@ enum class IOType {
 
 class IOInst : public _ObjectManager<InputManager> {
 public:
-	static void Init(IOType type = IOType::Pluto) noexcept;
+	static void Init(IOType type = IOType::Pluto);
 };
 
 enum class WindowType {
@@ -29,7 +29,24 @@ public:
 	static void Init(
 		int width, int height, InputManager* ioMan, const char* name,
 		WindowType type = WindowType::Luna
-	) noexcept;
+	);
+};
+
+enum class RendererType {
+	Terra,
+	Gaia
+};
+
+class RendererInst : public _ObjectManager<GraphicsEngine> {
+public:
+	static void Init(
+		const char* appName,
+		void* windowHandle,
+		void* moduleHandle,
+		std::uint32_t width, std::uint32_t height,
+		RendererType type = RendererType::Gaia,
+		std::uint8_t bufferCount = 2u
+	);
 };
 
 #endif

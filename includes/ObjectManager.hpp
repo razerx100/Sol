@@ -15,7 +15,7 @@ public:
 		}
 	}
 
-	static void Set(T* pObject) noexcept {
+	static void Set(T* pObject) {
 		if (!s_pObject)
 			s_pObject = pObject;
 	}
