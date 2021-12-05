@@ -4,7 +4,7 @@
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
 #include <vector>
-#include <WordProcessing.hpp>
+#include <ConfigManager.hpp>
 
 void AppInst::Init() {
 	Set(CreateAppInstance());
@@ -30,8 +30,6 @@ static const std::vector<const char*> RENDERERNAMES = {
 	"Gaia"
 };
 
-#define TOSTR(token) #token
-
 void RendererInst::Init(
 	const char* appName,
 	void* windowHandle,
@@ -40,7 +38,7 @@ void RendererInst::Init(
 	RendererType type,
 	std::uint8_t bufferCount
 ) {
-	type = WordProcess::ReadType("config.ini", "RendererType", type, RENDERERNAMES);
+	type = ConfigManager::ReadType("config.ini", "RendererType", type, RENDERERNAMES);
 
 	if (type == RendererType::Gaia)
 		Set(
@@ -63,5 +61,5 @@ void RendererInst::Init(
 }
 
 void RendererInst::SetAPI(RendererType type) noexcept {
-	WordProcess::SaveName("config.ini", "RendererType", type, RENDERERNAMES);
+	ConfigManager::SaveName("config.ini", "RendererType", type, RENDERERNAMES);
 }

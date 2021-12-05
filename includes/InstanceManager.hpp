@@ -5,7 +5,6 @@
 #include <GraphicsEngine.hpp>
 #include <IApp.hpp>
 #include <ObjectManager.hpp>
-#include <string>
 
 class AppInst : public _ObjectManager<IApp> {
 public:

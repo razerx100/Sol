@@ -1,13 +1,13 @@
-#include <WordProcessing.hpp>
+#include <ConfigManager.hpp>
 
-void WordProcess::ReplaceInString(
+void ConfigManager::ReplaceInString(
     const std::string& replacement, std::string& textStr,
     std::int64_t start, std::int64_t end
 ) noexcept {
     textStr.replace(start, end - start, replacement);
 }
 
-std::string WordProcess::GetLineFromString(
+std::string ConfigManager::GetLineFromString(
     const std::string& textString,
     std::int64_t start, std::int64_t end
 ) noexcept {
@@ -17,7 +17,7 @@ std::string WordProcess::GetLineFromString(
     return foundLine;
 }
 
-std::pair<std::int64_t, std::int64_t> WordProcess::FindInString(
+std::pair<std::int64_t, std::int64_t> ConfigManager::FindInString(
     const std::string& textStr, const std::string& searchItem
 ) noexcept {
     auto start = std::search(
@@ -40,7 +40,7 @@ std::pair<std::int64_t, std::int64_t> WordProcess::FindInString(
     return { startPos, endPos };
 }
 
-std::string WordProcess::FileToString(const char* fileName) noexcept {
+std::string ConfigManager::FileToString(const char* fileName) noexcept {
     std::ifstream input(fileName, std::ios_base::in);
 
     std::string buffer;

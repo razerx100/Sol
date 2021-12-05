@@ -1,5 +1,5 @@
-#ifndef __WORD_PROCESSING_HPP__
-#define __WORD_PROCESSING_HPP__
+#ifndef __CONFIG_MANAGER_HPP__
+#define __CONFIG_MANAGER_HPP__
 #include <vector>
 #include <string>
 #include <fstream>
@@ -7,7 +7,7 @@
 
 using namespace std::string_literals;
 
-class WordProcess {
+class ConfigManager {
 public:
     template<typename T>
     [[nodiscard]]
