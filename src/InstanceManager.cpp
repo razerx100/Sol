@@ -3,6 +3,8 @@
 #include <LunaInstance.hpp>
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
+#include <vector>
+#include <WordProcessing.hpp>
 
 void AppInst::Init() {
 	Set(CreateAppInstance());
@@ -23,6 +25,13 @@ void WindowInst::Init(
 		));
 }
 
+static const std::vector<const char*> RENDERERNAMES = {
+	"Terra",
+	"Gaia"
+};
+
+#define TOSTR(token) #token
+
 void RendererInst::Init(
 	const char* appName,
 	void* windowHandle,
@@ -31,6 +40,8 @@ void RendererInst::Init(
 	RendererType type,
 	std::uint8_t bufferCount
 ) {
+	type = WordProcess::ReadType("config.ini", "RendererType", type, RENDERERNAMES);
+
 	if (type == RendererType::Gaia)
 		Set(
 			CreateGaiaInstance(
@@ -49,4 +60,8 @@ void RendererInst::Init(
 				bufferCount
 			)
 		);
+}
+
+void RendererInst::SetAPI(RendererType type) noexcept {
+	WordProcess::SaveName("config.ini", "RendererType", type, RENDERERNAMES);
 }

@@ -15,8 +15,7 @@ Engine::Engine()
 		m_appName.c_str(),
 		m_pWindowRef->GetWindowHandle(),
 		m_pWindowRef->GetModuleInstance(),
-		1920u, 1080u,
-		RendererType::Terra
+		1920u, 1080u
 	);
 	m_pGraphicsRef = RendererInst::GetRef();
 	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);

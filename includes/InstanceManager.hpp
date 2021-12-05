@@ -5,6 +5,7 @@
 #include <GraphicsEngine.hpp>
 #include <IApp.hpp>
 #include <ObjectManager.hpp>
+#include <string>
 
 class AppInst : public _ObjectManager<IApp> {
 public:
@@ -47,6 +48,8 @@ public:
 		RendererType type = RendererType::Gaia,
 		std::uint8_t bufferCount = 2u
 	);
+
+	static void SetAPI(RendererType type) noexcept;
 };
 
 #endif
