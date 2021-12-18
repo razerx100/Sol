@@ -18,8 +18,8 @@ Manager module/executable which dynamically links to different modules to form a
 Run the appropriate Setup script to configure the project with or without ImGui. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation. But ***Visual Studio 16 2019*** generator should work as well.
 
 ## Resources
-### Default Icon
-Default icon location is {executable_directory}/resources/icon/Sol.ico.
+### Default Window Icon
+Default window icon location is {executable_directory}/resources/icon/Sol.ico.
 
 ### Shader Location
 Put the compiled shaders into {executable_directory}/resources/shaders/ directory.
