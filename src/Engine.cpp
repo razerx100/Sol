@@ -9,7 +9,7 @@ Engine::Engine()
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Gamepad);
 	WindowInst::Init(1920, 1080, IOInst::GetRef(), m_appName.c_str());
 	m_pWindowRef = WindowInst::GetRef();
-	m_pWindowRef->SetWindowIcon("icon\\Sol.ico");
+	m_pWindowRef->SetWindowIcon("resources/icon/Sol.ico");
 
 	RendererInst::Init(
 		m_appName.c_str(),
@@ -18,6 +18,9 @@ Engine::Engine()
 		1920u, 1080u
 	);
 	m_pGraphicsRef = RendererInst::GetRef();
+	m_pGraphicsRef->SetShaderPath("resources/shaders/");
+	m_pGraphicsRef->InitResourceBasedObjects();
+
 	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
 
 	AppInst::Init();

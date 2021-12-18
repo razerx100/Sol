@@ -3,9 +3,11 @@
 #include <InstanceManager.hpp>
 #include <CRSColor.hpp>
 #include <string>
+#include <BasicModels.hpp>
 
 App::App() {
-	RendererInst::GetRef()->SubmitModels(&m_triangle, 1u);
+	RendererInst::GetRef()->SubmitModels(new Triangle(Ceres::Color::Cyan), 1u, false);
+	RendererInst::GetRef()->SubmitModels(new Triangle1(Ceres::Color::Fuchsia), 1u, false);
 }
 
 void App::Update() {

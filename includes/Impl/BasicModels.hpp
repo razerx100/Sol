@@ -10,4 +10,13 @@ public:
 private:
 	void Init(const Ceres::VectorF32& solidColor) noexcept;
 };
+
+class Triangle1 : public Model {
+public:
+	Triangle1() noexcept;
+	Triangle1(const Ceres::VectorF32& solidColor) noexcept;
+
+private:
+	void Init(const Ceres::VectorF32& solidColor) noexcept;
+};
 #endif

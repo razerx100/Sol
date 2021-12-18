@@ -3,6 +3,12 @@
 #include <cstdint>
 #include <CRSVector.hpp>
 #include <CRSMatrix.hpp>
+#include <vector>
+
+enum class VertexElementType {
+	Position,
+	Color
+};
 
 class IModel {
 public:
@@ -10,14 +16,11 @@ public:
 
 	virtual void SetSolidColor(const Ceres::VectorF32& colorVector) noexcept = 0;
 
-	virtual void GetVertices(
-		Ceres::Float32_3* vertices, std::uint32_t& vertexCount
-	) const noexcept = 0;
-	virtual void GetIndices(
-		std::uint16_t* indices, std::uint32_t& indexCount
-	) const noexcept = 0;
+	virtual const std::vector<Ceres::Float32_3>& GetVertices() const noexcept = 0;
+	virtual const std::vector<std::uint16_t>& GetIndices() const noexcept = 0;
+	virtual const std::vector<VertexElementType>& GetVertexLayout() const noexcept = 0;
 
-	virtual void GetTransform(Ceres::Matrix& transform) const noexcept = 0;
-	virtual void GetSolidColor(Ceres::VectorF32& colorVector) const noexcept = 0;
+	virtual Ceres::Matrix GetTransform() const noexcept = 0;
+	virtual Ceres::VectorF32 GetSolidColor() const noexcept = 0;
 };
 #endif

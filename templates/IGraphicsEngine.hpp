@@ -11,13 +11,19 @@ public:
 	virtual ~GraphicsEngine() = default;
 
 	virtual void SetBackgroundColor(const Ceres::VectorF32& colorVector) noexcept = 0;
-	virtual void SubmitModels(const class IModel* const models, std::uint32_t modelCount) = 0;
+	virtual void SubmitModels(
+		class IModel* models, std::uint32_t modelCount,
+		bool texture = true
+	) = 0;
 	virtual void Render() = 0;
 	virtual void Resize(std::uint32_t width, std::uint32_t height) = 0;
 	virtual void GetMonitorCoordinates(
 		std::uint64_t& monitorWidth, uint64_t& monitorHeight
 	) = 0;
 	virtual void WaitForAsyncTasks() = 0;
+
+	virtual void SetShaderPath(const char* path) noexcept = 0;
+	virtual void InitResourceBasedObjects() = 0;
 };
 
 #endif
