@@ -6,8 +6,11 @@
 #include <BasicModels.hpp>
 
 App::App() {
-	RendererInst::GetRef()->SubmitModels(new Triangle(Ceres::Color::Cyan), 1u, false);
-	RendererInst::GetRef()->SubmitModels(new Triangle1(Ceres::Color::Fuchsia), 1u, false);
+	IModel* models[2];
+	models[0] = new Triangle(Ceres::Color::Cyan);
+	models[1] = new Triangle1(Ceres::Color::Fuchsia);
+
+	RendererInst::GetRef()->SubmitModels(models, 2u, false);
 }
 
 void App::Update() {
