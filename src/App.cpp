@@ -3,14 +3,16 @@
 #include <InstanceManager.hpp>
 #include <CRSColor.hpp>
 #include <string>
-#include <BasicModels.hpp>
 
 App::App() {
-	IModel* models[2];
-	models[0] = new Triangle(Ceres::Color::Cyan);
-	models[1] = new Triangle1(Ceres::Color::Fuchsia);
+	m_triangles.emplace_back(std::make_unique<Triangle>(Ceres::Color::Cyan));
+	m_triangles.emplace_back(std::make_unique<Triangle1>(Ceres::Color::Fuchsia));
 
-	RendererInst::GetRef()->SubmitModels(models, 2u, false);
+	for(auto& triangle : m_triangles)
+		RendererInst::GetRef()->SubmitModel(triangle.get(), false);
+
+	for (auto& triangle : m_triangles)
+		triangle->ResetVerticesAndIndices();
 }
 
 void App::Update() {

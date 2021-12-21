@@ -24,3 +24,8 @@ void Model::SetSolidColor(const Ceres::VectorF32& colorVector) noexcept {
 const std::vector<VertexElementType>& Model::GetVertexLayout() const noexcept {
 	return m_vertexLayout;
 }
+
+void Model::ResetVerticesAndIndices() noexcept {
+	m_vertices = std::vector<Ceres::Float32_3>();
+	m_indices = std::vector<std::uint16_t>();
+}

@@ -14,8 +14,6 @@ class IModel {
 public:
 	virtual ~IModel() = default;
 
-	virtual void SetSolidColor(const Ceres::VectorF32& colorVector) noexcept = 0;
-
 	virtual const std::vector<Ceres::Float32_3>& GetVertices() const noexcept = 0;
 	virtual const std::vector<std::uint16_t>& GetIndices() const noexcept = 0;
 	virtual const std::vector<VertexElementType>& GetVertexLayout() const noexcept = 0;
