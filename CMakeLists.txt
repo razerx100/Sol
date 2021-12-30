@@ -64,6 +64,14 @@ endif()
 include(FetchContent)
 
 FetchContent_Declare(
+    Venus
+    GIT_REPOSITORY https://github.com/razerx100/Venus.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(Venus)
+
+FetchContent_Declare(
     Pluto
     GIT_REPOSITORY https://github.com/razerx100/Pluto.git
     GIT_TAG master
@@ -96,7 +104,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Luna)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    Pluto GaiaX Terra Luna
+    Venus Pluto GaiaX Terra Luna
 )
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

@@ -1,8 +1,12 @@
 #include <Engine.hpp>
 #include <Exception.hpp>
+#include <VenusInstance.hpp>
 
 Engine::Engine()
 	: m_appName("Sol") {
+
+	CreateVenusInstance(4u);
+
 	IOInst::Init();
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Keyboard);
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Mouse);
@@ -32,6 +36,7 @@ Engine::~Engine() noexcept {
 	RendererInst::CleanUp();
 	WindowInst::CleanUp();
 	IOInst::CleanUp();
+	CleanUpVenusInstance();
 }
 
 int Engine::Run() {
