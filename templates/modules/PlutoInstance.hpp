@@ -2,5 +2,6 @@
 #define __PLUTO_INSTANCE_HPP__
 #include <InputManager.hpp>
 
+[[nodiscard]]
 __declspec(dllimport) InputManager* __cdecl CreatePlutoInstance();
 #endif

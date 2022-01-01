@@ -9,11 +9,16 @@ public:
 	void SetSolidColor(const Ceres::VectorF32& colorVector) noexcept override;
 	void ResetVerticesAndIndices() noexcept override;
 
+	[[nodiscard]]
 	const std::vector<Ceres::Float32_3>& GetVertices() const noexcept override;
+	[[nodiscard]]
 	const std::vector<std::uint16_t>& GetIndices() const noexcept override;
+	[[nodiscard]]
 	const std::vector<VertexElementType>& GetVertexLayout() const noexcept override;
 
+	[[nodiscard]]
 	Ceres::Matrix GetTransform() const noexcept override;
+	[[nodiscard]]
 	Ceres::VectorF32 GetSolidColor() const noexcept override;
 
 protected:

@@ -6,6 +6,7 @@ Manager module/executable which dynamically links to different modules to form a
 2. [GaiaX](https://github.com/razerx100/GaiaX).
 3. [Terra](https://github.com/razerx100/Terra).
 4. [Luna](https://github.com/razerx100/Luna).
+5. [Venus](https://github.com/razerx100/Venus).
 
 ## Library used
 1. [Ceres](https://github.com/razerx100/Ceres).

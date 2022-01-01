@@ -9,5 +9,6 @@ public:
 	virtual void Update() = 0;
 };
 
+[[nodiscard]]
 IApp* CreateAppInstance();
 #endif

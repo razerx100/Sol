@@ -8,6 +8,7 @@ public:
 	Engine();
 	~Engine() noexcept;
 
+	[[nodiscard]]
 	int Run();
 
 	void WaitForAsyncTasks();
