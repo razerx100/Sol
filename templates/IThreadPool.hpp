@@ -1,8 +1,6 @@
 #ifndef __I_THREAD_POOL_HPP__
 #define __I_THREAD_POOL_HPP__
-#include <cstdint>
 #include <functional>
-#include <string>
 
 class __declspec(dllimport) IThreadPool {
 public:

@@ -5,7 +5,7 @@
 Engine::Engine()
 	: m_appName("Sol") {
 
-	CreateVenusInstance(4u);
+	CreateVenusInstance(8u);
 
 	IOInst::Init();
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Keyboard);
