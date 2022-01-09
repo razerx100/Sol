@@ -6,7 +6,7 @@
 #include <IApp.hpp>
 #include <ObjectManager.hpp>
 
-class AppInst : public _ObjectManager<IApp> {
+class AppInst : public _ObjectManager<IApp, AppInst> {
 public:
 	static void Init();
 };
@@ -15,7 +15,7 @@ enum class IOType {
 	Pluto
 };
 
-class IOInst : public _ObjectManager<InputManager> {
+class IOInst : public _ObjectManager<InputManager, IOInst> {
 public:
 	static void Init(IOType type = IOType::Pluto);
 };
@@ -24,7 +24,7 @@ enum class WindowType {
 	Luna
 };
 
-class WindowInst : public _ObjectManager<Window> {
+class WindowInst : public _ObjectManager<Window, WindowInst> {
 public:
 	static void Init(
 		int width, int height, InputManager* ioMan, const char* name,
@@ -37,7 +37,7 @@ enum class RendererType {
 	Gaia
 };
 
-class RendererInst : public _ObjectManager<GraphicsEngine> {
+class RendererInst : public _ObjectManager<GraphicsEngine, RendererInst> {
 public:
 	static void Init(
 		const char* appName,

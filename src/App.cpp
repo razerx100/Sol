@@ -10,9 +10,6 @@ App::App() {
 
 	for(auto& triangle : m_triangles)
 		RendererInst::GetRef()->SubmitModel(triangle.get(), false);
-
-	for (auto& triangle : m_triangles)
-		triangle->ResetVerticesAndIndices();
 }
 
 void App::Update() {

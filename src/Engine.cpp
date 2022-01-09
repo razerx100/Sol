@@ -29,6 +29,8 @@ Engine::Engine()
 
 	AppInst::Init();
 	m_pAppRef = AppInst::GetRef();
+
+	m_pGraphicsRef->ProcessData();
 }
 
 Engine::~Engine() noexcept {

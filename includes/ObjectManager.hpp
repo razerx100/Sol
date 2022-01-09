@@ -1,10 +1,10 @@
 #ifndef __OBJECT_MANAGER_HPP__
 #define __OBJECT_MANAGER_HPP__
 
-template<typename T>
+template<class Type, class Specialization>
 class _ObjectManager {
 public:
-	static T* GetRef() noexcept {
+	static Type* GetRef() noexcept {
 		return s_pObject;
 	}
 
@@ -15,15 +15,15 @@ public:
 		}
 	}
 
-	static void Set(T* pObject) {
+	static void Set(Type* pObject) {
 		if (!s_pObject)
 			s_pObject = pObject;
 	}
 
 private:
-	static T* s_pObject;
+	static Type* s_pObject;
 };
 
-template<typename T>
-T* _ObjectManager<T>::s_pObject = nullptr;
+template<class Type, class Specialization>
+Type* _ObjectManager<Type, Specialization>::s_pObject = nullptr;
 #endif
