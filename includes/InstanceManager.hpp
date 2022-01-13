@@ -5,6 +5,7 @@
 #include <GraphicsEngine.hpp>
 #include <IApp.hpp>
 #include <ObjectManager.hpp>
+#include <IModelContainer.hpp>
 
 class AppInst : public _ObjectManager<IApp, AppInst> {
 public:
@@ -51,4 +52,8 @@ public:
 	static void SetAPI(RendererType type) noexcept;
 };
 
+class ModelContInst : public _ObjectManager<IModelContainer, ModelContInst> {
+public:
+	static void Init();
+};
 #endif

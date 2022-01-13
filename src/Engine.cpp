@@ -25,17 +25,22 @@ Engine::Engine()
 	m_pGraphicsRef->SetShaderPath("resources/shaders/");
 	m_pGraphicsRef->InitResourceBasedObjects();
 
+	ModelContInst::Init();
+
 	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
 
 	AppInst::Init();
 	m_pAppRef = AppInst::GetRef();
 
 	m_pGraphicsRef->ProcessData();
+
+	ModelContInst::GetRef()->ClearModelBuffers();
 }
 
 Engine::~Engine() noexcept {
 	AppInst::CleanUp();
 	RendererInst::CleanUp();
+	ModelContInst::CleanUp();
 	WindowInst::CleanUp();
 	IOInst::CleanUp();
 	CleanUpVenusInstance();

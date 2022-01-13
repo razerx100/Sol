@@ -5,11 +5,17 @@
 #include <string>
 
 App::App() {
-	m_triangles.emplace_back(std::make_unique<Triangle>(Ceres::Color::Cyan));
-	m_triangles.emplace_back(std::make_unique<Triangle1>(Ceres::Color::Fuchsia));
+	IModelContainer* modelCont = ModelContInst::GetRef();
 
-	for(auto& triangle : m_triangles)
-		RendererInst::GetRef()->SubmitModel(triangle.get(), false);
+	m_triangleRefs.emplace_back(
+		modelCont->AddModel(std::make_unique<Triangle>(Ceres::Color::Cyan))
+	);
+	m_triangleRefs.emplace_back(
+		modelCont->AddModel(std::make_unique<Triangle1>(Ceres::Color::Fuchsia))
+	);
+
+	for(auto& triangle : m_triangleRefs)
+		RendererInst::GetRef()->SubmitModel(triangle, false);
 }
 
 void App::Update() {

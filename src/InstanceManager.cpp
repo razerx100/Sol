@@ -63,3 +63,9 @@ void RendererInst::Init(
 void RendererInst::SetAPI(RendererType type) noexcept {
 	ConfigManager::SaveName("config.ini", "RendererType", type, RENDERERNAMES);
 }
+
+void ModelContInst::Init() {
+	Set(
+		CreateModelContainerInstance()
+	);
+}
