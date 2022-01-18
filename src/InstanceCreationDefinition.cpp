@@ -5,7 +5,6 @@ IApp* CreateAppInstance() {
 	return new App();
 }
 
-
 IModelContainer* CreateModelContainerInstance() {
 	return new ModelContainer();
 }

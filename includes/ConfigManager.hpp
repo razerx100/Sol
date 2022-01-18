@@ -38,7 +38,7 @@ public:
         std::string textStr = FileToString(fileName);
         std::ios_base::openmode openFLag = std::ios_base::out;
         std::string newValue =
-            typeName + " = "s + typeNames[static_cast<std::uint32_t>(type)];
+            typeName + " = "s + typeNames[static_cast<size_t>(type)];
 
         if (!textStr.empty()) {
             auto [start, end] = FindInString(textStr, typeName);
@@ -61,7 +61,7 @@ private:
         const std::string& str, T defaultType, const std::vector<const char*>& searchItems
     ) noexcept {
         T type = defaultType;
-        for (std::uint32_t index = 0u; index < searchItems.size(); ++index) {
+        for (size_t index = 0u; index < searchItems.size(); ++index) {
             std::string temp = searchItems[index];
             auto result = std::search(str.begin(), str.end(), temp.begin(), temp.end());
             if (result != str.end()) {

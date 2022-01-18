@@ -48,9 +48,10 @@ Engine::~Engine() noexcept {
 
 int Engine::Run() {
 	int errorCode = -1;
+
 	while (true) {
-		if (int ecode = m_pWindowRef->Update(); !ecode) {
-			errorCode = ecode;
+		if (auto ecode = m_pWindowRef->Update(); ecode) {
+			errorCode = *ecode;
 			break;
 		}
 

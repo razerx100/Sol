@@ -4,6 +4,6 @@
 #include <cstdint>
 
 __declspec(dllimport) IThreadPool* __cdecl GetVenusInstance() noexcept;
-__declspec(dllimport) void __cdecl CreateVenusInstance(std::uint32_t threadCount);
+__declspec(dllimport) void __cdecl CreateVenusInstance(size_t threadCount);
 __declspec(dllimport) void __cdecl CleanUpVenusInstance() noexcept;
 #endif
