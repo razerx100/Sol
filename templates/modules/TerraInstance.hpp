@@ -7,6 +7,6 @@ __declspec(dllimport) GraphicsEngine* __cdecl CreateTerraInstance(
 	void* windowHandle,
 	void* moduleHandle,
 	std::uint32_t width, std::uint32_t height,
-	std::uint8_t bufferCount = 2u
+	size_t bufferCount = 2u
 );
 #endif
