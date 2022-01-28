@@ -1,19 +1,35 @@
 #include <cstring>
 #include <Model.hpp>
 
-const std::vector<Ceres::Float32_3>& Model::GetVertices() const noexcept {
-	return m_vertices;
+const void* Model::GetVertexData() const noexcept {
+	return m_vertices.data();
 }
 
-const std::vector<std::uint16_t>& Model::GetIndices() const noexcept {
-	return m_indices;
+size_t Model::GetVertexStrideSize() const noexcept {
+	return sizeof(Vertex);
+}
+
+size_t Model::GetVertexBufferSize() const noexcept {
+	return GetVertexStrideSize() * m_vertices.size();
+}
+
+const void* Model::GetIndexData() const noexcept {
+	return m_indices.data();
+}
+
+size_t Model::GetIndexBufferSize() const noexcept {
+	return sizeof(std::uint16_t) * m_indices.size();
+}
+
+size_t Model::GetIndexCount() const noexcept {
+	return m_indices.size();
 }
 
 Ceres::Matrix Model::GetTransform() const noexcept {
 	return m_transform;
 }
 
-Ceres::VectorF32 Model::GetSolidColor() const noexcept {
+Ceres::Float32_4 Model::GetSolidColor() const noexcept {
 	return m_solidColor;
 }
 
@@ -26,6 +42,6 @@ const std::vector<VertexElementType>& Model::GetVertexLayout() const noexcept {
 }
 
 void Model::ResetVerticesAndIndices() noexcept {
-	m_vertices = std::vector<Ceres::Float32_3>();
+	m_vertices = std::vector<Vertex>();
 	m_indices = std::vector<std::uint16_t>();
 }

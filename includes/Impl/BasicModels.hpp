@@ -5,18 +5,18 @@
 class Triangle : public Model {
 public:
 	Triangle() noexcept;
-	Triangle(const Ceres::VectorF32& solidColor) noexcept;
+	Triangle(const Ceres::Float32_4& solidColor) noexcept;
 
 private:
-	void Init(const Ceres::VectorF32& solidColor) noexcept;
+	void Init(const Ceres::Float32_4& solidColor) noexcept;
 };
 
 class Triangle1 : public Model {
 public:
 	Triangle1() noexcept;
-	Triangle1(const Ceres::VectorF32& solidColor) noexcept;
+	Triangle1(const Ceres::Float32_4& solidColor) noexcept;
 
 private:
-	void Init(const Ceres::VectorF32& solidColor) noexcept;
+	void Init(const Ceres::Float32_4& solidColor) noexcept;
 };
 #endif
