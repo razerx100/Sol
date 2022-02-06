@@ -16,7 +16,7 @@ void IOInst::Init(IOType type) {
 }
 
 void WindowInst::Init(
-	int width, int height, InputManager* ioMan, const char* name,
+	std::uint32_t width, std::uint32_t height, InputManager* ioMan, const char* name,
 	WindowType type
 ) {
 	if (type == WindowType::Luna)

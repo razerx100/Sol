@@ -28,7 +28,7 @@ enum class WindowType {
 class WindowInst : public _ObjectManager<Window, WindowInst> {
 public:
 	static void Init(
-		int width, int height, InputManager* ioMan, const char* name,
+		std::uint32_t width, std::uint32_t height, InputManager* ioMan, const char* name,
 		WindowType type = WindowType::Luna
 	);
 };

@@ -11,7 +11,7 @@ Engine::Engine()
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Keyboard);
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Mouse);
 	IOInst::GetRef()->AddDeviceSupport(DeviceType::Gamepad);
-	WindowInst::Init(1920, 1080, IOInst::GetRef(), m_appName.c_str());
+	WindowInst::Init(1920u, 1080u, IOInst::GetRef(), m_appName.c_str());
 	m_pWindowRef = WindowInst::GetRef();
 	m_pWindowRef->SetWindowIcon("resources/icon/Sol.ico");
 
