@@ -26,6 +26,7 @@ Engine::Engine()
 	m_pGraphicsRef->InitResourceBasedObjects();
 
 	ModelContInst::Init();
+	UploadBufferInst::Init();
 
 	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
 
@@ -34,10 +35,12 @@ Engine::Engine()
 
 	m_pGraphicsRef->ProcessData();
 
+	UploadBufferInst::GetRef()->Release();
 	ModelContInst::GetRef()->ClearModelBuffers();
 }
 
 Engine::~Engine() noexcept {
+	UploadBufferInst::CleanUp();
 	AppInst::CleanUp();
 	RendererInst::CleanUp();
 	ModelContInst::CleanUp();

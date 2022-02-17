@@ -6,7 +6,7 @@ class ISolModel : public IModel {
 public:
 	virtual ~ISolModel() = default;
 
-	virtual void SetSolidColor(const Ceres::VectorF32& colorVector) noexcept = 0;
 	virtual void ResetVerticesAndIndices() noexcept = 0;
+	virtual void SetTextureIndex(size_t index) noexcept = 0;
 };
 #endif

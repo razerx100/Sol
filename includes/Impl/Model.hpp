@@ -11,8 +11,8 @@ struct Vertex {
 
 class Model : public ISolModel {
 public:
-	void SetSolidColor(const Ceres::VectorF32& colorVector) noexcept override;
 	void ResetVerticesAndIndices() noexcept override;
+	void SetTextureIndex(size_t index) noexcept override;
 
 	[[nodiscard]]
 	const void* GetVertexData() const noexcept override;
@@ -27,18 +27,18 @@ public:
 	[[nodiscard]]
 	size_t GetIndexCount() const noexcept override;
 	[[nodiscard]]
+	std::uint32_t GetTextureIndex() const noexcept override;
+	[[nodiscard]]
 	const std::vector<VertexElementType>& GetVertexLayout() const noexcept override;
 
 	[[nodiscard]]
 	Ceres::Matrix GetTransform() const noexcept override;
-	[[nodiscard]]
-	Ceres::Float32_4 GetSolidColor() const noexcept override;
 
 protected:
+	std::uint32_t m_textureIndex;
 	std::vector<Vertex> m_vertices;
 	std::vector<std::uint16_t> m_indices;
 	std::vector<VertexElementType> m_vertexLayout;
-	Ceres::Float32_4 m_solidColor;
 	Ceres::Matrix m_transform;
 };
 #endif

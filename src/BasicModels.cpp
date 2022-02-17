@@ -10,8 +10,6 @@ Triangle::Triangle(const Ceres::Float32_4 &solidColor) noexcept {
 }
 
 void Triangle::Init(const Ceres::Float32_4& solidColor) noexcept {
-	m_solidColor = solidColor;
-
 	Vertex temp = {};
 	temp.position = { 0.25f, 0.25f * (16.0f / 9.0f), 0.0f };
 	temp.color = solidColor;
@@ -39,8 +37,6 @@ Triangle1::Triangle1(const Ceres::Float32_4& solidColor) noexcept {
 }
 
 void Triangle1::Init(const Ceres::Float32_4& solidColor) noexcept {
-	m_solidColor = solidColor;
-
 	Vertex temp = {};
 	temp.position = { -0.25f, 0.25f * (16.0f/9.0f), 0.0f };
 	temp.color = solidColor;

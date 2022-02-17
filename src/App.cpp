@@ -15,7 +15,7 @@ App::App() {
 	);
 
 	for(auto& triangle : m_triangleRefs)
-		RendererInst::GetRef()->SubmitModel(triangle, false);
+		RendererInst::GetRef()->SubmitModel(triangle);
 }
 
 void App::Update() {

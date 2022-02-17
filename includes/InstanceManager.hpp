@@ -6,6 +6,7 @@
 #include <IApp.hpp>
 #include <ObjectManager.hpp>
 #include <IModelContainer.hpp>
+#include <IUploadBuffer.hpp>
 
 class AppInst : public _ObjectManager<IApp, AppInst> {
 public:
@@ -53,6 +54,11 @@ public:
 };
 
 class ModelContInst : public _ObjectManager<IModelContainer, ModelContInst> {
+public:
+	static void Init();
+};
+
+class UploadBufferInst : public _ObjectManager<IUploadBuffer, UploadBufferInst> {
 public:
 	static void Init();
 };

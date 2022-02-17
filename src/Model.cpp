@@ -29,14 +29,6 @@ Ceres::Matrix Model::GetTransform() const noexcept {
 	return m_transform;
 }
 
-Ceres::Float32_4 Model::GetSolidColor() const noexcept {
-	return m_solidColor;
-}
-
-void Model::SetSolidColor(const Ceres::VectorF32& colorVector) noexcept {
-	m_solidColor = colorVector;
-}
-
 const std::vector<VertexElementType>& Model::GetVertexLayout() const noexcept {
 	return m_vertexLayout;
 }
@@ -44,4 +36,12 @@ const std::vector<VertexElementType>& Model::GetVertexLayout() const noexcept {
 void Model::ResetVerticesAndIndices() noexcept {
 	m_vertices = std::vector<Vertex>();
 	m_indices = std::vector<std::uint16_t>();
+}
+
+void Model::SetTextureIndex(size_t index) noexcept {
+	m_textureIndex = static_cast<std::uint32_t>(index);
+}
+
+std::uint32_t Model::GetTextureIndex() const noexcept {
+	return m_textureIndex;
 }

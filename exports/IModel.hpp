@@ -27,11 +27,11 @@ public:
 	[[nodiscard]]
 	virtual size_t GetIndexCount() const noexcept = 0;
 	[[nodiscard]]
+	virtual std::uint32_t GetTextureIndex() const noexcept = 0;
+	[[nodiscard]]
 	virtual const std::vector<VertexElementType>& GetVertexLayout() const noexcept = 0;
 
 	[[nodiscard]]
 	virtual Ceres::Matrix GetTransform() const noexcept = 0;
-	[[nodiscard]]
-	virtual Ceres::Float32_4 GetSolidColor() const noexcept = 0;
 };
 #endif

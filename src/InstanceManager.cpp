@@ -69,3 +69,9 @@ void ModelContInst::Init() {
 		CreateModelContainerInstance()
 	);
 }
+
+void UploadBufferInst::Init() {
+	Set(
+		CreateUploadBufferInstance()
+	);
+}
