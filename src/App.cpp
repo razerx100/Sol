@@ -1,17 +1,21 @@
 #include <App.hpp>
 #include <GraphicsEngine.hpp>
 #include <InstanceManager.hpp>
-#include <CRSColor.hpp>
+#include <CRSColour.hpp>
 #include <string>
 
 App::App() {
 	IModelContainer* modelCont = ModelContInst::GetRef();
+	ITextureAtlas* texAtlas = TexAtlasInst::GetRef();
+
+	texAtlas->AddColour("Red", Ceres::Colour::Red);
+	texAtlas->AddColour("Cyan", Ceres::Colour::Cyan);
 
 	m_triangleRefs.emplace_back(
-		modelCont->AddModel(std::make_unique<Triangle>(Ceres::Color::Cyan))
+		modelCont->AddModel(std::make_unique<Triangle>(Ceres::Colour::Cyan))
 	);
 	m_triangleRefs.emplace_back(
-		modelCont->AddModel(std::make_unique<Triangle1>(Ceres::Color::Fuchsia))
+		modelCont->AddModel(std::make_unique<Triangle1>(Ceres::Colour::Fuchsia))
 	);
 
 	for(auto& triangle : m_triangleRefs)

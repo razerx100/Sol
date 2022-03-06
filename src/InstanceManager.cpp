@@ -75,3 +75,9 @@ void UploadBufferInst::Init() {
 		CreateUploadBufferInstance()
 	);
 }
+
+void TexAtlasInst::Init() {
+	Set(
+		CreateTextureAtlasInstance()
+	);
+}

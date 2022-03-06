@@ -1,6 +1,7 @@
 #include <App.hpp>
 #include <ModelContainer.hpp>
 #include <UploadBuffer.hpp>
+#include <TextureAtlas.hpp>
 
 IApp* CreateAppInstance() {
 	return new App();
@@ -12,4 +13,8 @@ IModelContainer* CreateModelContainerInstance() {
 
 IUploadBuffer* CreateUploadBufferInstance() {
 	return new UploadBuffer();
+}
+
+ITextureAtlas* CreateTextureAtlasInstance() {
+	return new TextureAtlas();
 }

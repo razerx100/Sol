@@ -27,16 +27,26 @@ Engine::Engine()
 
 	ModelContInst::Init();
 	UploadBufferInst::Init();
+	TexAtlasInst::Init();
 
 	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
 
 	AppInst::Init();
 	m_pAppRef = AppInst::GetRef();
 
+	ITextureAtlas* texRef = TexAtlasInst::GetRef();
+	texRef->CreateAtlas();
+	// Update UVs
+	const std::vector<std::uint8_t>& texture = texRef->GetTexture();
+	size_t textureIndex = m_pGraphicsRef->RegisterResource(
+		texture.data(), texRef->GetRowPitch(), texRef->GetRows()
+	);
+
 	m_pGraphicsRef->ProcessData();
 
 	UploadBufferInst::GetRef()->Release();
 	ModelContInst::GetRef()->ClearModelBuffers();
+	TexAtlasInst::CleanUp();
 }
 
 Engine::~Engine() noexcept {

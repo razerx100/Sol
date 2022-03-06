@@ -7,6 +7,7 @@
 #include <ObjectManager.hpp>
 #include <IModelContainer.hpp>
 #include <IUploadBuffer.hpp>
+#include <ITextureAtlas.hpp>
 
 class AppInst : public _ObjectManager<IApp, AppInst> {
 public:
@@ -59,6 +60,11 @@ public:
 };
 
 class UploadBufferInst : public _ObjectManager<IUploadBuffer, UploadBufferInst> {
+public:
+	static void Init();
+};
+
+class TexAtlasInst : public _ObjectManager<ITextureAtlas, TexAtlasInst> {
 public:
 	static void Init();
 };
