@@ -45,3 +45,16 @@ void Model::SetTextureIndex(size_t index) noexcept {
 std::uint32_t Model::GetTextureIndex() const noexcept {
 	return m_textureIndex;
 }
+
+void Model::SetTextureName(const std::string& name) noexcept {
+	m_textureName = name;
+}
+
+void Model::UpdateUV(float uStart, float vStart) noexcept {
+	// TO-DO
+	int x;
+}
+
+const std::string& Model::GetTextureName() const noexcept {
+	return m_textureName;
+}

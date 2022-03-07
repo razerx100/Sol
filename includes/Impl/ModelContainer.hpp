@@ -6,6 +6,8 @@
 class ModelContainer : public IModelContainer {
 public:
 	ISolModel* AddModel(std::unique_ptr<ISolModel> model) override;
+
+	void UpdateUVCoordinates() noexcept override;
 	void ClearModelBuffers() noexcept override;
 
 private:

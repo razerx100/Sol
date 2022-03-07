@@ -8,14 +8,20 @@ App::App() {
 	IModelContainer* modelCont = ModelContInst::GetRef();
 	ITextureAtlas* texAtlas = TexAtlasInst::GetRef();
 
-	texAtlas->AddColour("Red", Ceres::Colour::Red);
+	texAtlas->AddColour("Fuchsia", Ceres::Colour::Fuchsia);
 	texAtlas->AddColour("Cyan", Ceres::Colour::Cyan);
 
+	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>(Ceres::Colour::Cyan);
+	triangle0->SetTextureName("Cyan");
+
+	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>(Ceres::Colour::Fuchsia);
+	triangle1->SetTextureName("Fuchsia");
+
 	m_triangleRefs.emplace_back(
-		modelCont->AddModel(std::make_unique<Triangle>(Ceres::Colour::Cyan))
+		modelCont->AddModel(std::move(triangle0))
 	);
 	m_triangleRefs.emplace_back(
-		modelCont->AddModel(std::make_unique<Triangle1>(Ceres::Colour::Fuchsia))
+		modelCont->AddModel(std::move(triangle1))
 	);
 
 	for(auto& triangle : m_triangleRefs)

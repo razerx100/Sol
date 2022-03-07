@@ -36,7 +36,9 @@ Engine::Engine()
 
 	ITextureAtlas* texRef = TexAtlasInst::GetRef();
 	texRef->CreateAtlas();
-	// Update UVs
+
+	ModelContInst::GetRef()->UpdateUVCoordinates();
+
 	const std::vector<std::uint8_t>& texture = texRef->GetTexture();
 	size_t textureIndex = m_pGraphicsRef->RegisterResource(
 		texture.data(), texRef->GetRowPitch(), texRef->GetRows()

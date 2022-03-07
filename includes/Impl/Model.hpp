@@ -14,6 +14,12 @@ public:
 	void ResetVerticesAndIndices() noexcept override;
 	void SetTextureIndex(size_t index) noexcept override;
 
+	void SetTextureName(const std::string& name) noexcept override;
+	void UpdateUV(float uStart, float vStart) noexcept override;
+
+	[[nodiscard]]
+	const std::string& GetTextureName() const noexcept override;
+
 	[[nodiscard]]
 	const void* GetVertexData() const noexcept override;
 	[[nodiscard]]
@@ -40,5 +46,7 @@ protected:
 	std::vector<std::uint16_t> m_indices;
 	std::vector<VertexElementType> m_vertexLayout;
 	Ceres::Matrix m_transform;
+
+	std::string m_textureName;
 };
 #endif
