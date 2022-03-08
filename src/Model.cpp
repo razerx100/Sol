@@ -51,8 +51,10 @@ void Model::SetTextureName(const std::string& name) noexcept {
 }
 
 void Model::UpdateUV(float uStart, float vStart) noexcept {
-	// TO-DO
-	int x;
+	for (auto& vertex : m_vertices) {
+		vertex.uv.x += uStart;
+		vertex.uv.y += vStart;
+	}
 }
 
 const std::string& Model::GetTextureName() const noexcept {

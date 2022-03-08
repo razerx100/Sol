@@ -11,10 +11,10 @@ App::App() {
 	texAtlas->AddColour("Fuchsia", Ceres::Colour::Fuchsia);
 	texAtlas->AddColour("Cyan", Ceres::Colour::Cyan);
 
-	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>(Ceres::Colour::Cyan);
+	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>();
 	triangle0->SetTextureName("Cyan");
 
-	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>(Ceres::Colour::Fuchsia);
+	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>();
 	triangle1->SetTextureName("Fuchsia");
 
 	m_triangleRefs.emplace_back(

@@ -6,7 +6,7 @@
 
 struct Vertex {
 	Ceres::Float32_3 position;
-	Ceres::Float32_4 colour;
+	Ceres::Float32_2 uv;
 };
 
 class Model : public ISolModel {
