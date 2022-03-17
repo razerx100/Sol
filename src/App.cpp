@@ -17,6 +17,9 @@ App::App() {
 	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>();
 	triangle1->SetTextureName("Fuchsia");
 
+	triangle0->SetTextureIndex(0u);
+	triangle1->SetTextureIndex(0u);
+
 	m_triangleRefs.emplace_back(
 		modelCont->AddModel(std::move(triangle0))
 	);

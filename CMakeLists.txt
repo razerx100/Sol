@@ -76,7 +76,7 @@ FetchContent_MakeAvailable(Pluto)
 FetchContent_Declare(
     GaiaX
     GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
-    GIT_TAG master
+    GIT_TAG ${BRANCH}
 )
 
 FetchContent_MakeAvailable(GaiaX)
