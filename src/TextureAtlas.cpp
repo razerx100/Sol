@@ -27,8 +27,12 @@ const std::vector<std::string>& ColourTexture::GetNames() const noexcept {
 	return m_colourNames;
 }
 
-size_t ColourTexture::GetRowPitch() const noexcept {
-	return m_colourNames.size() * 16u;
+size_t ColourTexture::GetWidth() const noexcept {
+	return m_colourNames.size();
+}
+
+size_t ColourTexture::GetPixelSizeInBytes() const noexcept {
+	return 16u;
 }
 
 // Texture Atlas
@@ -40,10 +44,14 @@ void TextureAtlas::AddColour(
 
 void TextureAtlas::AddTexture(
 	const std::string& name, const std::vector<std::uint8_t>& data,
-	size_t rowPitch, size_t rows
+	size_t width, size_t height, size_t pixelSizeInBytes
 ) noexcept {
-	m_unprocessedData.emplace_back(name, m_unprocessedData.size(), rowPitch, rows);
-	m_unprocessedTextures.emplace_back(data, rowPitch, rows);
+	size_t rowPitch = pixelSizeInBytes * width;
+
+	m_unprocessedData.emplace_back(
+		name, m_unprocessedData.size(), height, width
+	);
+	m_unprocessedTextures.emplace_back(data, rowPitch, height);
 }
 
 void TextureAtlas::CreateAtlas() noexcept {
@@ -51,15 +59,15 @@ void TextureAtlas::CreateAtlas() noexcept {
 
 	AddTexture(
 		"Colours", m_colourTextureManager.GetTexture(),
-		m_colourTextureManager.GetRowPitch(), 1u
+		m_colourTextureManager.GetWidth(), 1u, m_colourTextureManager.GetPixelSizeInBytes()
 	);
 
 	// Atlas Logic
 	auto predicate = [](const TextureInfo& var1, const TextureInfo& var2) noexcept {
-		if (var1.rowPitch == var2.rowPitch)
-			return var1.rows > var2.rows;
+		if (var1.width == var2.width)
+			return var1.height > var2.height;
 		else
-			return var1.rowPitch > var2.rowPitch;
+			return var1.width > var2.width;
 	};
 
 	std::sort(m_unprocessedData.begin(), m_unprocessedData.end(), predicate);
@@ -70,11 +78,11 @@ void TextureAtlas::CreateAtlas() noexcept {
 	if (!m_unprocessedData.empty()) {
 		TextureInfo& tex = m_unprocessedData.front();
 
-		m_rowPitch = tex.rowPitch;
-		m_rows += tex.rows;
+		m_width = static_cast<std::uint32_t>(tex.width);
+		m_height += static_cast<std::uint32_t>(tex.height);
 
 		processedData.emplace_back(
-			tex.name, tex.index, UVU{ 0u, tex.rowPitch - 1u, 0u, tex.rows - 1u }
+			tex.name, tex.index, UVU{ 0u, tex.width, 0u, tex.height }
 		);
 		m_unprocessedData.erase(m_unprocessedData.begin());
 	}
@@ -84,69 +92,72 @@ void TextureAtlas::CreateAtlas() noexcept {
 
 		if (PlaceTextureInProperPlace(tex, emptyPartitions, processedData));
 		else {
-			size_t newRow = m_rows + tex.rows - 1u;
+			size_t newHeight = m_height + tex.height;
 			processedData.emplace_back(
-				tex.name, tex.index, UVU{ 0u, tex.rowPitch - 1u, m_rows, newRow }
+				tex.name, tex.index, UVU{ 0u, tex.width, m_height + 1u, newHeight }
 			);
 
-			if (tex.rowPitch < m_rowPitch)
+			if (tex.width < m_width)
 				AddPartition(
 					emptyPartitions.size(),
-					tex.rowPitch, m_rowPitch - 1u, m_rows, newRow,
+					tex.width, m_width, m_height, newHeight,
 					emptyPartitions
 				);
 
-			m_rows += tex.rows;
+			m_height += static_cast<std::uint32_t>(tex.height);
 		}
 
 		m_unprocessedData.erase(m_unprocessedData.begin());
 	}
 
-	for (auto& element : processedData)
-		m_uvDataMap.insert_or_assign(
+	// Till here
+
+	for (auto& element : processedData) {
+		UVU& coord = element.coord;
+
+		m_pixelDataMap.insert_or_assign(
 			element.name,
-			UVF{
-				FixedValueToRelative(element.coord.uStart, m_rowPitch - 1u),
-				FixedValueToRelative(element.coord.uEnd, m_rowPitch - 1u),
-				FixedValueToRelative(element.coord.vStart, m_rows),
-				FixedValueToRelative(element.coord.vEnd, m_rows)
+			UVU32{
+				static_cast<std::uint32_t>(coord.uStart + 1u),
+				static_cast<std::uint32_t>(coord.uEnd),
+				static_cast<std::uint32_t>(coord.vStart + 1u),
+				static_cast<std::uint32_t>(coord.vEnd)
 			}
 		);
+	}
 
-	UVU colourData = {};
-	for(auto& element : processedData)
-		if (element.name == "Colours") {
-			colourData = element.coord;
-
-			break;
-		}
+	UVU32 colourData = {};
+	if (auto result = m_pixelDataMap.find("Colours"); result != m_pixelDataMap.end())
+		colourData = result->second;
 
 	const std::vector<std::string>& colourNames = m_colourTextureManager.GetNames();
 
 	for (size_t index = 0u; index < colourNames.size(); ++index)
-		m_uvDataMap.insert_or_assign(
+		m_pixelDataMap.insert_or_assign(
 			colourNames[index],
-			UVF{
-				FixedValueToRelative(colourData.uStart + index * 16u, m_rowPitch - 1u),
-				FixedValueToRelative(colourData.uStart + index * 16u + 15, m_rowPitch - 1u),
-				FixedValueToRelative(colourData.vStart, m_rows),
-				FixedValueToRelative(colourData.vStart, m_rows),
+			UVU32{
+				static_cast<std::uint32_t>(colourData.uStart + index),
+				static_cast<std::uint32_t>(colourData.uStart + index),
+				static_cast<std::uint32_t>(colourData.vStart),
+				static_cast<std::uint32_t>(colourData.vStart)
 			}
 		);
 
-	m_texture.resize(m_rowPitch * m_rows);
+	size_t rowPitch = m_width * m_pixelSizeInBytes;
+	m_texture.resize(rowPitch * m_height);
 
 	// Copy data
 	for (size_t index = 0u; index < processedData.size(); ++index) {
 		size_t textureIndex = processedData[index].textureIndex;
 
-		for (size_t index1 = 0u; index1 < m_unprocessedTextures[textureIndex].rows; ++index1)
+		TextureData& unprocessedTextureData = m_unprocessedTextures[textureIndex];
+		for (size_t index1 = 0u; index1 < unprocessedTextureData.rows; ++index1)
 			std::memcpy(
-				m_texture.data() + (m_unprocessedTextures[textureIndex].rowPitch * index)
-				+ (m_rowPitch * index1),
-				m_unprocessedTextures[textureIndex].data.data()
-				+ (m_unprocessedTextures[textureIndex].rowPitch * index1),
-				m_unprocessedTextures[textureIndex].rowPitch
+				m_texture.data() + (unprocessedTextureData.rowPitch * index)
+				+ (rowPitch * index1),
+				unprocessedTextureData.data.data()
+				+ (unprocessedTextureData.rowPitch * index1),
+				unprocessedTextureData.rowPitch
 			);
 	}
 
@@ -155,17 +166,13 @@ void TextureAtlas::CreateAtlas() noexcept {
 	m_unprocessedData = std::vector<TextureInfo>();
 }
 
-std::optional<UVF> TextureAtlas::GetUVData(const std::string& name) const noexcept {
-	auto data = m_uvDataMap.find(name);
+UVU32 TextureAtlas::GetPixelData(const std::string& name) const noexcept {
+	auto data = m_pixelDataMap.find(name);
 
-	if (data != m_uvDataMap.end())
+	if (data != m_pixelDataMap.end())
 		return data->second;
 	else
 		return {};
-}
-
-float TextureAtlas::FixedValueToRelative(size_t value, size_t maxValue) const noexcept {
-	return static_cast<float>(value) / maxValue;
 }
 
 bool TextureAtlas::PlaceTextureInProperPlace(
@@ -175,9 +182,9 @@ bool TextureAtlas::PlaceTextureInProperPlace(
 ) const noexcept {
 	std::optional<size_t> partitionIndex = {};
 	for (size_t index = 0u; index < emptyPartitions.size(); ++index) {
-		UVU ref = emptyPartitions[index].coord;
-		if (ref.uEnd - ref.uStart + 1u >= texData.rowPitch
-			&& ref.vEnd - ref.vStart + 1u >= texData.rows) {
+		const UVU& ref = emptyPartitions[index].coord;
+		if (ref.uEnd - ref.uStart>= texData.width
+			&& ref.vEnd - ref.vStart>= texData.height) {
 
 			partitionIndex = index;
 			break;
@@ -187,27 +194,30 @@ bool TextureAtlas::PlaceTextureInProperPlace(
 	if (partitionIndex) {
 		size_t index = *partitionIndex;
 
-		size_t newRowPitch = emptyPartitions[index].coord.uStart + texData.rowPitch - 1u;
-		size_t newRows = emptyPartitions[index].coord.vStart + texData.rows - 1u;
+		Partition& emptyPartition = emptyPartitions[index];
+		UVU& coord = emptyPartition.coord;
+
+		size_t newWidth = coord.uStart + texData.width;
+		size_t newRows = coord.vStart + texData.height;
 
 		processedData.emplace_back(
 			texData.name,
 			texData.index,
 			UVU{
-				emptyPartitions[index].coord.uStart, newRowPitch,
-				emptyPartitions[index].coord.vStart, newRows
+				coord.uStart + 1u, newWidth,
+				coord.vStart + 1u, newRows
 			}
 		);
 
-		if (emptyPartitions[index].coord.uEnd > newRowPitch)
+		if (coord.uEnd > newWidth)
 			AddPartition(
-				emptyPartitions[index].index,
-				newRowPitch + 1u, emptyPartitions[index].coord.uEnd,
-				emptyPartitions[index].coord.vStart, newRows,
+				emptyPartition.index,
+				newWidth, coord.uEnd,
+				coord.vStart, newRows,
 				emptyPartitions
 			);
 
-		emptyPartitions[index].coord.vStart = newRows + 1u;
+		coord.vStart = newRows;
 
 		return true;
 	}
@@ -230,15 +240,23 @@ void TextureAtlas::AddPartition(
 	);
 }
 
-size_t TextureAtlas::GetRowPitch() const noexcept {
-	return m_rowPitch;
+std::uint32_t TextureAtlas::GetWidth() const noexcept {
+	return m_width;
 }
 
-size_t TextureAtlas::GetRows() const noexcept {
-	return m_rows;
+std::uint32_t TextureAtlas::GetHeight() const noexcept {
+	return m_height;
+}
+
+size_t TextureAtlas::GetPixelSizeInBytes() const noexcept {
+	return m_pixelSizeInBytes;
 }
 
 const std::vector<std::uint8_t>& TextureAtlas::GetTexture() const noexcept {
 	return m_texture;
 }
 
+void TextureAtlas::CleanUpBuffer() noexcept {
+	m_texture = std::vector<std::uint8_t>();
+	// Should clean the texture too once it gets big
+}

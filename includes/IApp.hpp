@@ -6,6 +6,7 @@ class IApp {
 public:
 	virtual ~IApp() = default;
 
+	virtual void SetResources() = 0;
 	virtual void Update() = 0;
 };
 

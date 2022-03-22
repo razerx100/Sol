@@ -7,7 +7,6 @@ Triangle::Triangle() noexcept {
 
 void Triangle::Init() noexcept {
 	Vertex temp = {};
-	temp.uv = { 0.f, 0.f };
 
 	temp.position = { 0.25f, 0.25f * (16.0f / 9.0f), 0.0f };
 
@@ -22,7 +21,7 @@ void Triangle::Init() noexcept {
 	m_indices = { 0u, 1u, 2u };
 
 	m_vertexLayout.emplace_back(VertexElementType::Position);
-	m_vertexLayout.emplace_back(VertexElementType::UV);
+	//m_vertexLayout.emplace_back(VertexElementType::UV);
 }
 
 Triangle1::Triangle1() noexcept {
@@ -31,7 +30,6 @@ Triangle1::Triangle1() noexcept {
 
 void Triangle1::Init() noexcept {
 	Vertex temp = {};
-	temp.uv = { 0.f, 0.f };
 
 	temp.position = { -0.25f, 0.25f * (16.0f/9.0f), 0.0f };
 
@@ -46,6 +44,6 @@ void Triangle1::Init() noexcept {
 	m_indices = { 0u, 1u, 2u };
 
 	m_vertexLayout.emplace_back(VertexElementType::Position);
-	m_vertexLayout.emplace_back(VertexElementType::UV);
+	//m_vertexLayout.emplace_back(VertexElementType::UV);
 }
 

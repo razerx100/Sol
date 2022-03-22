@@ -46,17 +46,12 @@ std::uint32_t Model::GetTextureIndex() const noexcept {
 	return m_textureIndex;
 }
 
-void Model::SetTextureName(const std::string& name) noexcept {
-	m_textureName = name;
+void Model::SetTextureInfo(
+	const TextureData& textureInfo
+) noexcept {
+	m_textureData = textureInfo;
 }
 
-void Model::UpdateUV(float uStart, float vStart) noexcept {
-	for (auto& vertex : m_vertices) {
-		vertex.uv.x += uStart;
-		vertex.uv.y += vStart;
-	}
-}
-
-const std::string& Model::GetTextureName() const noexcept {
-	return m_textureName;
+const TextureData& Model::GetTextureInfo() const noexcept {
+	return m_textureData;
 }

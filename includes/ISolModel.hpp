@@ -10,9 +10,8 @@ public:
 	virtual void ResetVerticesAndIndices() noexcept = 0;
 	virtual void SetTextureIndex(size_t index) noexcept = 0;
 
-	virtual void SetTextureName(const std::string& name) noexcept = 0;
-	virtual void UpdateUV(float uStart, float vStart) noexcept = 0;
-
-	virtual const std::string& GetTextureName() const noexcept = 0;
+	virtual void SetTextureInfo(
+		const TextureData& textureInfo
+	) noexcept = 0;
 };
 #endif

@@ -10,6 +10,15 @@ enum class VertexElementType {
 	UV
 };
 
+struct TextureData {
+	std::uint32_t uStart;
+	std::uint32_t uEnd;
+	std::uint32_t uMax;
+	std::uint32_t vStart;
+	std::uint32_t vEnd;
+	std::uint32_t vMax;
+};
+
 class IModel {
 public:
 	virtual ~IModel() = default;
@@ -30,6 +39,8 @@ public:
 	virtual std::uint32_t GetTextureIndex() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<VertexElementType>& GetVertexLayout() const noexcept = 0;
+	[[nodiscard]]
+	virtual const TextureData& GetTextureInfo() const noexcept = 0;
 
 	[[nodiscard]]
 	virtual Ceres::Matrix GetTransform() const noexcept = 0;

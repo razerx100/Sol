@@ -41,17 +41,20 @@ Engine::Engine()
 
 	const std::vector<std::uint8_t>& texture = texRef->GetTexture();
 	size_t textureIndex = m_pGraphicsRef->RegisterResource(
-		texture.data(), texRef->GetRowPitch(), texRef->GetRows()
+		texture.data(),
+		texRef->GetWidth(), texRef->GetHeight(), texRef->GetPixelSizeInBytes()
 	);
 
 	m_pGraphicsRef->ProcessData();
 
+	m_pAppRef->SetResources();
+
 	UploadBufferInst::GetRef()->Release();
 	ModelContInst::GetRef()->ClearModelBuffers();
-	TexAtlasInst::CleanUp();
 }
 
 Engine::~Engine() noexcept {
+	TexAtlasInst::CleanUp();
 	UploadBufferInst::CleanUp();
 	AppInst::CleanUp();
 	RendererInst::CleanUp();

@@ -16,6 +16,7 @@ struct _UV {
 
 typedef _UV<float> UVF;
 typedef _UV<size_t> UVU;
+typedef _UV<std::uint32_t> UVU32;
 
 class ITextureAtlas {
 public:
@@ -26,16 +27,23 @@ public:
 	) noexcept = 0;
 	virtual void AddTexture(
 		const std::string& name, const std::vector<std::uint8_t>& data,
-		size_t rowPitch, size_t rows
+		size_t width, size_t height, size_t pixelSizeInBytes
 	) noexcept = 0;
 	virtual void CreateAtlas() noexcept = 0;
+	virtual void CleanUpBuffer() noexcept = 0;
 
-	virtual std::optional<UVF> GetUVData(const std::string& name) const noexcept = 0;
+	virtual UVU32 GetPixelData(const std::string& name) const noexcept = 0;
 
-	virtual size_t GetRowPitch() const noexcept = 0;
-	virtual size_t GetRows() const noexcept = 0;
+	virtual std::uint32_t GetWidth() const noexcept = 0;
+	virtual std::uint32_t GetHeight() const noexcept = 0;
+	virtual size_t GetPixelSizeInBytes() const noexcept = 0;
+
 	virtual const std::vector<std::uint8_t>& GetTexture() const noexcept = 0;
 };
 
 ITextureAtlas* CreateTextureAtlasInstance();
+
+//constexpr float PixelToUV(size_t pixelCoord, size_t maxLength) noexcept {
+//	return static_cast<float>((pixelCoord - 1) * 2 + 1) / (maxLength * 2);
+//}
 #endif

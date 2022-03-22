@@ -8,7 +8,8 @@ public:
 	void AddColour(const std::string& name, const Ceres::Float32_4& colour) noexcept;
 	void CreateTexture() noexcept;
 
-	size_t GetRowPitch() const noexcept;
+	size_t GetWidth() const noexcept;
+	size_t GetPixelSizeInBytes() const noexcept;
 
 	const std::vector<std::uint8_t>& GetTexture() const noexcept;
 	const std::vector<std::string>& GetNames() const noexcept;
@@ -26,22 +27,26 @@ public:
 	) noexcept override;
 	void AddTexture(
 		const std::string& name, const std::vector<std::uint8_t>& data,
-		size_t rowPitch, size_t rows
+		size_t width, size_t height, size_t pixelSizeInByte
 	) noexcept override;
+
 	void CreateAtlas() noexcept override;
+	void CleanUpBuffer() noexcept override;
 
-	std::optional<UVF> GetUVData(const std::string& name) const noexcept override;
+	UVU32 GetPixelData(const std::string& name) const noexcept override;
 
-	size_t GetRowPitch() const noexcept override;
-	size_t GetRows() const noexcept override;
+	std::uint32_t GetWidth() const noexcept override;
+	std::uint32_t GetHeight() const noexcept override;
+	size_t GetPixelSizeInBytes() const noexcept override;
+
 	const std::vector<std::uint8_t>& GetTexture() const noexcept override;
 
 private:
 	struct TextureInfo {
 		std::string name;
 		size_t index;
-		size_t rowPitch;
-		size_t rows;
+		size_t height;
+		size_t width;
 	};
 
 	struct TextureData {
@@ -62,7 +67,6 @@ private:
 	};
 
 private:
-	float FixedValueToRelative(size_t value, size_t maxValue) const noexcept;
 	bool PlaceTextureInProperPlace(
 		const TextureInfo& texData,
 		std::vector<Partition>& emptyPartitions,
@@ -76,11 +80,13 @@ private:
 	) const noexcept;
 
 private:
-	size_t m_rowPitch;
-	size_t m_rows;
+	std::uint32_t m_width;
+	std::uint32_t m_height;
+
+	const size_t m_pixelSizeInBytes = 16u;
 
 	std::vector<std::uint8_t> m_texture;
-	std::unordered_map<std::string, UVF> m_uvDataMap;
+	std::unordered_map<std::string, UVU32> m_pixelDataMap;
 
 	std::vector<TextureInfo> m_unprocessedData;
 	std::vector<TextureData> m_unprocessedTextures;

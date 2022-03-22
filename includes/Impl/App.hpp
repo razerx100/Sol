@@ -8,6 +8,7 @@ class App : public IApp {
 public:
 	App();
 
+	void SetResources() override;
 	void Update() override;
 
 private:

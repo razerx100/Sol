@@ -10,12 +10,12 @@ App::App() {
 
 	texAtlas->AddColour("Fuchsia", Ceres::Colour::Fuchsia);
 	texAtlas->AddColour("Cyan", Ceres::Colour::Cyan);
+	texAtlas->AddColour("Red", Ceres::Colour::Red);
+	texAtlas->AddColour("Green", Ceres::Colour::Green);
+	texAtlas->AddColour("Blue", Ceres::Colour::Blue);
 
 	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>();
-	triangle0->SetTextureName("Cyan");
-
 	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>();
-	triangle1->SetTextureName("Fuchsia");
 
 	triangle0->SetTextureIndex(0u);
 	triangle1->SetTextureIndex(0u);
@@ -31,8 +31,56 @@ App::App() {
 		RendererInst::GetRef()->SubmitModel(triangle);
 }
 
+void App::SetResources() {
+	ITextureAtlas* texAtlas = TexAtlasInst::GetRef();
+	auto fuchsia = texAtlas->GetPixelData("Fuchsia");
+	auto cyan = texAtlas->GetPixelData("Cyan");
+	std::uint32_t atlasWidth = texAtlas->GetWidth();
+	std::uint32_t atlasHeight = texAtlas->GetHeight();
+
+	m_triangleRefs[0]->SetTextureInfo(
+		TextureData{
+			fuchsia.uStart, fuchsia.uEnd, atlasWidth,
+			fuchsia.vStart, fuchsia.vEnd, atlasHeight
+		}
+	);
+	m_triangleRefs[1]->SetTextureInfo(
+		TextureData{
+			cyan.uStart, cyan.uEnd, atlasWidth,
+			cyan.vStart, cyan.vEnd, atlasHeight
+		}
+	);
+}
+
 void App::Update() {
 	IKeyboard* pKeyboardRef = IOInst::GetRef()->GetKeyboardByIndex();
+
+	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
+		ITextureAtlas* texAtlas = TexAtlasInst::GetRef();
+		auto fuchsia = texAtlas->GetPixelData("Fuchsia");
+		std::uint32_t atlasWidth = texAtlas->GetWidth();
+		std::uint32_t atlasHeight = texAtlas->GetHeight();
+
+		m_triangleRefs[0]->SetTextureInfo(
+			TextureData{
+				fuchsia.uStart, fuchsia.uEnd, atlasWidth,
+				fuchsia.vStart, fuchsia.vEnd, atlasHeight
+			}
+		);
+	}
+	else if(pKeyboardRef->AreKeysPressed(2, SKeyCodes::R, SKeyCodes::One)) {
+		ITextureAtlas* texAtlas = TexAtlasInst::GetRef();
+		auto red = texAtlas->GetPixelData("Red");
+		std::uint32_t atlasWidth = texAtlas->GetWidth();
+		std::uint32_t atlasHeight = texAtlas->GetHeight();
+
+		m_triangleRefs[0]->SetTextureInfo(
+			TextureData{
+				red.uStart, red.uEnd, atlasWidth,
+				red.vStart, red.vEnd, atlasHeight
+			}
+		);
+	}
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))
 		WindowInst::GetRef()->SetTitle("Alt + D");

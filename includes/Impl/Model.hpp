@@ -6,7 +6,7 @@
 
 struct Vertex {
 	Ceres::Float32_3 position;
-	Ceres::Float32_2 uv;
+	//Ceres::Float32_2 uv;
 };
 
 class Model : public ISolModel {
@@ -14,11 +14,9 @@ public:
 	void ResetVerticesAndIndices() noexcept override;
 	void SetTextureIndex(size_t index) noexcept override;
 
-	void SetTextureName(const std::string& name) noexcept override;
-	void UpdateUV(float uStart, float vStart) noexcept override;
-
-	[[nodiscard]]
-	const std::string& GetTextureName() const noexcept override;
+	void SetTextureInfo(
+		const TextureData& textureInfo
+	) noexcept override;
 
 	[[nodiscard]]
 	const void* GetVertexData() const noexcept override;
@@ -40,6 +38,8 @@ public:
 	[[nodiscard]]
 	Ceres::Matrix GetTransform() const noexcept override;
 
+	const TextureData& GetTextureInfo() const noexcept override;
+
 protected:
 	std::uint32_t m_textureIndex;
 	std::vector<Vertex> m_vertices;
@@ -47,6 +47,6 @@ protected:
 	std::vector<VertexElementType> m_vertexLayout;
 	Ceres::Matrix m_transform;
 
-	std::string m_textureName;
+	TextureData m_textureData;
 };
 #endif

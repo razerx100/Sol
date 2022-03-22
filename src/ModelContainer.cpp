@@ -13,12 +13,9 @@ void ModelContainer::ClearModelBuffers() noexcept {
 }
 
 void ModelContainer::UpdateUVCoordinates() noexcept {
-	ITextureAtlas* texRef = TexAtlasInst::GetRef();
+	//ITextureAtlas* texRef = TexAtlasInst::GetRef();
+	//size_t atlasWidth = texRef->GetWidth();
+	//size_t atlasHeight = texRef->GetHeight();
 
-	for (auto& model : m_models) {
-		auto uvf = texRef->GetUVData(model->GetTextureName());
-
-		if (uvf)
-			model->UpdateUV(uvf->uStart, uvf->vStart);
-	}
+		// Complex textures will need more work
 }
