@@ -1,5 +1,5 @@
 #include <App.hpp>
-#include <GraphicsEngine.hpp>
+#include <IGraphicsEngine.hpp>
 #include <InstanceManager.hpp>
 #include <CRSColour.hpp>
 #include <string>

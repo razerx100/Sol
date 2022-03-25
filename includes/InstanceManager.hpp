@@ -2,7 +2,7 @@
 #define __STATIC_INSTANCES_HPP__
 #include <InputManager.hpp>
 #include <Window.hpp>
-#include <GraphicsEngine.hpp>
+#include <IGraphicsEngine.hpp>
 #include <IApp.hpp>
 #include <ObjectManager.hpp>
 #include <IModelContainer.hpp>

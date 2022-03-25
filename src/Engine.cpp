@@ -49,6 +49,7 @@ Engine::Engine()
 
 	m_pAppRef->SetResources();
 
+	texRef->CleanUpBuffer();
 	UploadBufferInst::GetRef()->Release();
 	ModelContInst::GetRef()->ClearModelBuffers();
 }
