@@ -8,9 +8,13 @@ App::App() {
 	IModelContainer* modelCont = ModelContInst::GetRef();
 	ITextureAtlas* texAtlas = TexAtlasInst::GetRef();
 
+	texAtlas->SetTextureFormat(TextureFormat::UINT8);
+
+	Ceres::Uint8_4 red = { 255u, 0u, 0u };
+
 	texAtlas->AddColour("Fuchsia", Ceres::Colour::Fuchsia);
 	texAtlas->AddColour("Cyan", Ceres::Colour::Cyan);
-	texAtlas->AddColour("Red", Ceres::Colour::Red);
+	texAtlas->AddColour("Red", red);
 	texAtlas->AddColour("Green", Ceres::Colour::Green);
 	texAtlas->AddColour("Blue", Ceres::Colour::Blue);
 

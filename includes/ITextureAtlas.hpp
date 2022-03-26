@@ -18,6 +18,11 @@ typedef _UV<float> UVF;
 typedef _UV<size_t> UVU;
 typedef _UV<std::uint32_t> UVU32;
 
+enum class TextureFormat {
+	Float32,
+	UINT8
+};
+
 class ITextureAtlas {
 public:
 	virtual ~ITextureAtlas() = default;
@@ -25,10 +30,16 @@ public:
 	virtual void AddColour(
 		const std::string& name, const Ceres::Float32_4& colour
 	) noexcept = 0;
+	virtual void AddColour(
+		const std::string& name, const Ceres::Uint8_4& colour
+	) noexcept = 0;
+
 	virtual void AddTexture(
 		const std::string& name, const std::vector<std::uint8_t>& data,
-		size_t width, size_t height, size_t pixelSizeInBytes
+		size_t width, size_t height
 	) noexcept = 0;
+
+	virtual void SetTextureFormat(TextureFormat format) noexcept = 0;
 	virtual void CreateAtlas() noexcept = 0;
 	virtual void CleanUpBuffer() noexcept = 0;
 
@@ -42,8 +53,4 @@ public:
 };
 
 ITextureAtlas* CreateTextureAtlasInstance();
-
-//constexpr float PixelToUV(size_t pixelCoord, size_t maxLength) noexcept {
-//	return static_cast<float>((pixelCoord - 1) * 2 + 1) / (maxLength * 2);
-//}
 #endif

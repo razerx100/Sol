@@ -6,7 +6,9 @@
 class ColourTexture {
 public:
 	void AddColour(const std::string& name, const Ceres::Float32_4& colour) noexcept;
+	void AddColour(const std::string& name, const Ceres::Uint8_4& colour) noexcept;
 	void CreateTexture() noexcept;
+	void SetPixelSizeInBytes(size_t pixelSizeInBytes) noexcept;
 
 	size_t GetWidth() const noexcept;
 	size_t GetPixelSizeInBytes() const noexcept;
@@ -15,8 +17,10 @@ public:
 	const std::vector<std::string>& GetNames() const noexcept;
 
 private:
+	size_t m_pixelSizeInBytes;
 	std::vector<std::string> m_colourNames;
-	std::vector<Ceres::Float32_4> m_unprocessedColour;
+	std::vector<Ceres::Float32_4> m_unprocessedColourF32;
+	std::vector<Ceres::Uint8_4> m_unprocessedColourU8;
 	std::vector<std::uint8_t> m_texture;
 };
 
@@ -25,11 +29,16 @@ public:
 	void AddColour(
 		const std::string& name, const Ceres::Float32_4& colour
 	) noexcept override;
-	void AddTexture(
-		const std::string& name, const std::vector<std::uint8_t>& data,
-		size_t width, size_t height, size_t pixelSizeInByte
+	void AddColour(
+		const std::string& name, const Ceres::Uint8_4& colour
 	) noexcept override;
 
+	void AddTexture(
+		const std::string& name, const std::vector<std::uint8_t>& data,
+		size_t width, size_t height
+	) noexcept override;
+
+	void SetTextureFormat(TextureFormat format) noexcept override;
 	void CreateAtlas() noexcept override;
 	void CleanUpBuffer() noexcept override;
 
@@ -83,7 +92,7 @@ private:
 	std::uint32_t m_width;
 	std::uint32_t m_height;
 
-	const size_t m_pixelSizeInBytes = 16u;
+	size_t m_pixelSizeInBytes;
 
 	std::vector<std::uint8_t> m_texture;
 	std::unordered_map<std::string, UVU32> m_pixelDataMap;

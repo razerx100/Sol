@@ -6,17 +6,63 @@
 // Colour Texture
 void ColourTexture::AddColour(const std::string& name, const Ceres::Float32_4& colour) noexcept {
 	m_colourNames.emplace_back(name);
-	m_unprocessedColour.emplace_back(colour);
+
+	if(m_pixelSizeInBytes == 16u)
+		m_unprocessedColourF32.emplace_back(colour);
+	else {
+		Ceres::Uint8_4 colourU8 = {};
+		colourU8.x = static_cast<std::uint8_t>(255u * colour.x);
+		colourU8.y = static_cast<std::uint8_t>(255u * colour.y);
+		colourU8.z = static_cast<std::uint8_t>(255u * colour.z);
+		colourU8.w = static_cast<std::uint8_t>(255u * colour.w);
+
+		m_unprocessedColourU8.emplace_back(colourU8);
+	}
+}
+
+void ColourTexture::AddColour(const std::string& name, const Ceres::Uint8_4& colour) noexcept {
+	m_colourNames.emplace_back(name);
+
+	if (m_pixelSizeInBytes == 16u) {
+		Ceres::Float32_4 colourF32 = {};
+		colourF32.x = static_cast<float>(colour.x) / 255u;
+		colourF32.y = static_cast<float>(colour.y) / 255u;
+		colourF32.z = static_cast<float>(colour.z) / 255u;
+		colourF32.w = static_cast<float>(colour.w) / 255u;
+
+		m_unprocessedColourF32.emplace_back(colourF32);
+	}
+	else
+		m_unprocessedColourU8.emplace_back(colour);
 }
 
 void ColourTexture::CreateTexture() noexcept {
-	size_t textureSize = 16u * m_unprocessedColour.size();
+	size_t textureSize = m_pixelSizeInBytes *
+		(m_unprocessedColourF32.size() + m_unprocessedColourU8.size());
 	m_texture.resize(textureSize);
 
-	for (size_t index = 0u; index < m_unprocessedColour.size(); ++index)
-		std::memcpy(m_texture.data() + (index * 16u), &m_unprocessedColour[index], 16u);
+	if (m_pixelSizeInBytes == 16u) {
+		for (size_t index = 0u; index < m_unprocessedColourF32.size(); ++index)
+			std::memcpy(
+				m_texture.data() + (index * m_pixelSizeInBytes),
+				&m_unprocessedColourF32[index], m_pixelSizeInBytes
+			);
 
-	m_unprocessedColour = std::vector<Ceres::Float32_4>();
+		m_unprocessedColourF32 = std::vector<Ceres::Float32_4>();
+	}
+	else {
+		for (size_t index = 0u; index < m_unprocessedColourU8.size(); ++index)
+			std::memcpy(
+				m_texture.data() + (index * m_pixelSizeInBytes),
+				&m_unprocessedColourU8[index], m_pixelSizeInBytes
+			);
+
+		m_unprocessedColourU8 = std::vector<Ceres::Uint8_4>();
+	}
+}
+
+void ColourTexture::SetPixelSizeInBytes(size_t pixelSizeInBytes) noexcept {
+	m_pixelSizeInBytes = pixelSizeInBytes;
 }
 
 const std::vector<std::uint8_t>& ColourTexture::GetTexture() const noexcept {
@@ -32,7 +78,7 @@ size_t ColourTexture::GetWidth() const noexcept {
 }
 
 size_t ColourTexture::GetPixelSizeInBytes() const noexcept {
-	return 16u;
+	return m_pixelSizeInBytes;
 }
 
 // Texture Atlas
@@ -42,11 +88,15 @@ void TextureAtlas::AddColour(
 	m_colourTextureManager.AddColour(name, colour);
 }
 
+void TextureAtlas::AddColour(const std::string& name, const Ceres::Uint8_4& colour) noexcept {
+	m_colourTextureManager.AddColour(name, colour);
+}
+
 void TextureAtlas::AddTexture(
 	const std::string& name, const std::vector<std::uint8_t>& data,
-	size_t width, size_t height, size_t pixelSizeInBytes
+	size_t width, size_t height
 ) noexcept {
-	size_t rowPitch = pixelSizeInBytes * width;
+	size_t rowPitch = m_pixelSizeInBytes * width;
 
 	m_unprocessedData.emplace_back(
 		name, m_unprocessedData.size(), height, width
@@ -59,7 +109,7 @@ void TextureAtlas::CreateAtlas() noexcept {
 
 	AddTexture(
 		"Colours", m_colourTextureManager.GetTexture(),
-		m_colourTextureManager.GetWidth(), 1u, m_colourTextureManager.GetPixelSizeInBytes()
+		m_colourTextureManager.GetWidth(), 1u
 	);
 
 	// Atlas Logic
@@ -238,6 +288,19 @@ void TextureAtlas::AddPartition(
 			return part1.index < part2.index;
 		}
 	);
+}
+
+void TextureAtlas::SetTextureFormat(TextureFormat format) noexcept {
+	size_t pixelSizeInBytes = 0u;
+
+	if (TextureFormat::Float32 == format)
+		pixelSizeInBytes = 16u;
+	else if (TextureFormat::UINT8 == format)
+		pixelSizeInBytes = 4u;
+
+	m_pixelSizeInBytes = pixelSizeInBytes;
+
+	m_colourTextureManager.SetPixelSizeInBytes(pixelSizeInBytes);
 }
 
 std::uint32_t TextureAtlas::GetWidth() const noexcept {
