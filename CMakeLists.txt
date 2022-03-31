@@ -84,7 +84,7 @@ FetchContent_MakeAvailable(GaiaX)
 FetchContent_Declare(
     Terra
     GIT_REPOSITORY https://github.com/razerx100/Terra.git
-    GIT_TAG master
+    GIT_TAG ${BRANCH}
 )
 
 FetchContent_MakeAvailable(Terra)

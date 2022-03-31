@@ -4,7 +4,7 @@
 #include <string>
 #include <optional>
 
-class __declspec(dllimport) Window {
+class Window {
 public:
 	virtual ~Window() = default;
 

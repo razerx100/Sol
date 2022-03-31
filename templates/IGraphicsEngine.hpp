@@ -4,7 +4,7 @@
 #include <IModel.hpp>
 #include <CRSStructures.hpp>
 
-class __declspec(dllimport) GraphicsEngine {
+class GraphicsEngine {
 public:
 	virtual ~GraphicsEngine() = default;
 
