@@ -1,5 +1,5 @@
-#ifndef __BASIC_MODELS_HPP__
-#define __BASIC_MODELS_HPP__
+#ifndef BASIC_MODELS_HPP_
+#define BASIC_MODELS_HPP_
 #include <Model.hpp>
 
 class Triangle : public Model {

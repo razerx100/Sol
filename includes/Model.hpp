@@ -1,22 +1,21 @@
-#ifndef __MODEL_HPP__
-#define __MODEL_HPP__
+#ifndef MODEL_HPP_
+#define MODEL_HPP_
 #include <vector>
-#include <memory>
-#include <ISolModel.hpp>
+#include <IModel.hpp>
 
 struct Vertex {
 	Ceres::Float32_3 position;
 	//Ceres::Float32_2 uv;
 };
 
-class Model : public ISolModel {
+class Model : public IModel {
 public:
-	void ResetVerticesAndIndices() noexcept override;
-	void SetTextureIndex(size_t index) noexcept override;
+	void ResetVerticesAndIndices() noexcept;
+	void SetTextureIndex(size_t index) noexcept;
 
 	void SetTextureInfo(
 		const TextureData& textureInfo
-	) noexcept override;
+	) noexcept;
 
 	[[nodiscard]]
 	const void* GetVertexData() const noexcept override;

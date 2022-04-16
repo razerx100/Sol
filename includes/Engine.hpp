@@ -1,6 +1,6 @@
-#ifndef __ENGINE_HPP__
-#define __ENGINE_HPP__
-#include <InstanceManager.hpp>
+#ifndef ENGINE_HPP_
+#define ENGINE_HPP_
+#include <Sol.hpp>
 #include <string>
 
 class Engine {
@@ -14,10 +14,6 @@ public:
 	void WaitForAsyncTasks();
 
 private:
-	Window* m_pWindowRef;
-	GraphicsEngine* m_pGraphicsRef;
-	IApp* m_pAppRef;
-
 	const std::string m_appName;
 };
 #endif

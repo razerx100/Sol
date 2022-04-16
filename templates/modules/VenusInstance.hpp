@@ -1,7 +1,6 @@
-#ifndef __VENUS_INSTANCE_HPP__
-#define __VENUS_INSTANCE_HPP__
+#ifndef VENUS_INSTANCE_HPP_
+#define VENUS_INSTANCE_HPP_
 #include <IThreadPool.hpp>
-#include <cstdint>
 
 __declspec(dllimport) IThreadPool* __cdecl GetVenusInstance() noexcept;
 __declspec(dllimport) void __cdecl CreateVenusInstance(size_t threadCount);

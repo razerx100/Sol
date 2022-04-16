@@ -1,5 +1,5 @@
-#ifndef __CONFIG_MANAGER_HPP__
-#define __CONFIG_MANAGER_HPP__
+#ifndef CONFIG_MANAGER_HPP_
+#define CONFIG_MANAGER_HPP_
 #include <vector>
 #include <string>
 #include <fstream>

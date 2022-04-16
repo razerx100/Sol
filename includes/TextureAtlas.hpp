@@ -1,7 +1,26 @@
-#ifndef __TEXTURE_ATLAS_HPP__
-#define __TEXTURE_ATLAS_HPP__
-#include <ITextureAtlas.hpp>
+#ifndef TEXTURE_ATLAS_HPP_
+#define TEXTURE_ATLAS_HPP_
+#include <string>
+#include <vector>
+#include <CRSColour.hpp>
 #include <unordered_map>
+
+template<typename T>
+struct _UV {
+	T uStart;
+	T uEnd;
+	T vStart;
+	T vEnd;
+};
+
+typedef _UV<float> UVF;
+typedef _UV<size_t> UVU;
+typedef _UV<std::uint32_t> UVU32;
+
+enum class TextureFormat {
+	Float32,
+	UINT8
+};
 
 class ColourTexture {
 public:
@@ -24,31 +43,31 @@ private:
 	std::vector<std::uint8_t> m_texture;
 };
 
-class TextureAtlas : public ITextureAtlas {
+class TextureAtlas {
 public:
 	void AddColour(
 		const std::string& name, const Ceres::Float32_4& colour
-	) noexcept override;
+	) noexcept;
 	void AddColour(
 		const std::string& name, const Ceres::Uint8_4& colour
-	) noexcept override;
+	) noexcept;
 
 	void AddTexture(
 		const std::string& name, const std::vector<std::uint8_t>& data,
 		size_t width, size_t height
-	) noexcept override;
+	) noexcept;
 
-	void SetTextureFormat(TextureFormat format) noexcept override;
-	void CreateAtlas() noexcept override;
-	void CleanUpBuffer() noexcept override;
+	void SetTextureFormat(TextureFormat format) noexcept;
+	void CreateAtlas() noexcept;
+	void CleanUpBuffer() noexcept;
 
-	UVU32 GetPixelData(const std::string& name) const noexcept override;
+	UVU32 GetPixelData(const std::string& name) const noexcept;
 
-	std::uint32_t GetWidth() const noexcept override;
-	std::uint32_t GetHeight() const noexcept override;
-	size_t GetPixelSizeInBytes() const noexcept override;
+	std::uint32_t GetWidth() const noexcept;
+	std::uint32_t GetHeight() const noexcept;
+	size_t GetPixelSizeInBytes() const noexcept;
 
-	const std::vector<std::uint8_t>& GetTexture() const noexcept override;
+	const std::vector<std::uint8_t>& GetTexture() const noexcept;
 
 private:
 	struct TextureInfo {

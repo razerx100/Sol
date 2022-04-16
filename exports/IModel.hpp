@@ -1,7 +1,6 @@
-#ifndef __I_MODEL_HPP__
-#define __I_MODEL_HPP__
+#ifndef I_MODEL_HPP_
+#define I_MODEL_HPP_
 #include <cstdint>
-#include <CRSVector.hpp>
 #include <CRSMatrix.hpp>
 #include <vector>
 

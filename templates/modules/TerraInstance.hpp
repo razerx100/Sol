@@ -1,5 +1,5 @@
-#ifndef __TERRA_INSTANCE_HPP__
-#define __TERRA_INSTANCE_HPP__
+#ifndef TERRA_INSTANCE_HPP_
+#define TERRA_INSTANCE_HPP_
 #include <IGraphicsEngine.hpp>
 
 __declspec(dllimport) GraphicsEngine* __cdecl CreateTerraInstance(

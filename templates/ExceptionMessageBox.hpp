@@ -1,5 +1,5 @@
-#ifndef __EXCEPTION_MESSAGE_BOX_HPP__
-#define __EXCEPTION_MESSAGE_BOX_HPP__
+#ifndef EXCEPTION_MESSAGE_BOX_HPP_
+#define EXCEPTION_MESSAGE_BOX_HPP_
 
 __declspec(dllimport) void __cdecl ExceptionMessageBox(
 	const char* exceptionDetails,

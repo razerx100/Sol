@@ -1,5 +1,5 @@
-#ifndef __PLUTO_INSTANCE_HPP__
-#define __PLUTO_INSTANCE_HPP__
+#ifndef PLUTO_INSTANCE_HPP_
+#define PLUTO_INSTANCE_HPP_
 #include <InputManager.hpp>
 
 [[nodiscard]]

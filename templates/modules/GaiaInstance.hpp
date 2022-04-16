@@ -1,5 +1,5 @@
-#ifndef __GAIA_INSTANCE_HPP__
-#define __GAIA_INSTANCE_HPP__
+#ifndef GAIA_INSTANCE_HPP_
+#define GAIA_INSTANCE_HPP_
 #include <IGraphicsEngine.hpp>
 
 __declspec(dllimport) GraphicsEngine* __cdecl CreateGaiaInstance(

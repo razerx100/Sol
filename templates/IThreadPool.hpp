@@ -1,5 +1,5 @@
-#ifndef __I_THREAD_POOL_HPP__
-#define __I_THREAD_POOL_HPP__
+#ifndef I_THREAD_POOL_HPP_
+#define I_THREAD_POOL_HPP_
 #include <functional>
 
 class __declspec(dllimport) IThreadPool {

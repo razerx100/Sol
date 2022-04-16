@@ -1,7 +1,6 @@
 #include <ModelContainer.hpp>
-#include <InstanceManager.hpp>
 
-ISolModel* ModelContainer::AddModel(std::unique_ptr<ISolModel> model) {
+Model* ModelContainer::AddModel(std::unique_ptr<Model> model) {
 	m_models.emplace_back(std::move(model));
 
 	return m_models.back().get();

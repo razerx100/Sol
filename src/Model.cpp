@@ -1,4 +1,3 @@
-#include <cstring>
 #include <Model.hpp>
 
 const void* Model::GetVertexData() const noexcept {

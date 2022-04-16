@@ -1,5 +1,4 @@
 #include <Engine.hpp>
-#include <Exception.hpp>
 #include <VenusInstance.hpp>
 
 Engine::Engine()
@@ -7,61 +6,60 @@ Engine::Engine()
 
 	CreateVenusInstance(8u);
 
-	IOInst::Init();
-	IOInst::GetRef()->AddDeviceSupport(DeviceType::Keyboard);
-	IOInst::GetRef()->AddDeviceSupport(DeviceType::Mouse);
-	IOInst::GetRef()->AddDeviceSupport(DeviceType::Gamepad);
-	WindowInst::Init(1920u, 1080u, IOInst::GetRef(), m_appName.c_str());
-	m_pWindowRef = WindowInst::GetRef();
-	m_pWindowRef->SetWindowIcon("resources/icon/Sol.ico");
+	Sol::InitIoMan();
+	Sol::ioMan->AddDeviceSupport(DeviceType::Keyboard);
+	Sol::ioMan->AddDeviceSupport(DeviceType::Mouse);
+	Sol::ioMan->AddDeviceSupport(DeviceType::Gamepad);
 
-	RendererInst::Init(
+	Sol::InitWindow(1920u, 1080u,  m_appName.c_str());
+	Sol::window->SetWindowIcon("resources/icon/Sol.ico");
+	Sol::window->SetInputManager(Sol::ioMan);
+
+	Sol::InitRenderer(
 		m_appName.c_str(),
-		m_pWindowRef->GetWindowHandle(),
-		m_pWindowRef->GetModuleInstance(),
+		Sol::window->GetWindowHandle(),
+		Sol::window->GetModuleInstance(),
 		1920u, 1080u
 	);
-	m_pGraphicsRef = RendererInst::GetRef();
-	m_pGraphicsRef->SetShaderPath("resources/shaders/");
-	m_pGraphicsRef->InitResourceBasedObjects();
+	Sol::renderer->SetShaderPath("resources/shaders/");
+	Sol::renderer->InitResourceBasedObjects();
 
-	ModelContInst::Init();
-	UploadBufferInst::Init();
-	TexAtlasInst::Init();
+	Sol::InitModelContainer();
+	Sol::InitUploadBuffer();
+	Sol::InitTextureAtlas();
 
-	WindowInst::GetRef()->SetGraphicsEngineRef(m_pGraphicsRef);
+	Sol::window->SetRenderer(Sol::renderer);
 
-	AppInst::Init();
-	m_pAppRef = AppInst::GetRef();
+	Sol::InitApp();
 
-	ITextureAtlas* texRef = TexAtlasInst::GetRef();
-	texRef->CreateAtlas();
+	Sol::textureAtlas->CreateAtlas();
 
-	ModelContInst::GetRef()->UpdateUVCoordinates();
+	Sol::modelContainer->UpdateUVCoordinates();
 
-	const std::vector<std::uint8_t>& texture = texRef->GetTexture();
-	size_t textureIndex = m_pGraphicsRef->RegisterResource(
+	const std::vector<std::uint8_t>& texture = Sol::textureAtlas->GetTexture();
+	size_t textureIndex = Sol::renderer->RegisterResource(
 		texture.data(),
-		texRef->GetWidth(), texRef->GetHeight(), texRef->GetPixelSizeInBytes()
+		Sol::textureAtlas->GetWidth(), Sol::textureAtlas->GetHeight(),
+		Sol::textureAtlas-> GetPixelSizeInBytes()
 	);
 
-	m_pGraphicsRef->ProcessData();
+	Sol::renderer->ProcessData();
 
-	m_pAppRef->SetResources();
+	Sol::app->SetResources();
 
-	texRef->CleanUpBuffer();
-	UploadBufferInst::GetRef()->Release();
-	ModelContInst::GetRef()->ClearModelBuffers();
+	Sol::textureAtlas->CleanUpBuffer();
+
+	Sol::uploadBuffer.reset();
+	Sol::modelContainer->ClearModelBuffers();
 }
 
 Engine::~Engine() noexcept {
-	TexAtlasInst::CleanUp();
-	UploadBufferInst::CleanUp();
-	AppInst::CleanUp();
-	RendererInst::CleanUp();
-	ModelContInst::CleanUp();
-	WindowInst::CleanUp();
-	IOInst::CleanUp();
+	Sol::textureAtlas.reset();
+	Sol::app.reset();
+	Sol::renderer.reset();
+	Sol::modelContainer.reset();
+	Sol::window.reset();
+	Sol::ioMan.reset();
 	CleanUpVenusInstance();
 }
 
@@ -69,14 +67,14 @@ int Engine::Run() {
 	int errorCode = -1;
 
 	while (true) {
-		if (auto ecode = m_pWindowRef->Update(); ecode) {
+		if (auto ecode = Sol::window->Update(); ecode) {
 			errorCode = *ecode;
 			break;
 		}
 
-		if(!m_pWindowRef->IsMinimized()) {
-			m_pAppRef->Update();
-			m_pGraphicsRef->Render();
+		if(!Sol::window->IsMinimized()) {
+			Sol::app->Update();
+			Sol::renderer->Render();
 		}
 	}
 
@@ -86,5 +84,5 @@ int Engine::Run() {
 }
 
 void Engine::WaitForAsyncTasks() {
-	m_pGraphicsRef->WaitForAsyncTasks();
+	Sol::renderer->WaitForAsyncTasks();
 }
