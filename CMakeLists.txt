@@ -38,7 +38,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Ceres)
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ templates/modules/ includes/Impl/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ templates/modules/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
