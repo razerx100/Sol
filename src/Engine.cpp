@@ -4,7 +4,7 @@
 Engine::Engine()
 	: m_appName("Sol") {
 
-	CreateVenusInstance(8u);
+	Sol::InitThreadPool(8u);
 
 	Sol::InitIoMan();
 	Sol::ioMan->AddDeviceSupport(DeviceType::Keyboard);
@@ -23,6 +23,7 @@ Engine::Engine()
 	);
 	Sol::renderer->SetShaderPath("resources/shaders/");
 	Sol::renderer->InitResourceBasedObjects();
+	Sol::renderer->SetThreadPool(Sol::threadPool);
 
 	Sol::InitModelContainer();
 	Sol::InitUploadBuffer();
@@ -60,7 +61,7 @@ Engine::~Engine() noexcept {
 	Sol::modelContainer.reset();
 	Sol::window.reset();
 	Sol::ioMan.reset();
-	CleanUpVenusInstance();
+	Sol::threadPool.reset();
 }
 
 int Engine::Run() {

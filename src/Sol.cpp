@@ -3,6 +3,7 @@
 #include <LunaInstance.hpp>
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
+#include <VenusInstance.hpp>
 #include <ConfigManager.hpp>
 #include <vector>
 
@@ -11,10 +12,11 @@ namespace Sol {
 	std::unique_ptr<App> app;
 	std::shared_ptr<InputManager> ioMan;
 	std::unique_ptr<Window> window;
-	std::shared_ptr<GraphicsEngine> renderer;
+	std::shared_ptr<Renderer> renderer;
 	std::unique_ptr<ModelContainer> modelContainer;
 	std::unique_ptr<UploadBuffer> uploadBuffer;
 	std::unique_ptr<TextureAtlas> textureAtlas;
+	std::shared_ptr<IThreadPool> threadPool;
 
 	// Functions
 	void InitApp() {
@@ -54,7 +56,7 @@ namespace Sol {
 		);
 
 		if (type == RendererType::Gaia)
-			renderer = std::shared_ptr<GraphicsEngine>(
+			renderer = std::shared_ptr<Renderer>(
 				CreateGaiaInstance(
 					appName,
 					windowHandle,
@@ -63,7 +65,7 @@ namespace Sol {
 				)
 			);
 		else if (type == RendererType::Terra)
-			renderer = std::shared_ptr<GraphicsEngine>(
+			renderer = std::shared_ptr<Renderer>(
 				CreateTerraInstance(
 					appName,
 					windowHandle, moduleHandle,
@@ -83,5 +85,9 @@ namespace Sol {
 
 	void InitTextureAtlas() {
 		textureAtlas = std::make_unique<TextureAtlas>();
+	}
+
+	void InitThreadPool(size_t threadCount) {
+		threadPool = std::shared_ptr<IThreadPool>(CreateVenusInstance(threadCount));
 	}
 }

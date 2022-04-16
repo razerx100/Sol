@@ -4,20 +4,22 @@
 #include <App.hpp>
 #include <InputManager.hpp>
 #include <Window.hpp>
-#include <IGraphicsEngine.hpp>
+#include <Renderer.hpp>
 #include <ModelContainer.hpp>
 #include <UploadBuffer.hpp>
 #include <TextureAtlas.hpp>
+#include <IThreadPool.hpp>
 
 namespace Sol {
 	// Variables
 	extern std::unique_ptr<App> app;
 	extern std::shared_ptr<InputManager> ioMan;
 	extern std::unique_ptr<Window> window;
-	extern std::shared_ptr<GraphicsEngine> renderer;
+	extern std::shared_ptr<Renderer> renderer;
 	extern std::unique_ptr<ModelContainer> modelContainer;
 	extern std::unique_ptr<UploadBuffer> uploadBuffer;
 	extern std::unique_ptr<TextureAtlas> textureAtlas;
+	extern std::shared_ptr<IThreadPool> threadPool;
 
 	// Enums
 	enum class IoType {
@@ -51,6 +53,7 @@ namespace Sol {
 	void InitModelContainer();
 	void InitUploadBuffer();
 	void InitTextureAtlas();
+	void InitThreadPool(size_t threadCount);
 }
 
 #endif
