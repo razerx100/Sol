@@ -18,26 +18,26 @@ public:
 	) noexcept;
 
 	[[nodiscard]]
-	const void* GetVertexData() const noexcept override;
+	const void* GetVertexData() const noexcept final;
 	[[nodiscard]]
-	size_t GetVertexStrideSize() const noexcept override;
+	size_t GetVertexStrideSize() const noexcept final;
 	[[nodiscard]]
-	size_t GetVertexBufferSize() const noexcept override;
+	size_t GetVertexBufferSize() const noexcept final;
 	[[nodiscard]]
-	const void* GetIndexData() const noexcept override;
+	const void* GetIndexData() const noexcept final;
 	[[nodiscard]]
-	size_t GetIndexBufferSize() const noexcept override;
+	size_t GetIndexBufferSize() const noexcept final;
 	[[nodiscard]]
-	size_t GetIndexCount() const noexcept override;
+	size_t GetIndexCount() const noexcept final;
 	[[nodiscard]]
-	std::uint32_t GetTextureIndex() const noexcept override;
+	std::uint32_t GetTextureIndex() const noexcept final;
 	[[nodiscard]]
-	const std::vector<VertexElementType>& GetVertexLayout() const noexcept override;
+	const std::vector<VertexElementType>& GetVertexLayout() const noexcept final;
 
 	[[nodiscard]]
-	Ceres::Matrix GetTransform() const noexcept override;
+	Ceres::Matrix GetTransform() const noexcept final;
 
-	const TextureData& GetTextureInfo() const noexcept override;
+	const TextureData& GetTextureInfo() const noexcept final;
 
 protected:
 	std::uint32_t m_textureIndex;

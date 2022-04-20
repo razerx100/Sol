@@ -24,7 +24,7 @@ protected:
 	std::string m_whatBuffer;
 };
 
-class GenericException : public Exception {
+class GenericException final : public Exception {
 public:
 	GenericException(
 		int line, const char* file,

@@ -2,7 +2,7 @@
 #define BASIC_MODELS_HPP_
 #include <Model.hpp>
 
-class Triangle : public Model {
+class Triangle final : public Model {
 public:
 	Triangle() noexcept;
 
@@ -10,7 +10,7 @@ private:
 	void Init() noexcept;
 };
 
-class Triangle1 : public Model {
+class Triangle1 final : public Model {
 public:
 	Triangle1() noexcept;
 
