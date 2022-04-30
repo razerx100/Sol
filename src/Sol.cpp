@@ -4,7 +4,6 @@
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
 #include <VenusInstance.hpp>
-#include <ConfigManager.hpp>
 #include <vector>
 
 namespace Sol {
@@ -17,45 +16,37 @@ namespace Sol {
 	std::unique_ptr<UploadBuffer> uploadBuffer;
 	std::unique_ptr<TextureAtlas> textureAtlas;
 	std::shared_ptr<IThreadPool> threadPool;
+	std::unique_ptr<ConfigManager> configManager;
 
 	// Functions
 	void InitApp() {
 		app = std::make_unique<App>();
 	}
 
-	void InitIoMan(IoType type) {
-		if (type == IoType::Pluto)
+	void InitIoMan(std::string moduleName) {
+		if (moduleName == "Pluto")
 			ioMan = std::shared_ptr<InputManager>(CreatePlutoInstance());
 	}
 
 	void InitWindow(
 		std::uint32_t width, std::uint32_t height, const char* name,
-		WindowType type
+		std::string moduleName
 	) {
-		if (type == WindowType::Luna)
+		if (moduleName == "Luna")
 			window = std::unique_ptr<Window>(
 				CreateLunaInstance(width, height, name)
 				);
 	}
-
-	static const std::vector<const char*> RENDERERNAMES = {
-		"Terra",
-		"Gaia"
-	};
 
 	void InitRenderer(
 		const char* appName,
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
-		RendererType type,
+		std::string moduleName,
 		std::uint8_t bufferCount
 	) {
-		type = ConfigManager::ReadType(
-			"config.ini", "RendererType", type, RENDERERNAMES
-		);
-
-		if (type == RendererType::Gaia)
+		if (moduleName == "Gaia")
 			renderer = std::shared_ptr<Renderer>(
 				CreateGaiaInstance(
 					appName,
@@ -64,7 +55,7 @@ namespace Sol {
 					bufferCount
 				)
 			);
-		else if (type == RendererType::Terra)
+		else if (moduleName == "Terra")
 			renderer = std::shared_ptr<Renderer>(
 				CreateTerraInstance(
 					appName,
@@ -89,5 +80,9 @@ namespace Sol {
 
 	void InitThreadPool(size_t threadCount) {
 		threadPool = std::shared_ptr<IThreadPool>(CreateVenusInstance(threadCount));
+	}
+
+	void InitConfigManager(const std::string& fileName) {
+		configManager = std::make_unique<ConfigManager>(fileName);
 	}
 }

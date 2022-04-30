@@ -9,6 +9,7 @@
 #include <UploadBuffer.hpp>
 #include <TextureAtlas.hpp>
 #include <IThreadPool.hpp>
+#include <ConfigManager.hpp>
 
 namespace Sol {
 	// Variables
@@ -20,40 +21,27 @@ namespace Sol {
 	extern std::unique_ptr<UploadBuffer> uploadBuffer;
 	extern std::unique_ptr<TextureAtlas> textureAtlas;
 	extern std::shared_ptr<IThreadPool> threadPool;
-
-	// Enums
-	enum class IoType {
-		Pluto
-	};
-
-	enum class WindowType {
-		Luna
-	};
-
-	enum class RendererType {
-		Terra,
-		Gaia
-	};
+	extern std::unique_ptr<ConfigManager> configManager;
 
 	// Initialization functions
 	void InitApp();
-	void InitIoMan(IoType type = IoType::Pluto);
+	void InitIoMan(std::string moduleName = "Pluto");
 	void InitWindow(
 		std::uint32_t width, std::uint32_t height, const char* name,
-		WindowType type = WindowType::Luna
+		std::string moduleName = "Luna"
 	);
 	void InitRenderer(
 		const char* appName,
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
-		RendererType type = RendererType::Gaia,
+		std::string moduleName = "Gaia",
 		std::uint8_t bufferCount = 2u
 	);
 	void InitModelContainer();
 	void InitUploadBuffer();
 	void InitTextureAtlas();
 	void InitThreadPool(size_t threadCount);
+	void InitConfigManager(const std::string& fileName);
 }
-
 #endif

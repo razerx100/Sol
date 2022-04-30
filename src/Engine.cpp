@@ -4,14 +4,21 @@
 Engine::Engine()
 	: m_appName("Sol") {
 
+	Sol::InitConfigManager("config.ini");
+	Sol::configManager->ReadConfigFile();
+
 	Sol::InitThreadPool(8u);
 
-	Sol::InitIoMan();
+	Sol::InitIoMan(Sol::configManager->GeIOName());
 	Sol::ioMan->AddDeviceSupport(DeviceType::Keyboard);
 	Sol::ioMan->AddDeviceSupport(DeviceType::Mouse);
 	Sol::ioMan->AddDeviceSupport(DeviceType::Gamepad);
 
-	Sol::InitWindow(1920u, 1080u,  m_appName.c_str());
+	Sol::InitWindow(
+		1920u, 1080u,
+		m_appName.c_str(),
+		Sol::configManager->GetWindowName()
+	);
 	Sol::window->SetWindowIcon("resources/icon/Sol.ico");
 	Sol::window->SetInputManager(Sol::ioMan);
 
@@ -19,7 +26,8 @@ Engine::Engine()
 		m_appName.c_str(),
 		Sol::window->GetWindowHandle(),
 		Sol::window->GetModuleInstance(),
-		1920u, 1080u
+		1920u, 1080u,
+		Sol::configManager->GetRendererName()
 	);
 	Sol::renderer->SetShaderPath("resources/shaders/");
 	Sol::renderer->InitResourceBasedObjects();
@@ -55,6 +63,7 @@ Engine::Engine()
 }
 
 Engine::~Engine() noexcept {
+	Sol::configManager.reset();
 	Sol::textureAtlas.reset();
 	Sol::app.reset();
 	Sol::renderer.reset();

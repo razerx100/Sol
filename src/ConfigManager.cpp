@@ -1,52 +1,57 @@
 #include <ConfigManager.hpp>
 
-void ConfigManager::ReplaceInString(
-    const std::string& replacement, std::string& textStr,
-    std::int64_t start, std::int64_t end
-) noexcept {
-    textStr.replace(start, end - start, replacement);
+ConfigManager::ConfigManager(const std::string& fileName)
+	: m_parser(fileName) {}
+
+ConfigManager::~ConfigManager() noexcept {
+	m_parser.WriteBack();
 }
 
-std::string ConfigManager::GetLineFromString(
-    const std::string& textString,
-    std::int64_t start, std::int64_t end
-) noexcept {
-    std::string foundLine;
-    foundLine = std::string(textString.begin() + start, textString.begin() + end);
+void ConfigManager::ReadConfigFile() noexcept {
+	m_parser.Parse();
 
-    return foundLine;
+	if (!m_parser.DoesValueExist("Renderer", "Modules")) {
+		auto valueMap = DEFAULTMODULES.find("Renderer");
+
+		if (valueMap != std::end(DEFAULTMODULES))
+			m_parser.AddOrUpdateValue("Modules", valueMap->first, valueMap->second);
+	}
+
+	if (!m_parser.DoesValueExist("Window", "Modules")) {
+		auto valueMap = DEFAULTMODULES.find("Window");
+
+		if (valueMap != std::end(DEFAULTMODULES))
+			m_parser.AddOrUpdateValue("Modules", valueMap->first, valueMap->second);
+	}
+
+	if (!m_parser.DoesValueExist("IO", "Modules")) {
+		auto valueMap = DEFAULTMODULES.find("IO");
+
+		if (valueMap != std::end(DEFAULTMODULES))
+			m_parser.AddOrUpdateValue("Modules", valueMap->first, valueMap->second);
+	}
 }
 
-std::pair<std::int64_t, std::int64_t> ConfigManager::FindInString(
-    const std::string& textStr, const std::string& searchItem
-) noexcept {
-    auto start = std::search(
-        textStr.begin(), textStr.end(), searchItem.begin(), searchItem.end()
-    );
-
-    std::string::const_iterator end;
-
-    if (start != textStr.end())
-        end = std::find(start, textStr.end(), '\n');
-
-    std::int64_t startPos = -1;
-    std::int64_t endPos = -1;
-
-    if (start != textStr.end() && end != textStr.end()) {
-        startPos = std::distance(textStr.begin(), start);
-        endPos = std::distance(textStr.begin(), end) + 1;
-    }
-
-    return { startPos, endPos };
+void ConfigManager::SetRenderer(const std::string& name) noexcept {
+	m_parser.AddOrUpdateValue("Modules", "Renderer", name);
 }
 
-std::string ConfigManager::FileToString(const char* fileName) noexcept {
-    std::ifstream input(fileName, std::ios_base::in);
+void ConfigManager::SetIO(const std::string& name) noexcept {
+	m_parser.AddOrUpdateValue("Modules", "IO", name);
+}
 
-    std::string buffer;
-    std::string str;
-    while (std::getline(input, buffer))
-        str.append(buffer + "\n"s);
+void ConfigManager::SetWindow(const std::string& name) noexcept {
+	m_parser.AddOrUpdateValue("Modules", "Window", name);
+}
 
-    return str;
+std::string ConfigManager::GetRendererName() const noexcept {
+	return m_parser.GetValue("Renderer", "Modules");
+}
+
+std::string ConfigManager::GeIOName() const noexcept {
+	return m_parser.GetValue("IO", "Modules");
+}
+
+std::string ConfigManager::GetWindowName() const noexcept {
+	return m_parser.GetValue("Window", "Modules");
 }

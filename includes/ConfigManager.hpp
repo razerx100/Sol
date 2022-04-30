@@ -1,96 +1,33 @@
 #ifndef CONFIG_MANAGER_HPP_
 #define CONFIG_MANAGER_HPP_
-#include <vector>
-#include <string>
-#include <fstream>
-#include <algorithm>
-
-using namespace std::string_literals;
+#include <IniParser.hpp>
+#include <array>
 
 class ConfigManager {
+	const std::unordered_map<std::string, std::string> DEFAULTMODULES = {
+		{"Renderer", "Gaia"},
+		{"Window", "Luna"},
+		{"IO", "Pluto"}
+	};
+
 public:
-    template<typename T>
-    [[nodiscard]]
-    static T ReadType(
-        const char* fileName, const char* typeName, T defaultType,
-        const std::vector<const char*>& typeNames
-    ) noexcept {
-        T type = defaultType;
+	ConfigManager(const std::string& fileName);
+	~ConfigManager() noexcept;
 
-        std::string textStr = FileToString(fileName);
+	void ReadConfigFile() noexcept;
 
-        if (!textStr.empty()) {
-            auto [start, end] = FindInString(textStr, typeName);
-            if (start != -1 && end != -1) {
-                std::string findLine = GetLineFromString(textStr, start, end);
-                type = FindTypeFromString(findLine, defaultType, typeNames);
-            }
-        }
+	void SetRenderer(const std::string& name) noexcept;
+	void SetIO(const std::string& name) noexcept;
+	void SetWindow(const std::string& name) noexcept;
 
-        return type;
-    }
-
-    template<typename T>
-    static void SaveName(
-        const char* fileName, const char* typeName, T type,
-        const std::vector<const char*>& typeNames
-    ) noexcept {
-        std::string textStr = FileToString(fileName);
-        std::ios_base::openmode openFLag = std::ios_base::out;
-        std::string newValue =
-            typeName + " = "s + typeNames[static_cast<size_t>(type)];
-
-        if (!textStr.empty()) {
-            auto [start, end] = FindInString(textStr, typeName);
-            if (start != -1 && end != -1)
-                ReplaceInString(newValue, textStr, start, end);
-            else
-                textStr.append(newValue);
-        }
-        else
-            textStr.append(newValue);
-
-        std::ofstream out(fileName, openFLag);
-        out << textStr;
-    }
+	[[nodiscard]]
+	std::string GetRendererName() const noexcept;
+	[[nodiscard]]
+	std::string GeIOName() const noexcept;
+	[[nodiscard]]
+	std::string GetWindowName() const noexcept;
 
 private:
-    template<typename T>
-    [[nodiscard]]
-    static T FindTypeFromString(
-        const std::string& str, T defaultType, const std::vector<const char*>& searchItems
-    ) noexcept {
-        T type = defaultType;
-        for (size_t index = 0u; index < searchItems.size(); ++index) {
-            std::string temp = searchItems[index];
-            auto result = std::search(str.begin(), str.end(), temp.begin(), temp.end());
-            if (result != str.end()) {
-                type = static_cast<T>(index);
-                break;
-            }
-        }
-
-        return type;
-    }
-
-private:
-    static void ReplaceInString(
-        const std::string& replacement, std::string& textStr,
-        std::int64_t start, std::int64_t end
-    ) noexcept;
-
-    [[nodiscard]]
-    static std::string GetLineFromString(
-        const std::string& textString,
-        std::int64_t start, std::int64_t end
-    ) noexcept;
-
-    [[nodiscard]]
-    static std::pair<std::int64_t, std::int64_t> FindInString(
-        const std::string& textStr, const std::string& searchItem
-    ) noexcept;
-
-    [[nodiscard]]
-    static std::string FileToString(const char* fileName) noexcept;
+	IniParser m_parser;
 };
 #endif
