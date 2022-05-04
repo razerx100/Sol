@@ -24,7 +24,7 @@ size_t Model::GetIndexCount() const noexcept {
 	return m_indices.size();
 }
 
-Ceres::Matrix Model::GetTransform() const noexcept {
+DirectX::XMMATRIX Model::GetTransform() const noexcept {
 	return m_transform;
 }
 

@@ -2,17 +2,19 @@
 #define RENDERER_HPP_
 #include <cstdint>
 #include <IModel.hpp>
-#include <CRSStructures.hpp>
 #include <memory>
+#include <array>
 
 class Renderer {
 public:
+	using Resolution = std::pair<std::uint64_t, std::uint64_t>;
+
 	virtual ~Renderer() = default;
 
 	virtual void Resize(std::uint32_t width, std::uint32_t height) = 0;
-	virtual void GetMonitorCoordinates(
-		std::uint64_t& monitorWidth, std::uint64_t& monitorHeight
-	) = 0;
+
+	[[nodiscard]]
+	virtual Resolution GetDisplayCoordinates(std::uint32_t displayIndex = 0u) const = 0;
 
 	[[nodiscard]] // Returns index of the resource in Resource Heap
 	virtual size_t RegisterResource(
@@ -21,7 +23,7 @@ public:
 	) = 0;
 
 	virtual void SetThreadPool(std::shared_ptr<class IThreadPool> threadPoolArg) noexcept = 0;
-	virtual void SetBackgroundColour(const Ceres::Float32_4& colour) noexcept = 0;
+	virtual void SetBackgroundColour(const std::array<float, 4>& colour) noexcept = 0;
 	virtual void SubmitModel(const class IModel* const modelRef) = 0;
 	virtual void Render() = 0;
 	virtual void WaitForAsyncTasks() = 0;

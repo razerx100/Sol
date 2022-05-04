@@ -1,5 +1,6 @@
 #include <Engine.hpp>
 #include <VenusInstance.hpp>
+#include <Sol.hpp>
 
 Engine::Engine()
 	: m_appName("Sol") {

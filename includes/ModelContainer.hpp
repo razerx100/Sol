@@ -1,8 +1,9 @@
 #ifndef MODEL_CONTAINER_HPP_
 #define MODEL_CONTAINER_HPP_
-#include <Model.hpp>
 #include <memory>
 #include <vector>
+
+#include <Model.hpp>
 
 class ModelContainer {
 public:

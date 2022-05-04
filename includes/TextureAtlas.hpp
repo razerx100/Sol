@@ -2,8 +2,10 @@
 #define TEXTURE_ATLAS_HPP_
 #include <string>
 #include <vector>
-#include <CRSColour.hpp>
 #include <unordered_map>
+#include <array>
+
+#include <DirectXMath.h>
 
 template<typename T>
 struct _UV {
@@ -17,6 +19,13 @@ typedef _UV<float> UVF;
 typedef _UV<size_t> UVU;
 typedef _UV<std::uint32_t> UVU32;
 
+struct RGBA8 {
+	std::uint8_t r;
+	std::uint8_t g;
+	std::uint8_t b;
+	std::uint8_t a;
+};
+
 enum class TextureFormat {
 	Float32,
 	UINT8
@@ -24,8 +33,10 @@ enum class TextureFormat {
 
 class ColourTexture {
 public:
-	void AddColour(const std::string& name, const Ceres::Float32_4& colour) noexcept;
-	void AddColour(const std::string& name, const Ceres::Uint8_4& colour) noexcept;
+	void AddColour(const std::string& name, const DirectX::XMVECTORF32& colour) noexcept;
+	void AddColour(
+		const std::string& name, const RGBA8& colour
+	) noexcept;
 	void CreateTexture() noexcept;
 	void SetPixelSizeInBytes(size_t pixelSizeInBytes) noexcept;
 
@@ -38,18 +49,18 @@ public:
 private:
 	size_t m_pixelSizeInBytes;
 	std::vector<std::string> m_colourNames;
-	std::vector<Ceres::Float32_4> m_unprocessedColourF32;
-	std::vector<Ceres::Uint8_4> m_unprocessedColourU8;
+	std::vector<DirectX::XMFLOAT4> m_unprocessedColourF32;
+	std::vector<RGBA8> m_unprocessedColourU8;
 	std::vector<std::uint8_t> m_texture;
 };
 
 class TextureAtlas {
 public:
 	void AddColour(
-		const std::string& name, const Ceres::Float32_4& colour
+		const std::string& name, const DirectX::XMVECTORF32& colour
 	) noexcept;
 	void AddColour(
-		const std::string& name, const Ceres::Uint8_4& colour
+		const std::string& name, const RGBA8& colour
 	) noexcept;
 
 	void AddTexture(

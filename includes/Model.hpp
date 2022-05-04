@@ -2,10 +2,11 @@
 #define MODEL_HPP_
 #include <vector>
 #include <IModel.hpp>
+#include <DirectXMath.h>
 
 struct Vertex {
-	Ceres::Float32_3 position;
-	//Ceres::Float32_2 uv;
+	DirectX::XMFLOAT3 position;
+	//DirectX::XMFLOAT2 uv;
 };
 
 class Model : public IModel {
@@ -35,7 +36,7 @@ public:
 	const std::vector<VertexElementType>& GetVertexLayout() const noexcept final;
 
 	[[nodiscard]]
-	Ceres::Matrix GetTransform() const noexcept final;
+	DirectX::XMMATRIX GetTransform() const noexcept final;
 
 	const TextureData& GetTextureInfo() const noexcept final;
 
@@ -44,7 +45,7 @@ protected:
 	std::vector<Vertex> m_vertices;
 	std::vector<std::uint16_t> m_indices;
 	std::vector<VertexElementType> m_vertexLayout;
-	Ceres::Matrix m_transform;
+	DirectX::XMMATRIX m_transform;
 
 	TextureData m_textureData;
 };

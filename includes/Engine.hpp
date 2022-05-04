@@ -1,6 +1,5 @@
 #ifndef ENGINE_HPP_
 #define ENGINE_HPP_
-#include <Sol.hpp>
 #include <string>
 
 class Engine {

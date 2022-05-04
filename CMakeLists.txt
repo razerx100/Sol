@@ -14,10 +14,10 @@ if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 endif()
 
+file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp)
+
 if(IMGUIFLAG STREQUAL "ENABLE")
-    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp ImGui/*.cpp ImGui/*.h)
-else()
-    file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp)
+    file(GLOB_RECURSE IMGUI ImGui/*.cpp ImGui/*.h)
 endif()
 
 if(PLATFORM STREQUAL "WINDOWS")
@@ -31,14 +31,7 @@ else()
     )
 endif()
 
-if(NOT CERES_ADDED)
-    add_subdirectory(Ceres)
-    set(CERES_ADDED "TRUE")
-endif()
-
-target_link_libraries(${PROJECT_NAME} PUBLIC Ceres)
-
-target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ templates/modules/)
+target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ templates/modules/ DirectXMath/Inc/ DirectXMath/Extensions/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 

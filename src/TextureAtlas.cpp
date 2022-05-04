@@ -1,36 +1,42 @@
-#include <TextureAtlas.hpp>
 #include <algorithm>
 #include <cstring>
 #include <optional>
 
+#include <TextureAtlas.hpp>
+
 // Colour Texture
-void ColourTexture::AddColour(const std::string& name, const Ceres::Float32_4& colour) noexcept {
+void ColourTexture::AddColour(
+	const std::string& name, const DirectX::XMVECTORF32& colour
+) noexcept {
 	m_colourNames.emplace_back(name);
 
-	if(m_pixelSizeInBytes == 16u)
-		m_unprocessedColourF32.emplace_back(colour);
-	else {
-		Ceres::Uint8_4 colourU8 = {};
-		colourU8.x = static_cast<std::uint8_t>(255u * colour.x);
-		colourU8.y = static_cast<std::uint8_t>(255u * colour.y);
-		colourU8.z = static_cast<std::uint8_t>(255u * colour.z);
-		colourU8.w = static_cast<std::uint8_t>(255u * colour.w);
+	DirectX::XMFLOAT4 colourF4 = {};
+	DirectX::XMStoreFloat4(&colourF4, colour);
 
-		m_unprocessedColourU8.emplace_back(colourU8);
+	if (m_pixelSizeInBytes == 16u)
+		m_unprocessedColourF32.emplace_back(std::move(colourF4));
+	else {
+		RGBA8 colourU8 = {};
+		colourU8.r = static_cast<std::uint8_t>(255u * colourF4.x);
+		colourU8.g = static_cast<std::uint8_t>(255u * colourF4.y);
+		colourU8.b = static_cast<std::uint8_t>(255u * colourF4.z);
+		colourU8.a = static_cast<std::uint8_t>(255u * colourF4.w);
+
+		m_unprocessedColourU8.emplace_back(std::move(colourU8));
 	}
 }
 
-void ColourTexture::AddColour(const std::string& name, const Ceres::Uint8_4& colour) noexcept {
+void ColourTexture::AddColour(const std::string& name, const RGBA8& colour) noexcept {
 	m_colourNames.emplace_back(name);
 
 	if (m_pixelSizeInBytes == 16u) {
-		Ceres::Float32_4 colourF32 = {};
-		colourF32.x = static_cast<float>(colour.x) / 255u;
-		colourF32.y = static_cast<float>(colour.y) / 255u;
-		colourF32.z = static_cast<float>(colour.z) / 255u;
-		colourF32.w = static_cast<float>(colour.w) / 255u;
+		DirectX::XMFLOAT4 colourF32 = {};
+		colourF32.x = static_cast<float>(colour.r) / 255u;
+		colourF32.y = static_cast<float>(colour.g) / 255u;
+		colourF32.z = static_cast<float>(colour.b) / 255u;
+		colourF32.w = static_cast<float>(colour.a) / 255u;
 
-		m_unprocessedColourF32.emplace_back(colourF32);
+		m_unprocessedColourF32.emplace_back(std::move(colourF32));
 	}
 	else
 		m_unprocessedColourU8.emplace_back(colour);
@@ -48,7 +54,7 @@ void ColourTexture::CreateTexture() noexcept {
 				&m_unprocessedColourF32[index], m_pixelSizeInBytes
 			);
 
-		m_unprocessedColourF32 = std::vector<Ceres::Float32_4>();
+		m_unprocessedColourF32 = std::vector<DirectX::XMFLOAT4>();
 	}
 	else {
 		for (size_t index = 0u; index < m_unprocessedColourU8.size(); ++index)
@@ -57,7 +63,7 @@ void ColourTexture::CreateTexture() noexcept {
 				&m_unprocessedColourU8[index], m_pixelSizeInBytes
 			);
 
-		m_unprocessedColourU8 = std::vector<Ceres::Uint8_4>();
+		m_unprocessedColourU8 = std::vector<RGBA8>();
 	}
 }
 
@@ -83,12 +89,12 @@ size_t ColourTexture::GetPixelSizeInBytes() const noexcept {
 
 // Texture Atlas
 void TextureAtlas::AddColour(
-	const std::string& name, const Ceres::Float32_4& colour
+	const std::string& name, const DirectX::XMVECTORF32& colour
 ) noexcept {
 	m_colourTextureManager.AddColour(name, colour);
 }
 
-void TextureAtlas::AddColour(const std::string& name, const Ceres::Uint8_4& colour) noexcept {
+void TextureAtlas::AddColour(const std::string& name, const RGBA8& colour) noexcept {
 	m_colourTextureManager.AddColour(name, colour);
 }
 
@@ -182,16 +188,20 @@ void TextureAtlas::CreateAtlas() noexcept {
 
 	const std::vector<std::string>& colourNames = m_colourTextureManager.GetNames();
 
-	for (size_t index = 0u; index < colourNames.size(); ++index)
+	for (size_t index = 0u; index < colourNames.size(); ++index) {
+		std::uint32_t uStart = colourData.uStart;
+		std::uint32_t vStart = colourData.vStart;
+
 		m_pixelDataMap.insert_or_assign(
 			colourNames[index],
 			UVU32{
-				static_cast<std::uint32_t>(colourData.uStart + index),
-				static_cast<std::uint32_t>(colourData.uStart + index),
-				static_cast<std::uint32_t>(colourData.vStart),
-				static_cast<std::uint32_t>(colourData.vStart)
+				uStart + static_cast<std::uint32_t>(index),
+				uStart + static_cast<std::uint32_t>(index),
+				vStart,
+				vStart
 			}
 		);
+	}
 
 	size_t rowPitch = m_width * m_pixelSizeInBytes;
 	m_texture.resize(rowPitch * m_height);

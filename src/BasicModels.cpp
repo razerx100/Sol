@@ -1,5 +1,4 @@
 #include <BasicModels.hpp>
-#include <CRSColour.hpp>
 
 Triangle::Triangle() noexcept {
 	Init();

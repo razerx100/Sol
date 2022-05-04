@@ -1,18 +1,20 @@
 #include <App.hpp>
-#include <CRSColour.hpp>
-#include <Sol.hpp>
 #include <string>
+
+#include <BasicModels.hpp>
+#include <Sol.hpp>
+#include <DirectXColors.h>
 
 App::App() {
 	Sol::textureAtlas->SetTextureFormat(TextureFormat::UINT8);
 
-	Ceres::Uint8_4 red = { 255u, 0u, 0u };
+	RGBA8 red = { 255u, 0u, 0u, 1u };
 
-	Sol::textureAtlas->AddColour("Fuchsia", Ceres::Colour::Fuchsia);
-	Sol::textureAtlas->AddColour("Cyan", Ceres::Colour::Cyan);
+	Sol::textureAtlas->AddColour("Fuchsia", DirectX::Colors::Fuchsia);
+	Sol::textureAtlas->AddColour("Cyan", DirectX::Colors::Cyan);
 	Sol::textureAtlas->AddColour("Red", red);
-	Sol::textureAtlas->AddColour("Green", Ceres::Colour::Green);
-	Sol::textureAtlas->AddColour("Blue", Ceres::Colour::Blue);
+	Sol::textureAtlas->AddColour("Green", DirectX::Colors::Green);
+	Sol::textureAtlas->AddColour("Blue", DirectX::Colors::Blue);
 
 	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>();
 	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>();

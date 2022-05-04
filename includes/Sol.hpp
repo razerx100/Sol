@@ -5,11 +5,12 @@
 #include <InputManager.hpp>
 #include <Window.hpp>
 #include <Renderer.hpp>
-#include <ModelContainer.hpp>
 #include <UploadBuffer.hpp>
-#include <TextureAtlas.hpp>
 #include <IThreadPool.hpp>
 #include <ConfigManager.hpp>
+
+#include <ModelContainer.hpp>
+#include <TextureAtlas.hpp>
 
 namespace Sol {
 	// Variables

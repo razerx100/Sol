@@ -1,8 +1,17 @@
 #ifndef I_MODEL_HPP_
 #define I_MODEL_HPP_
 #include <cstdint>
-#include <CRSMatrix.hpp>
 #include <vector>
+
+namespace DirectX {
+#ifdef _XM_NO_INTRINSICS_
+	struct XMMATRIX;
+#else
+	struct alignas(16) XMMATRIX;
+#endif
+}
+
+// Include DirectXMath in source files
 
 enum class VertexElementType {
 	Position,
@@ -42,6 +51,6 @@ public:
 	virtual const TextureData& GetTextureInfo() const noexcept = 0;
 
 	[[nodiscard]]
-	virtual Ceres::Matrix GetTransform() const noexcept = 0;
+	virtual DirectX::XMMATRIX GetTransform() const noexcept = 0;
 };
 #endif
