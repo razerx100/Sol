@@ -51,6 +51,6 @@ public:
 	virtual const TextureData& GetTextureInfo() const noexcept = 0;
 
 	[[nodiscard]]
-	virtual DirectX::XMMATRIX GetTransform() const noexcept = 0;
+	virtual DirectX::XMMATRIX GetModelMatrix() const noexcept = 0;
 };
 #endif

@@ -11,6 +11,8 @@ struct Vertex {
 
 class Model : public IModel {
 public:
+	Model() noexcept;
+
 	void ResetVerticesAndIndices() noexcept;
 	void SetTextureIndex(size_t index) noexcept;
 
@@ -36,16 +38,18 @@ public:
 	const std::vector<VertexElementType>& GetVertexLayout() const noexcept final;
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetTransform() const noexcept final;
+	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
 
 	const TextureData& GetTextureInfo() const noexcept final;
+
+	void SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept;
 
 protected:
 	std::uint32_t m_textureIndex;
 	std::vector<Vertex> m_vertices;
 	std::vector<std::uint16_t> m_indices;
 	std::vector<VertexElementType> m_vertexLayout;
-	DirectX::XMMATRIX m_transform;
+	DirectX::XMMATRIX m_modelMatrix;
 
 	TextureData m_textureData;
 };

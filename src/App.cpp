@@ -4,9 +4,10 @@
 #include <BasicModels.hpp>
 #include <Sol.hpp>
 #include <DirectXColors.h>
+#include <DirectXMath.h>
 
 App::App() {
-	Sol::textureAtlas->SetTextureFormat(TextureFormat::UINT8);
+	Sol::textureAtlas->SetTextureFormat(TextureFormat::Float32);
 
 	RGBA8 red = { 255u, 0u, 0u, 1u };
 
@@ -17,10 +18,14 @@ App::App() {
 	Sol::textureAtlas->AddColour("Blue", DirectX::Colors::Blue);
 
 	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>();
-	std::unique_ptr<Triangle1> triangle1 = std::make_unique<Triangle1>();
+	std::unique_ptr<Triangle> triangle1 = std::make_unique<Triangle>();
 
 	triangle0->SetTextureIndex(0u);
 	triangle1->SetTextureIndex(0u);
+
+	triangle1->SetModelMatrix(
+		DirectX::XMMatrixTranslation(-0.5f, 0.f, 0.f)
+	);
 
 	m_triangleRefs.emplace_back(
 		Sol::modelContainer->AddModel(std::move(triangle0))

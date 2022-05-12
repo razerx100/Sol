@@ -9,12 +9,4 @@ public:
 private:
 	void Init() noexcept;
 };
-
-class Triangle1 final : public Model {
-public:
-	Triangle1() noexcept;
-
-private:
-	void Init() noexcept;
-};
 #endif

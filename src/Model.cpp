@@ -1,5 +1,8 @@
 #include <Model.hpp>
 
+Model::Model() noexcept
+	: m_textureIndex(0u), m_modelMatrix(DirectX::XMMatrixIdentity()), m_textureData{} {}
+
 const void* Model::GetVertexData() const noexcept {
 	return m_vertices.data();
 }
@@ -24,8 +27,8 @@ size_t Model::GetIndexCount() const noexcept {
 	return m_indices.size();
 }
 
-DirectX::XMMATRIX Model::GetTransform() const noexcept {
-	return m_transform;
+DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
+	return m_modelMatrix;
 }
 
 const std::vector<VertexElementType>& Model::GetVertexLayout() const noexcept {
@@ -53,4 +56,8 @@ void Model::SetTextureInfo(
 
 const TextureData& Model::GetTextureInfo() const noexcept {
 	return m_textureData;
+}
+
+void Model::SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept {
+	m_modelMatrix = modelMatrix;
 }
