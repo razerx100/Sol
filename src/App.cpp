@@ -7,7 +7,7 @@
 #include <DirectXMath.h>
 
 App::App() {
-	Sol::textureAtlas->SetTextureFormat(TextureFormat::Float32);
+	Sol::textureAtlas->SetTextureFormat(TextureFormat::UINT8);
 
 	RGBA8 red = { 255u, 0u, 0u, 1u };
 
@@ -17,24 +17,31 @@ App::App() {
 	Sol::textureAtlas->AddColour("Green", DirectX::Colors::Green);
 	Sol::textureAtlas->AddColour("Blue", DirectX::Colors::Blue);
 
-	std::unique_ptr<Triangle> triangle0 = std::make_unique<Triangle>();
-	std::unique_ptr<Triangle> triangle1 = std::make_unique<Triangle>();
+	std::unique_ptr<Cube> cube0 = std::make_unique<Cube>();
+	std::unique_ptr<Cube> cube1 = std::make_unique<Cube>();
 
-	triangle0->SetTextureIndex(0u);
-	triangle1->SetTextureIndex(0u);
+	cube0->SetTextureIndex(0u);
+	cube1->SetTextureIndex(0u);
 
-	triangle1->SetModelMatrix(
-		DirectX::XMMatrixTranslation(-0.5f, 0.f, 0.f)
+	DirectX::XMVECTOR rotAxis = { 0.f, 1.f, 0.f, 0.f };
+
+	cube1->AddTransformation(
+		DirectX::XMMatrixRotationAxis(rotAxis, DirectX::XMConvertToRadians(45))
+		* DirectX::XMMatrixTranslation(-0.1f, 0.f, 0.3f)
 	);
 
-	m_triangleRefs.emplace_back(
-		Sol::modelContainer->AddModel(std::move(triangle0))
-	);
-	m_triangleRefs.emplace_back(
-		Sol::modelContainer->AddModel(std::move(triangle1))
+	cube0->AddTransformation(
+		DirectX::XMMatrixRotationAxis(rotAxis, DirectX::XMConvertToRadians(45))
 	);
 
-	for(auto& triangle : m_triangleRefs)
+	m_modelRefs.emplace_back(
+		Sol::modelContainer->AddModel(std::move(cube0))
+	);
+	m_modelRefs.emplace_back(
+		Sol::modelContainer->AddModel(std::move(cube1))
+	);
+
+	for(auto& triangle : m_modelRefs)
 		Sol::renderer->SubmitModel(triangle);
 }
 
@@ -44,13 +51,13 @@ void App::SetResources() {
 	std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
 	std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
 
-	m_triangleRefs[0]->SetTextureInfo(
+	m_modelRefs[0]->SetTextureInfo(
 		TextureData{
 			fuchsia.uStart, fuchsia.uEnd, atlasWidth,
 			fuchsia.vStart, fuchsia.vEnd, atlasHeight
 		}
 	);
-	m_triangleRefs[1]->SetTextureInfo(
+	m_modelRefs[1]->SetTextureInfo(
 		TextureData{
 			cyan.uStart, cyan.uEnd, atlasWidth,
 			cyan.vStart, cyan.vEnd, atlasHeight
@@ -66,7 +73,7 @@ void App::Update() {
 		std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
 		std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
 
-		m_triangleRefs[0]->SetTextureInfo(
+		m_modelRefs[0]->SetTextureInfo(
 			TextureData{
 				fuchsia.uStart, fuchsia.uEnd, atlasWidth,
 				fuchsia.vStart, fuchsia.vEnd, atlasHeight
@@ -78,7 +85,7 @@ void App::Update() {
 		std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
 		std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
 
-		m_triangleRefs[0]->SetTextureInfo(
+		m_modelRefs[0]->SetTextureInfo(
 			TextureData{
 				red.uStart, red.uEnd, atlasWidth,
 				red.vStart, red.vEnd, atlasHeight

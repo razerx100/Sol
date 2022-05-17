@@ -10,6 +10,6 @@ public:
 	void Update();
 
 private:
-	std::vector<class Model*> m_triangleRefs;
+	std::vector<class Model*> m_modelRefs;
 };
 #endif

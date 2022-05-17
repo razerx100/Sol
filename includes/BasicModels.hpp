@@ -9,4 +9,12 @@ public:
 private:
 	void Init() noexcept;
 };
+
+class Cube final : public Model {
+public:
+	Cube() noexcept;
+
+private:
+	void Init() noexcept;
+};
 #endif

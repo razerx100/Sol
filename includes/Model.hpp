@@ -43,6 +43,7 @@ public:
 	const TextureData& GetTextureInfo() const noexcept final;
 
 	void SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept;
+	void AddTransformation(const DirectX::XMMATRIX& transform) noexcept;
 
 protected:
 	std::uint32_t m_textureIndex;

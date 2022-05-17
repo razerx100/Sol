@@ -23,6 +23,10 @@ Engine::Engine()
 	Sol::window->SetWindowIcon("resources/icon/Sol.ico");
 	Sol::window->SetInputManager(Sol::ioMan);
 
+	Sol::window->SetTitle(
+		m_appName + " -|- Renderer : " + Sol::configManager->GetRendererName()
+	);
+
 	Sol::InitRenderer(
 		m_appName.c_str(),
 		Sol::window->GetWindowHandle(),

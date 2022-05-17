@@ -61,3 +61,7 @@ const TextureData& Model::GetTextureInfo() const noexcept {
 void Model::SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept {
 	m_modelMatrix = modelMatrix;
 }
+
+void Model::AddTransformation(const DirectX::XMMATRIX& transform) noexcept {
+	m_modelMatrix *= transform;
+}
