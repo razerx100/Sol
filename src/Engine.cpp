@@ -24,7 +24,7 @@ Engine::Engine()
 	Sol::window->SetInputManager(Sol::ioMan);
 
 	Sol::window->SetTitle(
-		m_appName + " -|- Renderer : " + Sol::configManager->GetRendererName()
+		m_appName + " Renderer : " + Sol::configManager->GetRendererName()
 	);
 
 	Sol::InitRenderer(
@@ -43,6 +43,9 @@ Engine::Engine()
 	Sol::InitTextureAtlas();
 
 	Sol::window->SetRenderer(Sol::renderer);
+
+	Sol::InitFrameTime();
+	Sol::frameTime->SetGraphicsUpdateDelta(0.02);
 
 	Sol::InitApp();
 
@@ -68,6 +71,7 @@ Engine::Engine()
 }
 
 Engine::~Engine() noexcept {
+	Sol::frameTime.reset();
 	Sol::configManager.reset();
 	Sol::textureAtlas.reset();
 	Sol::app.reset();
@@ -81,15 +85,51 @@ Engine::~Engine() noexcept {
 int Engine::Run() {
 	int errorCode = -1;
 
+	double accumulatedElapsedTime = 0;
+
+	double oneSecond = 0;
+	std::uint64_t frameCount = 0u;
+
 	while (true) {
+		Sol::frameTime->StartTimer();
+
 		if (auto ecode = Sol::window->Update(); ecode) {
 			errorCode = *ecode;
 			break;
 		}
 
 		if(!Sol::window->IsMinimized()) {
-			Sol::app->Update();
+			double deltaTime = Sol::frameTime->GetDeltaTime();
+			double updateDelta = Sol::frameTime->GetGraphicsUpdateDelta();
+
+			if (accumulatedElapsedTime >= updateDelta) {
+				while (accumulatedElapsedTime >= updateDelta) {
+					Sol::app->PhysicsUpdate();
+					accumulatedElapsedTime -= updateDelta;
+				}
+
+				accumulatedElapsedTime = 0;
+			}
+			else
+				accumulatedElapsedTime += deltaTime;
+
+			Sol::app->PerFrameUpdate();
 			Sol::renderer->Render();
+		}
+
+		Sol::frameTime->EndTimer();
+
+		oneSecond += Sol::frameTime->GetDeltaTime();
+		++frameCount;
+
+		if (oneSecond > 1.) {
+			static std::string rendererName = Sol::configManager->GetRendererName();
+			Sol::window->SetTitle(
+				m_appName + " Renderer : " + rendererName
+				+ " " + std::to_string(frameCount) + "fps"
+			);
+			oneSecond = 0;
+			frameCount = 0;
 		}
 	}
 

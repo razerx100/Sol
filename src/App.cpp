@@ -65,7 +65,7 @@ void App::SetResources() {
 	);
 }
 
-void App::Update() {
+void App::PerFrameUpdate() {
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboardByIndex();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
@@ -113,4 +113,18 @@ void App::Update() {
 
 	if (pGamepadRef->AreButtonsPressed(2, XBoxButton::START, XBoxButton::X))
 		Sol::window->SetTitle("Start + A");
+}
+
+void App::PhysicsUpdate() {
+	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboardByIndex();
+
+	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
+		m_modelRefs[1]->AddTransformation(
+			DirectX::XMMatrixTranslation(-0.1f, 0.f, 0.3f)
+		);
+
+	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::S, SKeyCodes::Two))
+		m_modelRefs[1]->AddTransformation(
+			DirectX::XMMatrixTranslation(0.1f, 0.f, -0.3f)
+		);
 }

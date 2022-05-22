@@ -8,6 +8,7 @@
 #include <UploadBuffer.hpp>
 #include <IThreadPool.hpp>
 #include <ConfigManager.hpp>
+#include <TimeManager.hpp>
 
 #include <ModelContainer.hpp>
 #include <TextureAtlas.hpp>
@@ -23,6 +24,7 @@ namespace Sol {
 	extern std::unique_ptr<TextureAtlas> textureAtlas;
 	extern std::shared_ptr<IThreadPool> threadPool;
 	extern std::unique_ptr<ConfigManager> configManager;
+	extern std::unique_ptr<FrameTime> frameTime;
 
 	// Initialization functions
 	void InitApp();
@@ -44,5 +46,6 @@ namespace Sol {
 	void InitTextureAtlas();
 	void InitThreadPool(size_t threadCount);
 	void InitConfigManager(const std::string& fileName);
+	void InitFrameTime();
 }
 #endif

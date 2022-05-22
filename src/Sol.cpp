@@ -17,6 +17,7 @@ namespace Sol {
 	std::unique_ptr<TextureAtlas> textureAtlas;
 	std::shared_ptr<IThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;
+	std::unique_ptr<FrameTime> frameTime;
 
 	// Functions
 	void InitApp() {
@@ -84,5 +85,9 @@ namespace Sol {
 
 	void InitConfigManager(const std::string& fileName) {
 		configManager = std::make_unique<ConfigManager>(fileName);
+	}
+
+	void InitFrameTime() {
+		frameTime = std::make_unique<FrameTime>();
 	}
 }

@@ -7,7 +7,8 @@ public:
 	App();
 
 	void SetResources();
-	void Update();
+	void PerFrameUpdate();
+	void PhysicsUpdate();
 
 private:
 	std::vector<class Model*> m_modelRefs;
