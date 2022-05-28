@@ -5,6 +5,16 @@
 #include <memory>
 #include <array>
 
+namespace DirectX {
+#ifdef _XM_NO_INTRINSICS_
+	struct XMMATRIX;
+#else
+	struct alignas(16) XMMATRIX;
+#endif
+}
+
+// Include DirectXMath in source files
+
 class Renderer {
 public:
 	using Resolution = std::pair<std::uint64_t, std::uint64_t>;
@@ -31,6 +41,8 @@ public:
 	virtual void SetShaderPath(const char* path) noexcept = 0;
 	virtual void InitResourceBasedObjects() = 0;
 	virtual void ProcessData() = 0;
-};
 
+	virtual void SetViewMatrix(const DirectX::XMMATRIX& viewMatrix) noexcept = 0;
+	virtual void SetFov(std::uint32_t fovAngleInDegree) noexcept = 0;
+};
 #endif

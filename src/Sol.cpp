@@ -18,6 +18,7 @@ namespace Sol {
 	std::shared_ptr<IThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;
 	std::unique_ptr<FrameTime> frameTime;
+	std::unique_ptr<CameraManager> cameraManager;
 
 	// Functions
 	void InitApp() {
@@ -89,5 +90,9 @@ namespace Sol {
 
 	void InitFrameTime() {
 		frameTime = std::make_unique<FrameTime>();
+	}
+
+	void InitCameraManager() {
+		cameraManager = std::make_unique<CameraManager>();
 	}
 }

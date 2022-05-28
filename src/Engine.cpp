@@ -2,6 +2,8 @@
 #include <VenusInstance.hpp>
 #include <Sol.hpp>
 
+#include <DirectXMath.h>
+
 Engine::Engine()
 	: m_appName("Sol") {
 
@@ -38,6 +40,8 @@ Engine::Engine()
 	Sol::renderer->InitResourceBasedObjects();
 	Sol::renderer->SetThreadPool(Sol::threadPool);
 
+	Sol::InitCameraManager();
+
 	Sol::InitModelContainer();
 	Sol::InitUploadBuffer();
 	Sol::InitTextureAtlas();
@@ -45,7 +49,6 @@ Engine::Engine()
 	Sol::window->SetRenderer(Sol::renderer);
 
 	Sol::InitFrameTime();
-	Sol::frameTime->SetGraphicsUpdateDelta(0.02);
 
 	Sol::InitApp();
 
@@ -72,6 +75,7 @@ Engine::Engine()
 
 Engine::~Engine() noexcept {
 	Sol::frameTime.reset();
+	Sol::cameraManager.reset();
 	Sol::configManager.reset();
 	Sol::textureAtlas.reset();
 	Sol::app.reset();
@@ -86,9 +90,6 @@ int Engine::Run() {
 	int errorCode = -1;
 
 	double accumulatedElapsedTime = 0;
-
-	double oneSecond = 0;
-	std::uint64_t frameCount = 0u;
 
 	while (true) {
 		Sol::frameTime->StartTimer();
@@ -119,17 +120,13 @@ int Engine::Run() {
 
 		Sol::frameTime->EndTimer();
 
-		oneSecond += Sol::frameTime->GetDeltaTime();
-		++frameCount;
-
-		if (oneSecond > 1.) {
+		if (Sol::frameTime->HasASecondPassed()) {
 			static std::string rendererName = Sol::configManager->GetRendererName();
 			Sol::window->SetTitle(
 				m_appName + " Renderer : " + rendererName
-				+ " " + std::to_string(frameCount) + "fps"
+				+ " " + std::to_string(Sol::frameTime->GetFrameCount()) + "fps"
 			);
-			oneSecond = 0;
-			frameCount = 0;
+			Sol::frameTime->ResetFrameCount();
 		}
 	}
 

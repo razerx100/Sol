@@ -29,17 +29,25 @@ public:
 
 	void StartTimer() noexcept;
 	void EndTimer() noexcept;
+	void ResetFrameCount() noexcept;
+
 	void SetGraphicsUpdateDelta(double delta) noexcept;
 
 	[[nodiscard]]
 	double GetGraphicsUpdateDelta() const noexcept;
 	[[nodiscard]]
 	double GetDeltaTime() const noexcept;
+	[[nodiscard]]
+	std::uint64_t GetFrameCount() const noexcept;
+	[[nodiscard]]
+	bool HasASecondPassed() const noexcept;
 
 private:
 	Timer m_timer;
 	double m_deltaTime;
 	double m_graphicsUpdateDelta;
+	double m_oneSecond;
+	std::uint64_t m_frameCount;
 };
 
 #endif

@@ -12,6 +12,7 @@
 
 #include <ModelContainer.hpp>
 #include <TextureAtlas.hpp>
+#include <CameraManager.hpp>
 
 namespace Sol {
 	// Variables
@@ -25,6 +26,7 @@ namespace Sol {
 	extern std::shared_ptr<IThreadPool> threadPool;
 	extern std::unique_ptr<ConfigManager> configManager;
 	extern std::unique_ptr<FrameTime> frameTime;
+	extern std::unique_ptr<CameraManager> cameraManager;
 
 	// Initialization functions
 	void InitApp();
@@ -47,5 +49,6 @@ namespace Sol {
 	void InitThreadPool(size_t threadCount);
 	void InitConfigManager(const std::string& fileName);
 	void InitFrameTime();
+	void InitCameraManager();
 }
 #endif

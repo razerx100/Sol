@@ -2,6 +2,7 @@
 #define MODEL_HPP_
 #include <vector>
 #include <IModel.hpp>
+
 #include <DirectXMath.h>
 
 struct Vertex {
