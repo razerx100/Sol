@@ -3,6 +3,7 @@
 
 #include <BasicModels.hpp>
 #include <Sol.hpp>
+#include <AppModules.hpp>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
@@ -46,26 +47,26 @@ App::App() {
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
-	DirectX::XMFLOAT3 focusPosition = { 0.f, 0.f, 0.f };
-	DirectX::XMFLOAT3 upVector = { 0.f, 1.f, 0.f };
 
-	PerspectiveCamera camera1;
-	camera1.SetFocusPosition(focusPosition);
+	PerspectiveCameraEuler camera1;
+	camera1.SetWorldForwardDirection(true);
 	camera1.SetCameraPosition(cameraPosition);
 
-	size_t camera1Index = Sol::cameraManager->AddPerspectiveCameraAndGetIndex(camera1);
+	size_t camera1Index = AMods::cameraManager->AddEulerCameraAndGetIndex(
+		std::make_unique<PerspectiveCameraEuler>(camera1)
+	);
 
 	cameraPosition.z = 1.f;
 
-	PerspectiveCamera camera2;
-	camera2.SetFocusPosition(focusPosition);
+	PerspectiveCameraEuler camera2;
+	camera2.SetWorldForwardDirection(false);
 	camera2.SetCameraPosition(cameraPosition);
 
-	size_t camera2Index = Sol::cameraManager->AddPerspectiveCameraAndGetIndex(camera2);
-
-	Sol::renderer->SetViewMatrix(
-		Sol::cameraManager->GetPerspectiveCameraByIndex(camera1Index).GetViewMatrix()
+	size_t camera2Index = AMods::cameraManager->AddEulerCameraAndGetIndex(
+		std::make_unique<PerspectiveCameraEuler>(camera2)
 	);
+
+	AMods::cameraManager->SetCurrentCameraIndex(camera1Index);
 }
 
 void App::SetResources() {
@@ -138,14 +139,12 @@ void App::PerFrameUpdate() {
 		Sol::window->SetTitle("Start + A");
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::UpArrow))
-		Sol::renderer->SetViewMatrix(
-			Sol::cameraManager->GetPerspectiveCameraByIndex(0u).GetViewMatrix()
-		);
+		AMods::cameraManager->SetCurrentCameraIndex(0u);
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::DownArrow))
-		Sol::renderer->SetViewMatrix(
-			Sol::cameraManager->GetPerspectiveCameraByIndex(1u).GetViewMatrix()
-		);
+		AMods::cameraManager->SetCurrentCameraIndex(1u);
+
+	AMods::cameraManager->SetCamera();
 }
 
 void App::PhysicsUpdate() {
@@ -160,4 +159,46 @@ void App::PhysicsUpdate() {
 		m_modelRefs[1]->AddTransformation(
 			DirectX::XMMatrixTranslation(0.1f, 0.f, -0.3f)
 		);
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::W)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->MoveForward(AMods::frameTime->GetDeltaTime());
+	}
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::S)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->MoveBackward(AMods::frameTime->GetDeltaTime());
+	}
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::A)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->MoveLeft(AMods::frameTime->GetDeltaTime());
+	}
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::D)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->MoveRight(AMods::frameTime->GetDeltaTime());
+	}
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::T)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->MoveUp(AMods::frameTime->GetDeltaTime());
+	}
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::G)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->MoveDown(AMods::frameTime->GetDeltaTime());
+	}
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::RightArrow)) {
+		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+
+		camera->LookAround(0.01f, 0.f);
+	}
 }

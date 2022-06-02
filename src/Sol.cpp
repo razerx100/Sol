@@ -1,10 +1,11 @@
-#include <Sol.hpp>
 #include <PlutoInstance.hpp>
 #include <LunaInstance.hpp>
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
 #include <VenusInstance.hpp>
 #include <vector>
+
+#include <Sol.hpp>
 
 namespace Sol {
 	// Variables
@@ -17,8 +18,7 @@ namespace Sol {
 	std::unique_ptr<TextureAtlas> textureAtlas;
 	std::shared_ptr<IThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;
-	std::unique_ptr<FrameTime> frameTime;
-	std::unique_ptr<CameraManager> cameraManager;
+	std::shared_ptr<ISharedDataContainer> sharedData;
 
 	// Functions
 	void InitApp() {
@@ -88,11 +88,7 @@ namespace Sol {
 		configManager = std::make_unique<ConfigManager>(fileName);
 	}
 
-	void InitFrameTime() {
-		frameTime = std::make_unique<FrameTime>();
-	}
-
-	void InitCameraManager() {
-		cameraManager = std::make_unique<CameraManager>();
+	void InitSharedData() {
+		sharedData = std::make_shared<SharedDataContainer>();
 	}
 }

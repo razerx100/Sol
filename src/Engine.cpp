@@ -1,8 +1,9 @@
 #include <Engine.hpp>
 #include <VenusInstance.hpp>
-#include <Sol.hpp>
 
+#include <Sol.hpp>
 #include <DirectXMath.h>
+#include <AppModules.hpp>
 
 Engine::Engine()
 	: m_appName("Sol") {
@@ -11,6 +12,7 @@ Engine::Engine()
 	Sol::configManager->ReadConfigFile();
 
 	Sol::InitThreadPool(8u);
+	Sol::InitSharedData();
 
 	Sol::InitIoMan(Sol::configManager->GeIOName());
 	Sol::ioMan->AddDeviceSupport(DeviceType::Keyboard);
@@ -39,16 +41,15 @@ Engine::Engine()
 	Sol::renderer->SetShaderPath("resources/shaders/");
 	Sol::renderer->InitResourceBasedObjects();
 	Sol::renderer->SetThreadPool(Sol::threadPool);
+	Sol::renderer->SetSharedDataContainer(Sol::sharedData);
 
-	Sol::InitCameraManager();
+	AMods::InitAppModules();
 
 	Sol::InitModelContainer();
 	Sol::InitUploadBuffer();
 	Sol::InitTextureAtlas();
 
 	Sol::window->SetRenderer(Sol::renderer);
-
-	Sol::InitFrameTime();
 
 	Sol::InitApp();
 
@@ -74,12 +75,12 @@ Engine::Engine()
 }
 
 Engine::~Engine() noexcept {
-	Sol::frameTime.reset();
-	Sol::cameraManager.reset();
+	AMods::ResetAppModules();
 	Sol::configManager.reset();
 	Sol::textureAtlas.reset();
 	Sol::app.reset();
 	Sol::renderer.reset();
+	Sol::sharedData.reset();
 	Sol::modelContainer.reset();
 	Sol::window.reset();
 	Sol::ioMan.reset();
@@ -89,10 +90,10 @@ Engine::~Engine() noexcept {
 int Engine::Run() {
 	int errorCode = -1;
 
-	double accumulatedElapsedTime = 0;
+	float accumulatedElapsedTime = 0;
 
 	while (true) {
-		Sol::frameTime->StartTimer();
+		AMods::frameTime->StartTimer();
 
 		if (auto ecode = Sol::window->Update(); ecode) {
 			errorCode = *ecode;
@@ -100,8 +101,8 @@ int Engine::Run() {
 		}
 
 		if(!Sol::window->IsMinimized()) {
-			double deltaTime = Sol::frameTime->GetDeltaTime();
-			double updateDelta = Sol::frameTime->GetGraphicsUpdateDelta();
+			float deltaTime = AMods::frameTime->GetDeltaTime();
+			float updateDelta = AMods::frameTime->GetGraphicsUpdateDelta();
 
 			if (accumulatedElapsedTime >= updateDelta) {
 				while (accumulatedElapsedTime >= updateDelta) {
@@ -118,15 +119,15 @@ int Engine::Run() {
 			Sol::renderer->Render();
 		}
 
-		Sol::frameTime->EndTimer();
+		AMods::frameTime->EndTimer();
 
-		if (Sol::frameTime->HasASecondPassed()) {
+		if (AMods::frameTime->HasASecondPassed()) {
 			static std::string rendererName = Sol::configManager->GetRendererName();
 			Sol::window->SetTitle(
 				m_appName + " Renderer : " + rendererName
-				+ " " + std::to_string(Sol::frameTime->GetFrameCount()) + "fps"
+				+ " " + std::to_string(AMods::frameTime->GetFrameCount()) + "fps"
 			);
-			Sol::frameTime->ResetFrameCount();
+			AMods::frameTime->ResetFrameCount();
 		}
 	}
 

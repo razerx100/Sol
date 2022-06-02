@@ -31,12 +31,12 @@ public:
 	void EndTimer() noexcept;
 	void ResetFrameCount() noexcept;
 
-	void SetGraphicsUpdateDelta(double delta) noexcept;
+	void SetGraphicsUpdateDelta(float delta) noexcept;
 
 	[[nodiscard]]
-	double GetGraphicsUpdateDelta() const noexcept;
+	float GetGraphicsUpdateDelta() const noexcept;
 	[[nodiscard]]
-	double GetDeltaTime() const noexcept;
+	float GetDeltaTime() const noexcept;
 	[[nodiscard]]
 	std::uint64_t GetFrameCount() const noexcept;
 	[[nodiscard]]
@@ -44,9 +44,9 @@ public:
 
 private:
 	Timer m_timer;
-	double m_deltaTime;
-	double m_graphicsUpdateDelta;
-	double m_oneSecond;
+	float m_deltaTime;
+	float m_graphicsUpdateDelta;
+	float m_oneSecond;
 	std::uint64_t m_frameCount;
 };
 

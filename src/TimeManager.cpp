@@ -34,7 +34,7 @@ void FrameTime::StartTimer() noexcept {
 }
 
 void FrameTime::EndTimer() noexcept {
-	m_deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(
+	m_deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(
 		m_timer.GetDurationNano()
 		).count();
 
@@ -42,21 +42,21 @@ void FrameTime::EndTimer() noexcept {
 	++m_frameCount;
 }
 
-double FrameTime::GetDeltaTime() const noexcept {
+float FrameTime::GetDeltaTime() const noexcept {
 	return m_deltaTime;
 }
 
-void FrameTime::SetGraphicsUpdateDelta(double delta) noexcept {
+void FrameTime::SetGraphicsUpdateDelta(float delta) noexcept {
 	m_graphicsUpdateDelta = delta;
 }
 
-double FrameTime::GetGraphicsUpdateDelta() const noexcept {
+float FrameTime::GetGraphicsUpdateDelta() const noexcept {
 	return m_graphicsUpdateDelta;
 }
 
 void FrameTime::ResetFrameCount() noexcept {
 	m_frameCount = 0u;
-	m_oneSecond = 0;
+	m_oneSecond = 0.f;
 }
 
 std::uint64_t FrameTime::GetFrameCount() const noexcept {
@@ -64,5 +64,5 @@ std::uint64_t FrameTime::GetFrameCount() const noexcept {
 }
 
 bool FrameTime::HasASecondPassed() const noexcept {
-	return m_oneSecond >= 1.;
+	return m_oneSecond >= 1.f;
 }

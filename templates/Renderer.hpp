@@ -42,7 +42,8 @@ public:
 	virtual void InitResourceBasedObjects() = 0;
 	virtual void ProcessData() = 0;
 
-	virtual void SetViewMatrix(const DirectX::XMMATRIX& viewMatrix) noexcept = 0;
-	virtual void SetFov(std::uint32_t fovAngleInDegree) noexcept = 0;
+	virtual void SetSharedDataContainer(
+		std::shared_ptr<class ISharedDataContainer> sharedData
+	) noexcept = 0;
 };
 #endif
