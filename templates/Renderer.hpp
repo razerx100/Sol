@@ -1,19 +1,9 @@
 #ifndef RENDERER_HPP_
 #define RENDERER_HPP_
 #include <cstdint>
-#include <IModel.hpp>
 #include <memory>
 #include <array>
-
-namespace DirectX {
-#ifdef _XM_NO_INTRINSICS_
-	struct XMMATRIX;
-#else
-	struct alignas(16) XMMATRIX;
-#endif
-}
-
-// Include DirectXMath in source files
+#include <IModel.hpp>
 
 class Renderer {
 public:
@@ -34,7 +24,7 @@ public:
 
 	virtual void SetThreadPool(std::shared_ptr<class IThreadPool> threadPoolArg) noexcept = 0;
 	virtual void SetBackgroundColour(const std::array<float, 4>& colour) noexcept = 0;
-	virtual void SubmitModel(const class IModel* const modelRef) = 0;
+	virtual void SubmitModel(std::shared_ptr<IModel> model) = 0;
 	virtual void Render() = 0;
 	virtual void WaitForAsyncTasks() = 0;
 

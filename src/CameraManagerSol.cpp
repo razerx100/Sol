@@ -24,7 +24,7 @@ void _BaseCamera::SetCameraPosition(const XMFLOAT3& cameraPosition) noexcept {
 PerspectiveCamera::PerspectiveCamera() noexcept
 	: m_worldForwardDirection(XMVectorSet(0.f, 0.f, 1.f, 0.f)),
 	m_cameraFocusDirection(m_worldForwardDirection),
-	m_upVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)), m_travelSpeed(5.f), m_rotationSpeed(2.5f) {}
+	m_upVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)), m_travelSpeed(5.f), m_rotationSpeed(5.f) {}
 
 void PerspectiveCamera::SetWorldForwardDirection(
 	bool positiveZ

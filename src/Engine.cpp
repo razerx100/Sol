@@ -115,6 +115,7 @@ int Engine::Run() {
 			else
 				accumulatedElapsedTime += deltaTime;
 
+			Sol::window->UpdateIndependentInputs();
 			Sol::app->PerFrameUpdate();
 			Sol::renderer->Render();
 		}

@@ -18,8 +18,8 @@ App::App() {
 	Sol::textureAtlas->AddColour("Green", DirectX::Colors::Green);
 	Sol::textureAtlas->AddColour("Blue", DirectX::Colors::Blue);
 
-	std::unique_ptr<Cube> cube0 = std::make_unique<Cube>();
-	std::unique_ptr<Cube> cube1 = std::make_unique<Cube>();
+	std::shared_ptr<Cube> cube0 = std::make_unique<Cube>();
+	std::shared_ptr<Cube> cube1 = std::make_unique<Cube>();
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
@@ -36,14 +36,14 @@ App::App() {
 	);
 
 	m_modelRefs.emplace_back(
-		Sol::modelContainer->AddModel(std::move(cube0))
+		Sol::modelContainer->AddModel(cube0)
 	);
 	m_modelRefs.emplace_back(
-		Sol::modelContainer->AddModel(std::move(cube1))
+		Sol::modelContainer->AddModel(cube1)
 	);
 
-	for(auto& triangle : m_modelRefs)
-		Sol::renderer->SubmitModel(triangle);
+	Sol::renderer->SubmitModel(cube0);
+	Sol::renderer->SubmitModel(cube1);
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
@@ -90,7 +90,7 @@ void App::SetResources() {
 }
 
 void App::PerFrameUpdate() {
-	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboardByIndex();
+	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
 		auto fuchsia = Sol::textureAtlas->GetPixelData("Fuchsia");
@@ -120,20 +120,12 @@ void App::PerFrameUpdate() {
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))
 		Sol::window->SetTitle("Alt + D");
 
-	IMouse* pMouseRef = Sol::ioMan->GetMouseByIndex();
+	IMouse* pMouseRef = Sol::ioMan->GetMouse();
 
 	if (pMouseRef->AreButtonsPressed(2, MouseButtons::X1, MouseButtons::Middle))
 		Sol::window->SetTitle("Left + Right");
 
-	IGamepad* pGamepadRef = Sol::ioMan->GetGamepadByIndex();
-
-	if (auto e = pGamepadRef->Read();
-		e.GetType() == IGamepad::Event::Type::LeftThumbStick)
-		Sol::window->SetTitle(
-			"M: " + std::to_string(e.GetMagnitude()) +
-			" X: " + std::to_string(e.GetASData().xDirection) +
-			" Y: " + std::to_string(e.GetASData().yDirection)
-			);
+	IGamepad* pGamepadRef = Sol::ioMan->GetGamepad();
 
 	if (pGamepadRef->AreButtonsPressed(2, XBoxButton::START, XBoxButton::X))
 		Sol::window->SetTitle("Start + A");
@@ -148,7 +140,7 @@ void App::PerFrameUpdate() {
 }
 
 void App::PhysicsUpdate() {
-	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboardByIndex();
+	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
 		m_modelRefs[1]->AddTransformation(
@@ -196,9 +188,14 @@ void App::PhysicsUpdate() {
 		camera->MoveDown(AMods::frameTime->GetDeltaTime());
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::RightArrow)) {
+	IGamepad* pGamepadRef = Sol::ioMan->GetGamepad();
+
+	if (auto thumbStickData = pGamepadRef->ReadRightThumbStickData(); thumbStickData) {
 		auto camera = AMods::cameraManager->GetEulerCamera(0u);
 
-		camera->LookAround(0.01f, 0.f);
+		auto& [magnitude, offsetX, offsetY] = *thumbStickData;
+		float deltaTime = AMods::frameTime->GetDeltaTime();
+
+		camera->LookAround(offsetX * deltaTime * 3.f , -1.f * offsetY * deltaTime * 3.f);
 	}
 }

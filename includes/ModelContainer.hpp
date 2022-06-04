@@ -7,12 +7,12 @@
 
 class ModelContainer {
 public:
-	Model* AddModel(std::unique_ptr<Model> model);
+	Model* AddModel(std::shared_ptr<Model> model);
 
 	void UpdateUVCoordinates() noexcept;
 	void ClearModelBuffers() noexcept;
 
 private:
-	std::vector<std::unique_ptr<Model>> m_models;
+	std::vector<std::shared_ptr<Model>> m_models;
 };
 #endif
