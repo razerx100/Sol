@@ -7,7 +7,7 @@
 
 class ModelContainer {
 public:
-	Model* AddModel(std::shared_ptr<Model> model);
+	void AddModel(std::shared_ptr<Model> model);
 
 	void UpdateUVCoordinates() noexcept;
 	void ClearModelBuffers() noexcept;

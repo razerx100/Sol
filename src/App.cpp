@@ -1,5 +1,6 @@
 #include <App.hpp>
 #include <string>
+#include <TextureLoader.hpp>
 
 #include <BasicModels.hpp>
 #include <Sol.hpp>
@@ -8,15 +9,27 @@
 #include <DirectXMath.h>
 
 App::App() {
-	Sol::textureAtlas->SetTextureFormat(TextureFormat::UINT8);
-
 	RGBA8 red = { 255u, 0u, 0u, 1u };
 
-	Sol::textureAtlas->AddColour("Fuchsia", DirectX::Colors::Fuchsia);
-	Sol::textureAtlas->AddColour("Cyan", DirectX::Colors::Cyan);
-	Sol::textureAtlas->AddColour("Red", red);
-	Sol::textureAtlas->AddColour("Green", DirectX::Colors::Green);
-	Sol::textureAtlas->AddColour("Blue", DirectX::Colors::Blue);
+	ColourTexture& colourManager = Sol::textureAtlas->GetColourTextureManager();
+
+	colourManager.AddColour("Fuchsia", DirectX::Colors::Fuchsia);
+	colourManager.AddColour("Cyan", DirectX::Colors::Cyan);
+	colourManager.AddColour("Red", red);
+	colourManager.AddColour("Green", DirectX::Colors::Green);
+	colourManager.AddColour("Blue", DirectX::Colors::Blue);
+
+	STexture dogeTex = TextureLoader::LoadTextureFromFile("resources/textures/doge.jpg");
+
+	Sol::textureAtlas->AddTexture(
+		"doge", std::move(dogeTex.data), dogeTex.width, dogeTex.height
+	);
+
+	STexture doge1Tex = TextureLoader::LoadTextureFromFile("resources/textures/doge1.jpg");
+
+	Sol::textureAtlas->AddTexture(
+		"doge1", std::move(doge1Tex.data), doge1Tex.width, doge1Tex.height
+	);
 
 	std::shared_ptr<Cube> cube0 = std::make_unique<Cube>();
 	std::shared_ptr<Cube> cube1 = std::make_unique<Cube>();
@@ -35,15 +48,8 @@ App::App() {
 		DirectX::XMMatrixRotationAxis(rotAxis, DirectX::XMConvertToRadians(45))
 	);
 
-	m_modelRefs.emplace_back(
-		Sol::modelContainer->AddModel(cube0)
-	);
-	m_modelRefs.emplace_back(
-		Sol::modelContainer->AddModel(cube1)
-	);
-
-	Sol::renderer->SubmitModel(cube0);
-	Sol::renderer->SubmitModel(cube1);
+	AddModel(std::move(cube0));
+	AddModel(std::move(cube1));
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
@@ -75,13 +81,13 @@ void App::SetResources() {
 	std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
 	std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
 
-	m_modelRefs[0]->SetTextureInfo(
+	m_models[0].lock()->SetTextureInfo(
 		TextureData{
 			fuchsia.uStart, fuchsia.uEnd, atlasWidth,
 			fuchsia.vStart, fuchsia.vEnd, atlasHeight
 		}
 	);
-	m_modelRefs[1]->SetTextureInfo(
+	m_models[1].lock()->SetTextureInfo(
 		TextureData{
 			cyan.uStart, cyan.uEnd, atlasWidth,
 			cyan.vStart, cyan.vEnd, atlasHeight
@@ -97,7 +103,7 @@ void App::PerFrameUpdate() {
 		std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
 		std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
 
-		m_modelRefs[0]->SetTextureInfo(
+		m_models[0].lock()->SetTextureInfo(
 			TextureData{
 				fuchsia.uStart, fuchsia.uEnd, atlasWidth,
 				fuchsia.vStart, fuchsia.vEnd, atlasHeight
@@ -109,7 +115,7 @@ void App::PerFrameUpdate() {
 		std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
 		std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
 
-		m_modelRefs[0]->SetTextureInfo(
+		m_models[0].lock()->SetTextureInfo(
 			TextureData{
 				red.uStart, red.uEnd, atlasWidth,
 				red.vStart, red.vEnd, atlasHeight
@@ -143,12 +149,12 @@ void App::PhysicsUpdate() {
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
-		m_modelRefs[1]->AddTransformation(
+		m_models[1].lock()->AddTransformation(
 			DirectX::XMMatrixTranslation(-0.1f, 0.f, 0.3f)
 		);
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::S, SKeyCodes::Two))
-		m_modelRefs[1]->AddTransformation(
+		m_models[1].lock()->AddTransformation(
 			DirectX::XMMatrixTranslation(0.1f, 0.f, -0.3f)
 		);
 
@@ -198,4 +204,12 @@ void App::PhysicsUpdate() {
 
 		camera->LookAround(offsetX * deltaTime * 3.f , -1.f * offsetY * deltaTime * 3.f);
 	}
+}
+
+void App::AddModel(std::shared_ptr<Model> model) noexcept {
+	Sol::modelContainer->AddModel(model);
+
+	m_models.emplace_back(model);
+
+	Sol::renderer->SubmitModel(std::move(model));
 }

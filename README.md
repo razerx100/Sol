@@ -14,9 +14,10 @@ Manager module/executable which dynamically links to different modules to form a
 ## Third party library used
 1. [ImGui](https://github.com/ocornut/imgui).
 2. [DirectXMath](https://github.com/microsoft/DirectXMath).
+3. [stb](https://github.com/nothings/stb).
 
 ## Instructions
-Run the appropriate Setup script to configure the project with or without ImGui. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation. But ***Visual Studio 16 2019*** generator should work as well.
+Run the appropriate Setup script to configure the project with or without ImGui. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation.
 
 ## Resources
 ### Default Window Icon

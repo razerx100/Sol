@@ -2,16 +2,9 @@
 #define I_MODEL_HPP_
 #include <cstdint>
 #include <vector>
+#include <memory>
 
-namespace DirectX {
-#ifdef _XM_NO_INTRINSICS_
-	struct XMMATRIX;
-#else
-	struct alignas(16) XMMATRIX;
-#endif
-}
-
-// Include DirectXMath in source files
+#include <DirectXMath.h>
 
 enum class VertexElementType {
 	Position,
@@ -32,13 +25,13 @@ public:
 	virtual ~IModel() = default;
 
 	[[nodiscard]]
-	virtual const void* GetVertexData() const noexcept = 0;
+	virtual std::unique_ptr<std::uint8_t> GetVertexData() const noexcept = 0;
 	[[nodiscard]]
 	virtual size_t GetVertexStrideSize() const noexcept = 0;
 	[[nodiscard]]
 	virtual size_t GetVertexBufferSize() const noexcept = 0;
 	[[nodiscard]]
-	virtual const void* GetIndexData() const noexcept = 0;
+	virtual std::unique_ptr<std::uint8_t> GetIndexData() const noexcept = 0;
 	[[nodiscard]]
 	virtual size_t GetIndexBufferSize() const noexcept = 0;
 	[[nodiscard]]

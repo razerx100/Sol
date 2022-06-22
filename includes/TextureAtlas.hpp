@@ -4,131 +4,86 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
+#include <memory>
+#include <concepts>
+#include <limits>
+#include <TextureLoader.hpp>
 
 #include <DirectXMath.h>
+#include <ColourTexture.hpp>
 
-template<typename T>
-struct _UV {
-	T uStart;
-	T uEnd;
-	T vStart;
-	T vEnd;
-};
+struct UVU32 {
+	UVU32() = default;
+	constexpr UVU32(
+		std::uint32_t _uStart, std::uint32_t _uEnd,
+		std::uint32_t _vStart, std::uint32_t _vEnd
+	) noexcept : uStart(_uStart), uEnd(_uEnd), vStart(_vStart), vEnd(_vEnd) {}
 
-typedef _UV<float> UVF;
-typedef _UV<size_t> UVU;
-typedef _UV<std::uint32_t> UVU32;
-
-struct RGBA8 {
-	std::uint8_t r;
-	std::uint8_t g;
-	std::uint8_t b;
-	std::uint8_t a;
-};
-
-enum class TextureFormat {
-	Float32,
-	UINT8
-};
-
-class ColourTexture {
-public:
-	void AddColour(const std::string& name, const DirectX::XMVECTORF32& colour) noexcept;
-	void AddColour(
-		const std::string& name, const RGBA8& colour
-	) noexcept;
-	void CreateTexture() noexcept;
-	void SetPixelSizeInBytes(size_t pixelSizeInBytes) noexcept;
-
-	size_t GetWidth() const noexcept;
-	size_t GetPixelSizeInBytes() const noexcept;
-
-	const std::vector<std::uint8_t>& GetTexture() const noexcept;
-	const std::vector<std::string>& GetNames() const noexcept;
-
-private:
-	size_t m_pixelSizeInBytes;
-	std::vector<std::string> m_colourNames;
-	std::vector<DirectX::XMFLOAT4> m_unprocessedColourF32;
-	std::vector<RGBA8> m_unprocessedColourU8;
-	std::vector<std::uint8_t> m_texture;
+	std::uint32_t uStart;
+	std::uint32_t uEnd;
+	std::uint32_t vStart;
+	std::uint32_t vEnd;
 };
 
 class TextureAtlas {
 public:
-	void AddColour(
-		const std::string& name, const DirectX::XMVECTORF32& colour
-	) noexcept;
-	void AddColour(
-		const std::string& name, const RGBA8& colour
-	) noexcept;
+	TextureAtlas() noexcept;
 
 	void AddTexture(
-		const std::string& name, const std::vector<std::uint8_t>& data,
-		size_t width, size_t height
+		const std::string& name, std::unique_ptr<std::uint8_t> texture,
+		std::uint32_t width, std::uint32_t height
 	) noexcept;
+	void SetIfComponentsAre16bits(bool component16bits) noexcept;
 
-	void SetTextureFormat(TextureFormat format) noexcept;
 	void CreateAtlas() noexcept;
-	void CleanUpBuffer() noexcept;
 
+	[[nodiscard]]
+	ColourTexture& GetColourTextureManager() noexcept;
+
+	[[nodiscard]]
 	UVU32 GetPixelData(const std::string& name) const noexcept;
-
+	[[nodiscard]]
 	std::uint32_t GetWidth() const noexcept;
+	[[nodiscard]]
 	std::uint32_t GetHeight() const noexcept;
-	size_t GetPixelSizeInBytes() const noexcept;
+	[[nodiscard]]
+	bool IsTexture16bits() const noexcept;
 
-	const std::vector<std::uint8_t>& GetTexture() const noexcept;
+	[[nodiscard]]
+	std::unique_ptr<std::uint8_t> MoveTexture() noexcept;
 
 private:
 	struct TextureInfo {
+		TextureInfo() = default;
+		constexpr TextureInfo(
+			const std::string& _name, std::uint32_t _width, std::uint32_t _height
+		) noexcept : name(_name), width(_width), height(_height) {}
+
 		std::string name;
-		size_t index;
-		size_t height;
-		size_t width;
-	};
-
-	struct TextureData {
-		std::vector<std::uint8_t> data;
-		size_t rowPitch;
-		size_t rows;
-	};
-
-	struct Partition {
-		size_t index;
-		UVU coord;
-	};
-
-	struct ProcessedData {
-		std::string name;
-		size_t textureIndex;
-		UVU coord;
+		std::uint32_t width;
+		std::uint32_t height;
 	};
 
 private:
-	bool PlaceTextureInProperPlace(
-		const TextureInfo& texData,
-		std::vector<Partition>& emptyPartitions,
-		std::vector<ProcessedData>& processedData
+	[[nodiscard]]
+	bool ManagePartitions(
+		std::vector<UVU32>& partitions, const TextureInfo& texData,
+		std::vector<UVU32>& processedData
 	) const noexcept;
-
-	void AddPartition(
-		size_t index,
-		size_t uStart, size_t uEnd, size_t vStart, size_t vEnd,
-		std::vector<Partition>& emptyPartitions
-	) const noexcept;
+	[[nodiscard]]
+	bool IsCoordSuitable(const UVU32& coord) const noexcept;
 
 private:
 	std::uint32_t m_width;
 	std::uint32_t m_height;
 
-	size_t m_pixelSizeInBytes;
+	bool m_16bitsComponent;
 
-	std::vector<std::uint8_t> m_texture;
+	std::unique_ptr<std::uint8_t> m_texture;
 	std::unordered_map<std::string, UVU32> m_pixelDataMap;
 
 	std::vector<TextureInfo> m_unprocessedData;
-	std::vector<TextureData> m_unprocessedTextures;
+	std::vector<std::unique_ptr<std::uint8_t>> m_unprocessedTextures;
 
 	ColourTexture m_colourTextureManager;
 };

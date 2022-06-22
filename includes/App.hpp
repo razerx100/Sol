@@ -1,6 +1,7 @@
 #ifndef APP_HPP_
 #define APP_HPP_
 #include <vector>
+#include <memory>
 
 class App {
 public:
@@ -11,6 +12,9 @@ public:
 	void PhysicsUpdate();
 
 private:
-	std::vector<class Model*> m_modelRefs;
+	void AddModel(std::shared_ptr<class Model> model) noexcept;
+
+private:
+	std::vector<std::weak_ptr<class Model>> m_models;
 };
 #endif

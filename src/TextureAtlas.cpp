@@ -1,124 +1,35 @@
+#include <ranges>
 #include <algorithm>
 #include <cstring>
 #include <optional>
 
 #include <TextureAtlas.hpp>
 
-// Colour Texture
-void ColourTexture::AddColour(
-	const std::string& name, const DirectX::XMVECTORF32& colour
-) noexcept {
-	m_colourNames.emplace_back(name);
+TextureAtlas::TextureAtlas() noexcept :
+	m_width(0u), m_height(0u), m_16bitsComponent(false) {}
 
-	DirectX::XMFLOAT4 colourF4 = {};
-	DirectX::XMStoreFloat4(&colourF4, colour);
-
-	if (m_pixelSizeInBytes == 16u)
-		m_unprocessedColourF32.emplace_back(std::move(colourF4));
-	else {
-		RGBA8 colourU8 = {};
-		colourU8.r = static_cast<std::uint8_t>(255u * colourF4.x);
-		colourU8.g = static_cast<std::uint8_t>(255u * colourF4.y);
-		colourU8.b = static_cast<std::uint8_t>(255u * colourF4.z);
-		colourU8.a = static_cast<std::uint8_t>(255u * colourF4.w);
-
-		m_unprocessedColourU8.emplace_back(std::move(colourU8));
-	}
-}
-
-void ColourTexture::AddColour(const std::string& name, const RGBA8& colour) noexcept {
-	m_colourNames.emplace_back(name);
-
-	if (m_pixelSizeInBytes == 16u) {
-		DirectX::XMFLOAT4 colourF32 = {};
-		colourF32.x = static_cast<float>(colour.r) / 255u;
-		colourF32.y = static_cast<float>(colour.g) / 255u;
-		colourF32.z = static_cast<float>(colour.b) / 255u;
-		colourF32.w = static_cast<float>(colour.a) / 255u;
-
-		m_unprocessedColourF32.emplace_back(std::move(colourF32));
-	}
-	else
-		m_unprocessedColourU8.emplace_back(colour);
-}
-
-void ColourTexture::CreateTexture() noexcept {
-	size_t textureSize = m_pixelSizeInBytes *
-		(m_unprocessedColourF32.size() + m_unprocessedColourU8.size());
-	m_texture.resize(textureSize);
-
-	if (m_pixelSizeInBytes == 16u) {
-		for (size_t index = 0u; index < m_unprocessedColourF32.size(); ++index)
-			std::memcpy(
-				m_texture.data() + (index * m_pixelSizeInBytes),
-				&m_unprocessedColourF32[index], m_pixelSizeInBytes
-			);
-
-		m_unprocessedColourF32 = std::vector<DirectX::XMFLOAT4>();
-	}
-	else {
-		for (size_t index = 0u; index < m_unprocessedColourU8.size(); ++index)
-			std::memcpy(
-				m_texture.data() + (index * m_pixelSizeInBytes),
-				&m_unprocessedColourU8[index], m_pixelSizeInBytes
-			);
-
-		m_unprocessedColourU8 = std::vector<RGBA8>();
-	}
-}
-
-void ColourTexture::SetPixelSizeInBytes(size_t pixelSizeInBytes) noexcept {
-	m_pixelSizeInBytes = pixelSizeInBytes;
-}
-
-const std::vector<std::uint8_t>& ColourTexture::GetTexture() const noexcept {
-	return m_texture;
-}
-
-const std::vector<std::string>& ColourTexture::GetNames() const noexcept {
-	return m_colourNames;
-}
-
-size_t ColourTexture::GetWidth() const noexcept {
-	return m_colourNames.size();
-}
-
-size_t ColourTexture::GetPixelSizeInBytes() const noexcept {
-	return m_pixelSizeInBytes;
-}
-
-// Texture Atlas
-void TextureAtlas::AddColour(
-	const std::string& name, const DirectX::XMVECTORF32& colour
-) noexcept {
-	m_colourTextureManager.AddColour(name, colour);
-}
-
-void TextureAtlas::AddColour(const std::string& name, const RGBA8& colour) noexcept {
-	m_colourTextureManager.AddColour(name, colour);
+ColourTexture& TextureAtlas::GetColourTextureManager() noexcept {
+	return m_colourTextureManager;
 }
 
 void TextureAtlas::AddTexture(
-	const std::string& name, const std::vector<std::uint8_t>& data,
-	size_t width, size_t height
+	const std::string& name, std::unique_ptr<std::uint8_t> texture,
+	std::uint32_t width, std::uint32_t height
 ) noexcept {
-	size_t rowPitch = m_pixelSizeInBytes * width;
-
-	m_unprocessedData.emplace_back(
-		name, m_unprocessedData.size(), height, width
-	);
-	m_unprocessedTextures.emplace_back(data, rowPitch, height);
+	m_unprocessedData.emplace_back(name, width, height);
+	m_unprocessedTextures.emplace_back(std::move(texture));
 }
 
 void TextureAtlas::CreateAtlas() noexcept {
+	// Create and add colour texture
 	m_colourTextureManager.CreateTexture();
 
 	AddTexture(
-		"Colours", m_colourTextureManager.GetTexture(),
+		"Colours", m_colourTextureManager.MoveTexture(),
 		m_colourTextureManager.GetWidth(), 1u
 	);
 
-	// Atlas Logic
+	// sort textures by their width and if width are same then by height
 	auto predicate = [](const TextureInfo& var1, const TextureInfo& var2) noexcept {
 		if (var1.width == var2.width)
 			return var1.height > var2.height;
@@ -126,69 +37,59 @@ void TextureAtlas::CreateAtlas() noexcept {
 			return var1.width > var2.width;
 	};
 
-	std::sort(m_unprocessedData.begin(), m_unprocessedData.end(), predicate);
+	// Before texture info are sorted, remember their original indices to access the
+	// corresponding texture data
+	std::unordered_map<std::string, size_t> textureIndices;
+	for (size_t index = 0u; index < std::size(m_unprocessedData); ++index)
+		textureIndices.insert_or_assign(m_unprocessedData[index].name, index);
 
-	std::vector<Partition> emptyPartitions;
-	std::vector<ProcessedData> processedData;
+	std::ranges::sort(m_unprocessedData, predicate);
 
-	if (!m_unprocessedData.empty()) {
-		TextureInfo& tex = m_unprocessedData.front();
+	std::vector<UVU32> emptyPartitions;
+	std::vector<UVU32> processedData;
 
-		m_width = static_cast<std::uint32_t>(tex.width);
-		m_height += static_cast<std::uint32_t>(tex.height);
+	// Calculate coordinates
+	for (const TextureInfo& texData : m_unprocessedData) {
+		bool newAllocationRequired = false;
+		if (std::empty(emptyPartitions))
+			newAllocationRequired = true;
+		else
+			newAllocationRequired = !ManagePartitions(emptyPartitions, texData, processedData);
 
-		processedData.emplace_back(
-			tex.name, tex.index, UVU{ 0u, tex.width, 0u, tex.height }
-		);
-		m_unprocessedData.erase(m_unprocessedData.begin());
-	}
+		if (newAllocationRequired) {
+			std::uint32_t newHeight = m_height + texData.height;
 
-	while (!m_unprocessedData.empty()) {
-		TextureInfo& tex = m_unprocessedData.front();
+			if (m_width > texData.width) {
+				emptyPartitions.emplace_back(
+					UVU32{ texData.width + 1u, m_width, m_height + 1u, newHeight }
+				);
+			}
 
-		if (PlaceTextureInProperPlace(tex, emptyPartitions, processedData));
-		else {
-			size_t newHeight = m_height + tex.height;
 			processedData.emplace_back(
-				tex.name, tex.index, UVU{ 0u, tex.width, m_height + 1u, newHeight }
+				1u, texData.width,
+				m_height + 1u, newHeight
 			);
 
-			if (tex.width < m_width)
-				AddPartition(
-					emptyPartitions.size(),
-					tex.width, m_width, m_height, newHeight,
-					emptyPartitions
-				);
-
-			m_height += static_cast<std::uint32_t>(tex.height);
+			m_height = newHeight;
 		}
 
-		m_unprocessedData.erase(m_unprocessedData.begin());
+		if (m_width < texData.width)
+			m_width = texData.width;
 	}
 
-	// Till here
+	// set calculated coordinates based on their names
+	for (size_t index = 0u; index < std::size(m_unprocessedData); ++index)
+		m_pixelDataMap.insert_or_assign(m_unprocessedData[index].name, processedData[index]);
 
-	for (auto& element : processedData) {
-		UVU& coord = element.coord;
-
-		m_pixelDataMap.insert_or_assign(
-			element.name,
-			UVU32{
-				static_cast<std::uint32_t>(coord.uStart + 1u),
-				static_cast<std::uint32_t>(coord.uEnd),
-				static_cast<std::uint32_t>(coord.vStart + 1u),
-				static_cast<std::uint32_t>(coord.vEnd)
-			}
-		);
-	}
-
+	// Find coordinates for Colours
 	UVU32 colourData = {};
-	if (auto result = m_pixelDataMap.find("Colours"); result != m_pixelDataMap.end())
+	if (auto result = m_pixelDataMap.find("Colours"); result != std::end(m_pixelDataMap))
 		colourData = result->second;
 
 	const std::vector<std::string>& colourNames = m_colourTextureManager.GetNames();
 
-	for (size_t index = 0u; index < colourNames.size(); ++index) {
+	// Add individual colours' coordinates into the pixel map
+	for (size_t index = 0u; index < std::size(colourNames); ++index) {
 		std::uint32_t uStart = colourData.uStart;
 		std::uint32_t vStart = colourData.vStart;
 
@@ -203,114 +104,48 @@ void TextureAtlas::CreateAtlas() noexcept {
 		);
 	}
 
-	size_t rowPitch = m_width * m_pixelSizeInBytes;
-	m_texture.resize(rowPitch * m_height);
+	size_t bytesPerPixel = m_16bitsComponent ? 8u : 4u;
+	size_t rowPitch = static_cast<size_t>(m_width) * bytesPerPixel;
+	size_t textureSize = rowPitch * m_height;
+	m_texture = std::unique_ptr<std::uint8_t>(new std::uint8_t[textureSize]);
 
 	// Copy data
-	for (size_t index = 0u; index < processedData.size(); ++index) {
-		size_t textureIndex = processedData[index].textureIndex;
+	for (size_t index = 0u; index < std::size(processedData); ++index) {
+		UVU32& currentCoord = processedData[index];
+		size_t textureIndex = textureIndices[m_unprocessedData[index].name];
+		std::unique_ptr<std::uint8_t>& unprocessedTexture =
+			m_unprocessedTextures[textureIndex];
 
-		TextureData& unprocessedTextureData = m_unprocessedTextures[textureIndex];
-		for (size_t index1 = 0u; index1 < unprocessedTextureData.rows; ++index1)
-			std::memcpy(
-				m_texture.data() + (unprocessedTextureData.rowPitch * index)
-				+ (rowPitch * index1),
-				unprocessedTextureData.data.data()
-				+ (unprocessedTextureData.rowPitch * index1),
-				unprocessedTextureData.rowPitch
+		size_t currentRowPitch =
+			(static_cast<size_t>(currentCoord.uEnd) - currentCoord.uStart + 1u)
+			* bytesPerPixel;
+		size_t currentRowPitchStart =
+			(static_cast<size_t>(currentCoord.uStart) - 1u) * bytesPerPixel;
+
+		for (size_t columnIndex =
+			static_cast<size_t>(currentCoord.vStart) - 1u, currentColumnIndex = 0u;
+			columnIndex < currentCoord.vEnd; ++columnIndex, ++currentColumnIndex) {
+
+			memcpy(
+				m_texture.get() + currentRowPitchStart + (rowPitch * columnIndex),
+				unprocessedTexture.get() + (currentRowPitch * currentColumnIndex),
+				currentRowPitch
 			);
+		}
 	}
 
 	// Clean up
-	m_unprocessedTextures = std::vector<TextureData>();
+	m_unprocessedTextures = std::vector<std::unique_ptr<std::uint8_t>>();
 	m_unprocessedData = std::vector<TextureInfo>();
 }
 
 UVU32 TextureAtlas::GetPixelData(const std::string& name) const noexcept {
 	auto data = m_pixelDataMap.find(name);
 
-	if (data != m_pixelDataMap.end())
+	if (data != std::end(m_pixelDataMap))
 		return data->second;
 	else
 		return {};
-}
-
-bool TextureAtlas::PlaceTextureInProperPlace(
-	const TextureInfo& texData,
-	std::vector<Partition>& emptyPartitions,
-	std::vector<ProcessedData>& processedData
-) const noexcept {
-	std::optional<size_t> partitionIndex = {};
-	for (size_t index = 0u; index < emptyPartitions.size(); ++index) {
-		const UVU& ref = emptyPartitions[index].coord;
-		if (ref.uEnd - ref.uStart>= texData.width
-			&& ref.vEnd - ref.vStart>= texData.height) {
-
-			partitionIndex = index;
-			break;
-		}
-	}
-
-	if (partitionIndex) {
-		size_t index = *partitionIndex;
-
-		Partition& emptyPartition = emptyPartitions[index];
-		UVU& coord = emptyPartition.coord;
-
-		size_t newWidth = coord.uStart + texData.width;
-		size_t newRows = coord.vStart + texData.height;
-
-		processedData.emplace_back(
-			texData.name,
-			texData.index,
-			UVU{
-				coord.uStart + 1u, newWidth,
-				coord.vStart + 1u, newRows
-			}
-		);
-
-		if (coord.uEnd > newWidth)
-			AddPartition(
-				emptyPartition.index,
-				newWidth, coord.uEnd,
-				coord.vStart, newRows,
-				emptyPartitions
-			);
-
-		coord.vStart = newRows;
-
-		return true;
-	}
-	else
-		return false;
-}
-
-void TextureAtlas::AddPartition(
-	size_t index,
-	size_t uStart, size_t uEnd, size_t vStart, size_t vEnd,
-	std::vector<Partition>& emptyPartitions
-) const noexcept {
-	emptyPartitions.emplace_back(index, UVU{ uStart, uEnd, vStart, vEnd });
-
-	std::sort(
-		emptyPartitions.begin(), emptyPartitions.end(),
-		[](const Partition& part1, const Partition& part2) {
-			return part1.index < part2.index;
-		}
-	);
-}
-
-void TextureAtlas::SetTextureFormat(TextureFormat format) noexcept {
-	size_t pixelSizeInBytes = 0u;
-
-	if (TextureFormat::Float32 == format)
-		pixelSizeInBytes = 16u;
-	else if (TextureFormat::UINT8 == format)
-		pixelSizeInBytes = 4u;
-
-	m_pixelSizeInBytes = pixelSizeInBytes;
-
-	m_colourTextureManager.SetPixelSizeInBytes(pixelSizeInBytes);
 }
 
 std::uint32_t TextureAtlas::GetWidth() const noexcept {
@@ -321,15 +156,57 @@ std::uint32_t TextureAtlas::GetHeight() const noexcept {
 	return m_height;
 }
 
-size_t TextureAtlas::GetPixelSizeInBytes() const noexcept {
-	return m_pixelSizeInBytes;
+std::unique_ptr<std::uint8_t> TextureAtlas::MoveTexture() noexcept {
+	return std::move(m_texture);
 }
 
-const std::vector<std::uint8_t>& TextureAtlas::GetTexture() const noexcept {
-	return m_texture;
+bool TextureAtlas::IsTexture16bits() const noexcept {
+	return m_16bitsComponent;
 }
 
-void TextureAtlas::CleanUpBuffer() noexcept {
-	m_texture = std::vector<std::uint8_t>();
-	// Should clean the texture too once it gets big
+void TextureAtlas::SetIfComponentsAre16bits(bool component16bits) noexcept {
+	m_16bitsComponent = component16bits;
+
+	m_colourTextureManager.SetIfComponentsAre16bits(component16bits);
+}
+
+bool TextureAtlas::ManagePartitions(
+	std::vector<UVU32>& partitions, const TextureInfo& texData,
+	std::vector<UVU32>& processedData
+) const noexcept {
+	for (auto it = std::begin(partitions); it != std::end(partitions); ++it) {
+		UVU32& coord = (*it);
+		std::uint32_t emptyWidth = coord.uEnd - coord.uStart + 1u;
+		std::uint32_t emptyHeight = coord.vEnd - coord.vStart + 1u;
+
+		if (emptyWidth >= texData.width && emptyHeight >= texData.height) {
+			std::uint32_t newWidthStart = coord.uStart + texData.width;
+			std::uint32_t newHeightStart = coord.vStart + texData.height;
+
+			processedData.emplace_back(
+				coord.uStart, newWidthStart - 1u,
+				coord.vStart, newHeightStart - 1u
+			);
+
+			UVU32 fullHeight =
+			{ newWidthStart, coord.uEnd, coord.vStart, coord.vEnd };
+			UVU32 fullWidth =
+			{ coord.uStart, newWidthStart - 1u, newHeightStart, coord.vEnd };
+
+			partitions.erase(it);
+
+			if (IsCoordSuitable(fullHeight))
+				partitions.emplace_back(fullHeight);
+			if (IsCoordSuitable(fullWidth))
+				partitions.emplace_back(fullWidth);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TextureAtlas::IsCoordSuitable(const UVU32& coord) const noexcept {
+	return coord.vEnd >= coord.vStart && coord.uEnd >= coord.uStart;
 }

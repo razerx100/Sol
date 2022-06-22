@@ -1,9 +1,7 @@
 #include <ModelContainer.hpp>
 
-Model* ModelContainer::AddModel(std::shared_ptr<Model> model) {
+void ModelContainer::AddModel(std::shared_ptr<Model> model) {
 	m_models.emplace_back(std::move(model));
-
-	return m_models.back().get();
 }
 
 void ModelContainer::ClearModelBuffers() noexcept {

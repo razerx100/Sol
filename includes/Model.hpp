@@ -1,9 +1,9 @@
 #ifndef MODEL_HPP_
 #define MODEL_HPP_
 #include <vector>
-#include <IModel.hpp>
+#include <cstring>
 
-#include <DirectXMath.h>
+#include <IModel.hpp>
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;
@@ -22,13 +22,13 @@ public:
 	) noexcept;
 
 	[[nodiscard]]
-	const void* GetVertexData() const noexcept final;
+	std::unique_ptr<std::uint8_t> GetVertexData() const noexcept final;
 	[[nodiscard]]
 	size_t GetVertexStrideSize() const noexcept final;
 	[[nodiscard]]
 	size_t GetVertexBufferSize() const noexcept final;
 	[[nodiscard]]
-	const void* GetIndexData() const noexcept final;
+	std::unique_ptr<std::uint8_t> GetIndexData() const noexcept final;
 	[[nodiscard]]
 	size_t GetIndexBufferSize() const noexcept final;
 	[[nodiscard]]
@@ -54,5 +54,17 @@ protected:
 	DirectX::XMMATRIX m_modelMatrix;
 
 	TextureData m_textureData;
+
+private:
+	template<typename T>
+	static std::unique_ptr<std::uint8_t> GetDataFromVector(const std::vector<T>& vec) noexcept {
+		size_t dataSize = std::size(vec) * sizeof(T);
+
+		auto data = std::unique_ptr<std::uint8_t>(new std::uint8_t[dataSize]);
+
+		memcpy(data.get(), std::data(vec), dataSize);
+
+		return data;
+	}
 };
 #endif

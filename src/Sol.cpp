@@ -14,7 +14,6 @@ namespace Sol {
 	std::unique_ptr<Window> window;
 	std::shared_ptr<Renderer> renderer;
 	std::unique_ptr<ModelContainer> modelContainer;
-	std::unique_ptr<UploadBuffer> uploadBuffer;
 	std::unique_ptr<TextureAtlas> textureAtlas;
 	std::shared_ptr<IThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;
@@ -70,10 +69,6 @@ namespace Sol {
 
 	void InitModelContainer() {
 		modelContainer = std::make_unique<ModelContainer>();
-	}
-
-	void InitUploadBuffer() {
-		uploadBuffer = std::make_unique<UploadBuffer>();
 	}
 
 	void InitTextureAtlas() {

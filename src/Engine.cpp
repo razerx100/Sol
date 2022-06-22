@@ -42,11 +42,11 @@ Engine::Engine()
 	Sol::renderer->InitResourceBasedObjects();
 	Sol::renderer->SetThreadPool(Sol::threadPool);
 	Sol::renderer->SetSharedDataContainer(Sol::sharedData);
+	Sol::renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
 	AMods::InitAppModules();
 
 	Sol::InitModelContainer();
-	Sol::InitUploadBuffer();
 	Sol::InitTextureAtlas();
 
 	Sol::window->SetRenderer(Sol::renderer);
@@ -57,20 +57,14 @@ Engine::Engine()
 
 	Sol::modelContainer->UpdateUVCoordinates();
 
-	const std::vector<std::uint8_t>& texture = Sol::textureAtlas->GetTexture();
 	size_t textureIndex = Sol::renderer->RegisterResource(
-		texture.data(),
-		Sol::textureAtlas->GetWidth(), Sol::textureAtlas->GetHeight(),
-		Sol::textureAtlas-> GetPixelSizeInBytes()
+		Sol::textureAtlas->MoveTexture(),
+		Sol::textureAtlas->GetWidth(), Sol::textureAtlas->GetHeight()
 	);
 
 	Sol::renderer->ProcessData();
 
 	Sol::app->SetResources();
-
-	Sol::textureAtlas->CleanUpBuffer();
-
-	Sol::uploadBuffer.reset();
 	Sol::modelContainer->ClearModelBuffers();
 }
 

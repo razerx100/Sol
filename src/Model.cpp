@@ -3,8 +3,8 @@
 Model::Model() noexcept
 	: m_textureIndex(0u), m_modelMatrix(DirectX::XMMatrixIdentity()), m_textureData{} {}
 
-const void* Model::GetVertexData() const noexcept {
-	return m_vertices.data();
+std::unique_ptr<std::uint8_t> Model::GetVertexData() const noexcept {
+	return GetDataFromVector(m_vertices);
 }
 
 size_t Model::GetVertexStrideSize() const noexcept {
@@ -12,19 +12,19 @@ size_t Model::GetVertexStrideSize() const noexcept {
 }
 
 size_t Model::GetVertexBufferSize() const noexcept {
-	return GetVertexStrideSize() * m_vertices.size();
+	return GetVertexStrideSize() * std::size(m_vertices);
 }
 
-const void* Model::GetIndexData() const noexcept {
-	return m_indices.data();
+std::unique_ptr<std::uint8_t> Model::GetIndexData() const noexcept {
+	return GetDataFromVector(m_indices);
 }
 
 size_t Model::GetIndexBufferSize() const noexcept {
-	return sizeof(std::uint16_t) * m_indices.size();
+	return sizeof(std::uint16_t) * std::size(m_indices);
 }
 
 size_t Model::GetIndexCount() const noexcept {
-	return m_indices.size();
+	return std::size(m_indices);
 }
 
 DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
