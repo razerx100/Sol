@@ -24,8 +24,10 @@ void TextureAtlas::CreateAtlas() noexcept {
 	// Create and add colour texture
 	m_colourTextureManager.CreateTexture();
 
+	const std::string coloursTexName = "Colours";
+
 	AddTexture(
-		"Colours", m_colourTextureManager.MoveTexture(),
+		coloursTexName, m_colourTextureManager.MoveTexture(),
 		m_colourTextureManager.GetWidth(), 1u
 	);
 
@@ -49,59 +51,99 @@ void TextureAtlas::CreateAtlas() noexcept {
 	std::vector<UVU32> processedData;
 
 	// Calculate coordinates
+	const std::uint32_t textureBorder = 1u;
+	const std::uint32_t borderX2 = textureBorder * 2u;
+	m_height += textureBorder;
+
 	for (const TextureInfo& texData : m_unprocessedData) {
 		bool newAllocationRequired = false;
 		if (std::empty(emptyPartitions))
 			newAllocationRequired = true;
 		else
-			newAllocationRequired = !ManagePartitions(emptyPartitions, texData, processedData);
+			newAllocationRequired = !ManagePartitions(
+				emptyPartitions, texData, processedData, textureBorder
+			);
 
 		if (newAllocationRequired) {
-			std::uint32_t newHeight = m_height + texData.height;
+			std::uint32_t newHeight = m_height + texData.height + textureBorder;
 
-			if (m_width > texData.width) {
+			if (m_width > texData.width + borderX2) {
 				emptyPartitions.emplace_back(
-					UVU32{ texData.width + 1u, m_width, m_height + 1u, newHeight }
+					UVU32{
+						texData.width + 1u + borderX2, m_width - textureBorder,
+						m_height + 1u, newHeight - textureBorder
+					}
 				);
 			}
 
 			processedData.emplace_back(
-				1u, texData.width,
-				m_height + 1u, newHeight
+				1u + textureBorder, texData.width + textureBorder,
+				m_height + 1u, newHeight - textureBorder
 			);
 
 			m_height = newHeight;
 		}
 
 		if (m_width < texData.width)
-			m_width = texData.width;
+			m_width = texData.width + borderX2;
 	}
 
-	// set calculated coordinates based on their names
-	for (size_t index = 0u; index < std::size(m_unprocessedData); ++index)
-		m_pixelDataMap.insert_or_assign(m_unprocessedData[index].name, processedData[index]);
+	// Calculate offsets of textures and map them based on their names
+	for (size_t index = 0u; index < std::size(m_unprocessedData); ++index) {
+		const UVU32& texLocation = processedData[index];
+		const TextureInfo& texInfo = m_unprocessedData[index];
+		const std::string& name = texInfo.name;
 
-	// Find coordinates for Colours
-	UVU32 colourData = {};
-	if (auto result = m_pixelDataMap.find("Colours"); result != std::end(m_pixelDataMap))
-		colourData = result->second;
+		// A single pixel has the actual pixel data at a point, a point before it and a
+		// point after it, 3 points in total. A texture with length n will have 2n + 1
+		// points. A pixel coordinate from a texture represents the point of it's data. So,
+		// Multiplying it with 2 should give us the actual position. But UV coordinate starts
+		// from 0. So, we need to subtract 1 to get the coordinate of the point representing
+		// the pixel data. But we want the coordinate of the point before the data. So, we
+		// need to subtract 1 again, 2 in total.
 
-	const std::vector<std::string>& colourNames = m_colourTextureManager.GetNames();
+		const float uRatio = static_cast<float>(texInfo.width) / m_width;
+		const float vRatio = static_cast<float>(texInfo.height) / m_height;
 
-	// Add individual colours' coordinates into the pixel map
-	for (size_t index = 0u; index < std::size(colourNames); ++index) {
-		std::uint32_t uStart = colourData.uStart;
-		std::uint32_t vStart = colourData.vStart;
+		UVInfo uvInfo{
+			CoordToUV(texLocation.uStart * 2u - 2u, m_width),
+			CoordToUV(texLocation.vStart * 2u - 2u, m_height),
+			uRatio, vRatio
+		};
 
-		m_pixelDataMap.insert_or_assign(
-			colourNames[index],
-			UVU32{
-				uStart + static_cast<std::uint32_t>(index),
-				uStart + static_cast<std::uint32_t>(index),
-				vStart,
-				vStart
-			}
-		);
+		m_uvInfoMap.insert_or_assign(name, uvInfo);
+	}
+
+	// Add individual colours' coordinates into the texture offset map, if they exist
+	// and remove the colours entry
+	if (m_colourTextureManager.IsThereAnyColours()) {
+		// Find colours in proccessedData
+		size_t coloursIndex = 0u;
+		for (; coloursIndex < std::size(m_unprocessedData); ++coloursIndex)
+			if (m_unprocessedData[coloursIndex].name == coloursTexName)
+				break;
+
+		m_uvInfoMap.erase(coloursTexName);
+
+		const UVU32& coloursTexOffset = processedData[coloursIndex];
+		const std::vector<std::string>& colourNames = m_colourTextureManager.GetNames();
+
+		for (size_t index = 0u; index < std::size(colourNames); ++index) {
+			// These are solid colour in a single pixel. So, we would want the coordinate
+			// of the pixel's data. So, subtracting 1 should be enough. There could be multiple
+			// colours, so index is added to the u start. Colours should be on a single line.
+
+			UVInfo uvInfo{
+				CoordToUV(
+					(coloursTexOffset.uStart + static_cast<std::uint32_t>(index)) * 2u - 1u,
+					m_width
+				),
+				CoordToUV(coloursTexOffset.vStart * 2u - 1u, m_height),
+				0.f, 0.f
+			};
+
+			m_uvInfoMap.insert_or_assign(colourNames[index], uvInfo);
+		}
 	}
 
 	size_t bytesPerPixel = m_16bitsComponent ? 8u : 4u;
@@ -139,10 +181,10 @@ void TextureAtlas::CreateAtlas() noexcept {
 	m_unprocessedData = std::vector<TextureInfo>();
 }
 
-UVU32 TextureAtlas::GetPixelData(const std::string& name) const noexcept {
-	auto data = m_pixelDataMap.find(name);
+TextureAtlas::UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept {
+	auto data = m_uvInfoMap.find(name);
 
-	if (data != std::end(m_pixelDataMap))
+	if (data != std::end(m_uvInfoMap))
 		return data->second;
 	else
 		return {};
@@ -172,7 +214,7 @@ void TextureAtlas::SetIfComponentsAre16bits(bool component16bits) noexcept {
 
 bool TextureAtlas::ManagePartitions(
 	std::vector<UVU32>& partitions, const TextureInfo& texData,
-	std::vector<UVU32>& processedData
+	std::vector<UVU32>& processedData, const std::uint32_t textureBorder
 ) const noexcept {
 	for (auto it = std::begin(partitions); it != std::end(partitions); ++it) {
 		UVU32& coord = (*it);
@@ -180,18 +222,18 @@ bool TextureAtlas::ManagePartitions(
 		std::uint32_t emptyHeight = coord.vEnd - coord.vStart + 1u;
 
 		if (emptyWidth >= texData.width && emptyHeight >= texData.height) {
-			std::uint32_t newWidthStart = coord.uStart + texData.width;
-			std::uint32_t newHeightStart = coord.vStart + texData.height;
+			std::uint32_t newWidthStart = coord.uStart + texData.width + textureBorder;
+			std::uint32_t newHeightStart = coord.vStart + texData.height + textureBorder;
 
 			processedData.emplace_back(
-				coord.uStart, newWidthStart - 1u,
-				coord.vStart, newHeightStart - 1u
+				coord.uStart, newWidthStart - 1u - textureBorder,
+				coord.vStart, newHeightStart - 1u - textureBorder
 			);
 
 			UVU32 fullHeight =
 			{ newWidthStart, coord.uEnd, coord.vStart, coord.vEnd };
 			UVU32 fullWidth =
-			{ coord.uStart, newWidthStart - 1u, newHeightStart, coord.vEnd };
+			{ coord.uStart, newWidthStart - 1u - textureBorder, newHeightStart, coord.vEnd };
 
 			partitions.erase(it);
 

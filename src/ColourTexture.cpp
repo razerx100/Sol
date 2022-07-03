@@ -48,3 +48,6 @@ void ColourTexture::SetIfComponentsAre16bits(bool component16bits) noexcept {
 	m_16bitsComponent = component16bits;
 }
 
+bool ColourTexture::IsThereAnyColours() const noexcept {
+	return !std::empty(m_colourNames);
+}

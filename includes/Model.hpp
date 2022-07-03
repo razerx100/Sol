@@ -7,7 +7,7 @@
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;
-	//DirectX::XMFLOAT2 uv;
+	DirectX::XMFLOAT2 uv;
 };
 
 class Model : public IModel {
@@ -15,11 +15,10 @@ public:
 	Model() noexcept;
 
 	void ResetVerticesAndIndices() noexcept;
-	void SetTextureIndex(size_t index) noexcept;
 
-	void SetTextureInfo(
-		const TextureData& textureInfo
-	) noexcept;
+	void SetTextureIndex(size_t index) noexcept;
+	void SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept;
+	void SetUVInfo(const UVInfo& uvInfo) noexcept;
 
 	[[nodiscard]]
 	std::unique_ptr<std::uint8_t> GetVertexData() const noexcept final;
@@ -36,12 +35,9 @@ public:
 	[[nodiscard]]
 	std::uint32_t GetTextureIndex() const noexcept final;
 	[[nodiscard]]
-	const std::vector<VertexElementType>& GetVertexLayout() const noexcept final;
-
-	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
-
-	const TextureData& GetTextureInfo() const noexcept final;
+	[[nodiscard]]
+	UVInfo GetUVInfo() const noexcept final;
 
 	void SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept;
 	void AddTransformation(const DirectX::XMMATRIX& transform) noexcept;
@@ -50,10 +46,9 @@ protected:
 	std::uint32_t m_textureIndex;
 	std::vector<Vertex> m_vertices;
 	std::vector<std::uint16_t> m_indices;
-	std::vector<VertexElementType> m_vertexLayout;
 	DirectX::XMMATRIX m_modelMatrix;
 
-	TextureData m_textureData;
+	UVInfo m_uvInfo;
 
 private:
 	template<typename T>

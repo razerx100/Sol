@@ -19,23 +19,31 @@ App::App() {
 	colourManager.AddColour("Green", DirectX::Colors::Green);
 	colourManager.AddColour("Blue", DirectX::Colors::Blue);
 
-	STexture dogeTex = TextureLoader::LoadTextureFromFile("resources/textures/doge.jpg");
+	STexture segsTex = TextureLoader::LoadTextureFromFile("resources/textures/segs.jpg");
+
+	Sol::textureAtlas->AddTexture(
+		"segs", std::move(segsTex.data), segsTex.width, segsTex.height
+	);
+
+	STexture dogeTex = TextureLoader::LoadTextureFromFile("resources/textures/doge1.jpg");
 
 	Sol::textureAtlas->AddTexture(
 		"doge", std::move(dogeTex.data), dogeTex.width, dogeTex.height
 	);
 
-	STexture doge1Tex = TextureLoader::LoadTextureFromFile("resources/textures/doge1.jpg");
+	STexture dogeBigTex = TextureLoader::LoadTextureFromFile("resources/textures/doge.jpg");
 
 	Sol::textureAtlas->AddTexture(
-		"doge1", std::move(doge1Tex.data), doge1Tex.width, doge1Tex.height
+		"dogeBig", std::move(dogeBigTex.data), dogeBigTex.width, dogeBigTex.height
 	);
 
 	std::shared_ptr<Cube> cube0 = std::make_unique<Cube>();
 	std::shared_ptr<Cube> cube1 = std::make_unique<Cube>();
+	std::shared_ptr<Quad> quad = std::make_unique<Quad>();
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
+	quad->SetTextureIndex(0u);
 
 	DirectX::XMVECTOR rotAxis = { 0.f, 1.f, 0.f, 0.f };
 
@@ -48,8 +56,13 @@ App::App() {
 		DirectX::XMMatrixRotationAxis(rotAxis, DirectX::XMConvertToRadians(45))
 	);
 
+	quad->AddTransformation(
+		DirectX::XMMatrixTranslation(0.5, 0.f, 0.f)
+	);
+
 	AddModel(std::move(cube0));
 	AddModel(std::move(cube1));
+	AddModel(std::move(quad));
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
@@ -76,51 +89,27 @@ App::App() {
 }
 
 void App::SetResources() {
-	auto fuchsia = Sol::textureAtlas->GetPixelData("Fuchsia");
-	auto cyan = Sol::textureAtlas->GetPixelData("Cyan");
-	std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
-	std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
+	auto fuchsia = Sol::textureAtlas->GetUVInfo("Fuchsia");
+	auto cyan = Sol::textureAtlas->GetUVInfo("Cyan");
+	auto doge = Sol::textureAtlas->GetUVInfo("doge");
 
-	m_models[0].lock()->SetTextureInfo(
-		TextureData{
-			fuchsia.uStart, fuchsia.uEnd, atlasWidth,
-			fuchsia.vStart, fuchsia.vEnd, atlasHeight
-		}
-	);
-	m_models[1].lock()->SetTextureInfo(
-		TextureData{
-			cyan.uStart, cyan.uEnd, atlasWidth,
-			cyan.vStart, cyan.vEnd, atlasHeight
-		}
-	);
+	m_models[0].lock()->SetUVInfo(fuchsia.u, fuchsia.v, fuchsia.uRatio, fuchsia.vRatio);
+	m_models[1].lock()->SetUVInfo(cyan.u, cyan.v, cyan.uRatio, cyan.vRatio);
+	m_models[2].lock()->SetUVInfo(doge.u, doge.v, doge.uRatio, doge.vRatio);
 }
 
 void App::PerFrameUpdate() {
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
-		auto fuchsia = Sol::textureAtlas->GetPixelData("Fuchsia");
-		std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
-		std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
+		auto doge = Sol::textureAtlas->GetUVInfo("dogeBig");
 
-		m_models[0].lock()->SetTextureInfo(
-			TextureData{
-				fuchsia.uStart, fuchsia.uEnd, atlasWidth,
-				fuchsia.vStart, fuchsia.vEnd, atlasHeight
-			}
-		);
+		m_models[2].lock()->SetUVInfo(doge.u, doge.v, doge.uRatio, doge.vRatio);
 	}
 	else if(pKeyboardRef->AreKeysPressed(2, SKeyCodes::R, SKeyCodes::One)) {
-		auto red = Sol::textureAtlas->GetPixelData("Red");
-		std::uint32_t atlasWidth = Sol::textureAtlas->GetWidth();
-		std::uint32_t atlasHeight = Sol::textureAtlas->GetHeight();
+		auto segs = Sol::textureAtlas->GetUVInfo("segs");
 
-		m_models[0].lock()->SetTextureInfo(
-			TextureData{
-				red.uStart, red.uEnd, atlasWidth,
-				red.vStart, red.vEnd, atlasHeight
-			}
-		);
+		m_models[2].lock()->SetUVInfo(segs.u, segs.v, segs.uRatio, segs.vRatio);
 	}
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))
@@ -209,7 +198,5 @@ void App::PhysicsUpdate() {
 void App::AddModel(std::shared_ptr<Model> model) noexcept {
 	Sol::modelContainer->AddModel(model);
 
-	m_models.emplace_back(model);
-
-	Sol::renderer->SubmitModel(std::move(model));
+	m_models.emplace_back(std::move(model));
 }

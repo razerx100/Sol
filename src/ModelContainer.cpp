@@ -1,5 +1,7 @@
 #include <ModelContainer.hpp>
 
+#include <Sol.hpp>
+
 void ModelContainer::AddModel(std::shared_ptr<Model> model) {
 	m_models.emplace_back(std::move(model));
 }
@@ -9,10 +11,7 @@ void ModelContainer::ClearModelBuffers() noexcept {
 		model->ResetVerticesAndIndices();
 }
 
-void ModelContainer::UpdateUVCoordinates() noexcept {
-	//ITextureAtlas* texRef = TexAtlasInst::GetRef();
-	//size_t atlasWidth = texRef->GetWidth();
-	//size_t atlasHeight = texRef->GetHeight();
-
-		// Complex textures will need more work
+void ModelContainer::SubmitModelsToRenderer() const noexcept {
+	for (auto& model : m_models)
+		Sol::renderer->SubmitModel(model);
 }

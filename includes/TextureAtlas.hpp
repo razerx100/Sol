@@ -27,6 +27,14 @@ struct UVU32 {
 
 class TextureAtlas {
 public:
+	struct UVInfo {
+		float u;
+		float v;
+		float uRatio;
+		float vRatio;
+	};
+
+public:
 	TextureAtlas() noexcept;
 
 	void AddTexture(
@@ -41,7 +49,7 @@ public:
 	ColourTexture& GetColourTextureManager() noexcept;
 
 	[[nodiscard]]
-	UVU32 GetPixelData(const std::string& name) const noexcept;
+	UVInfo GetUVInfo(const std::string& name) const noexcept;
 	[[nodiscard]]
 	std::uint32_t GetWidth() const noexcept;
 	[[nodiscard]]
@@ -68,10 +76,15 @@ private:
 	[[nodiscard]]
 	bool ManagePartitions(
 		std::vector<UVU32>& partitions, const TextureInfo& texData,
-		std::vector<UVU32>& processedData
+		std::vector<UVU32>& processedData, const std::uint32_t textureBorder
 	) const noexcept;
 	[[nodiscard]]
 	bool IsCoordSuitable(const UVU32& coord) const noexcept;
+
+	[[nodiscard]]
+	constexpr float CoordToUV(std::uint32_t coord, std::uint32_t maxLength) const noexcept {
+		return static_cast<float>(coord) / (maxLength * 2u);
+	}
 
 private:
 	std::uint32_t m_width;
@@ -80,7 +93,7 @@ private:
 	bool m_16bitsComponent;
 
 	std::unique_ptr<std::uint8_t> m_texture;
-	std::unordered_map<std::string, UVU32> m_pixelDataMap;
+	std::unordered_map<std::string, UVInfo> m_uvInfoMap;
 
 	std::vector<TextureInfo> m_unprocessedData;
 	std::vector<std::unique_ptr<std::uint8_t>> m_unprocessedTextures;

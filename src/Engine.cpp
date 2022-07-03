@@ -55,7 +55,7 @@ Engine::Engine()
 
 	Sol::textureAtlas->CreateAtlas();
 
-	Sol::modelContainer->UpdateUVCoordinates();
+	Sol::modelContainer->SubmitModelsToRenderer();
 
 	size_t textureIndex = Sol::renderer->RegisterResource(
 		Sol::textureAtlas->MoveTexture(),

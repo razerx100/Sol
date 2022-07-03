@@ -36,6 +36,8 @@ public:
 	std::unique_ptr<std::uint8_t> MoveTexture() noexcept;
 	[[nodiscard]]
 	const std::vector<std::string>& GetNames() const noexcept;
+	[[nodiscard]]
+	bool IsThereAnyColours() const noexcept;
 
 private:
 	std::vector<std::string> m_colourNames;

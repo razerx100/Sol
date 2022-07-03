@@ -17,4 +17,12 @@ public:
 private:
 	void Init() noexcept;
 };
+
+class Quad final : public Model {
+public:
+	Quad() noexcept;
+
+private:
+	void Init() noexcept;
+};
 #endif

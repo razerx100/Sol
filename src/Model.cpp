@@ -1,7 +1,7 @@
 #include <Model.hpp>
 
 Model::Model() noexcept
-	: m_textureIndex(0u), m_modelMatrix(DirectX::XMMatrixIdentity()), m_textureData{} {}
+	: m_textureIndex(0u), m_modelMatrix(DirectX::XMMatrixIdentity()), m_uvInfo{} {}
 
 std::unique_ptr<std::uint8_t> Model::GetVertexData() const noexcept {
 	return GetDataFromVector(m_vertices);
@@ -31,10 +31,6 @@ DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
 	return m_modelMatrix;
 }
 
-const std::vector<VertexElementType>& Model::GetVertexLayout() const noexcept {
-	return m_vertexLayout;
-}
-
 void Model::ResetVerticesAndIndices() noexcept {
 	m_vertices = std::vector<Vertex>();
 	m_indices = std::vector<std::uint16_t>();
@@ -48,14 +44,19 @@ std::uint32_t Model::GetTextureIndex() const noexcept {
 	return m_textureIndex;
 }
 
-void Model::SetTextureInfo(
-	const TextureData& textureInfo
-) noexcept {
-	m_textureData = textureInfo;
+void Model::SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept {
+	m_uvInfo.u = uOffset;
+	m_uvInfo.v = vOffset;
+	m_uvInfo.uRatio = uRatio;
+	m_uvInfo.vRatio = vRatio;
 }
 
-const TextureData& Model::GetTextureInfo() const noexcept {
-	return m_textureData;
+void Model::SetUVInfo(const UVInfo& uvInfo) noexcept {
+	m_uvInfo = uvInfo;
+}
+
+UVInfo Model::GetUVInfo() const noexcept {
+	return m_uvInfo;
 }
 
 void Model::SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept {
