@@ -12,12 +12,11 @@ Manager module/executable which dynamically links to different modules to form a
 1. [Europa](https://github.com/razerx100/Europa).
 
 ## Third party library used
-1. [ImGui](https://github.com/ocornut/imgui).
-2. [DirectXMath](https://github.com/microsoft/DirectXMath).
-3. [stb](https://github.com/nothings/stb).
+1. [DirectXMath](https://github.com/microsoft/DirectXMath).
+2. [stb](https://github.com/nothings/stb).
 
 ## Instructions
-Run the appropriate Setup script to configure the project with or without ImGui. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation.
+Run the appropriate Setup script to either pull from master or dev branch. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation.
 
 ## Resources
 ### Default Window Icon

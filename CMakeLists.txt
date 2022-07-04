@@ -16,10 +16,6 @@ endif()
 
 file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp)
 
-if(IMGUIFLAG STREQUAL "ENABLE")
-    file(GLOB_RECURSE IMGUI ThirdPartyLibraries/ImGui/*.cpp ThirdPartyLibraries/ImGui/*.h)
-endif()
-
 if(PLATFORM STREQUAL "WINDOWS")
     add_executable(${PROJECT_NAME} WIN32
         ${SRC}
@@ -34,11 +30,6 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/ templates/modules/ ThirdPartyLibraries/DirectXMath/Inc/ ThirdPartyLibraries/DirectXMath/Extensions/ ThirdPartyLibraries/stb/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
-
-if(IMGUIFLAG STREQUAL "ENABLE")
-    target_include_directories(${PROJECT_NAME} PRIVATE ThirdPartyLibraries/ImGui/includes/)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _IMGUI)
-endif()
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot /W4)

@@ -28,8 +28,8 @@ struct UVU32 {
 class TextureAtlas {
 public:
 	struct UVInfo {
-		float u;
-		float v;
+		float uOffset;
+		float vOffset;
 		float uRatio;
 		float vRatio;
 	};

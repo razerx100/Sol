@@ -93,9 +93,11 @@ void App::SetResources() {
 	auto cyan = Sol::textureAtlas->GetUVInfo("Cyan");
 	auto doge = Sol::textureAtlas->GetUVInfo("doge");
 
-	m_models[0].lock()->SetUVInfo(fuchsia.u, fuchsia.v, fuchsia.uRatio, fuchsia.vRatio);
-	m_models[1].lock()->SetUVInfo(cyan.u, cyan.v, cyan.uRatio, cyan.vRatio);
-	m_models[2].lock()->SetUVInfo(doge.u, doge.v, doge.uRatio, doge.vRatio);
+	m_models[0].lock()->SetUVInfo(
+		fuchsia.uOffset, fuchsia.vOffset, fuchsia.uRatio, fuchsia.vRatio
+	);
+	m_models[1].lock()->SetUVInfo(cyan.uOffset, cyan.vOffset, cyan.uRatio, cyan.vRatio);
+	m_models[2].lock()->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
 }
 
 void App::PerFrameUpdate() {
@@ -104,12 +106,12 @@ void App::PerFrameUpdate() {
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
 		auto doge = Sol::textureAtlas->GetUVInfo("dogeBig");
 
-		m_models[2].lock()->SetUVInfo(doge.u, doge.v, doge.uRatio, doge.vRatio);
+		m_models[2].lock()->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
 	}
 	else if(pKeyboardRef->AreKeysPressed(2, SKeyCodes::R, SKeyCodes::One)) {
 		auto segs = Sol::textureAtlas->GetUVInfo("segs");
 
-		m_models[2].lock()->SetUVInfo(segs.u, segs.v, segs.uRatio, segs.vRatio);
+		m_models[2].lock()->SetUVInfo(segs.uOffset, segs.vOffset, segs.uRatio, segs.vRatio);
 	}
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))

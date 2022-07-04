@@ -45,8 +45,8 @@ std::uint32_t Model::GetTextureIndex() const noexcept {
 }
 
 void Model::SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept {
-	m_uvInfo.u = uOffset;
-	m_uvInfo.v = vOffset;
+	m_uvInfo.uOffset = uOffset;
+	m_uvInfo.vOffset = vOffset;
 	m_uvInfo.uRatio = uRatio;
 	m_uvInfo.vRatio = vRatio;
 }

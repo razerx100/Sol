@@ -7,8 +7,8 @@
 #include <DirectXMath.h>
 
 struct UVInfo {
-	float u;
-	float v;
+	float uOffset;
+	float vOffset;
 	float uRatio;
 	float vRatio;
 };
