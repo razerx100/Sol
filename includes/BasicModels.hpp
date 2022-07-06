@@ -8,7 +8,7 @@
 
 class Triangle final : public Model {
 public:
-	Triangle() noexcept;
+	Triangle(std::uint32_t indexCount) noexcept;
 
 private:
 	void Init() noexcept;
@@ -24,7 +24,7 @@ private:
 
 class Cube final : public Model {
 public:
-	Cube() noexcept;
+	Cube(std::uint32_t indexCount) noexcept;
 
 private:
 	void Init() noexcept;
@@ -40,7 +40,7 @@ private:
 
 class Quad final : public Model {
 public:
-	Quad() noexcept;
+	Quad(std::uint32_t indexCount) noexcept;
 
 private:
 	void Init() noexcept;
@@ -61,10 +61,8 @@ std::vector<std::shared_ptr<Model>> AddAndGetModels(std::uint32_t instances) noe
 	auto modelInputs = std::make_unique<input>();
 
 	std::vector<std::shared_ptr<Model>> models;
-	for (size_t index = 0u; index < instances; ++index) {
-		models.emplace_back(std::make_shared<model>());
-		models.back()->SetIndexCount(modelInputs->GetIndexCount());
-	}
+	for (size_t index = 0u; index < instances; ++index)
+		models.emplace_back(std::make_shared<model>(modelInputs->GetIndexCount()));
 
 	Sol::modelContainer->AddModels(models, std::move(modelInputs));
 

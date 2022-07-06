@@ -45,12 +45,11 @@ private:
 
 class Model : public IModel {
 public:
-	Model() noexcept;
+	Model(std::uint32_t indexCount) noexcept;
 
 	void SetTextureIndex(size_t index) noexcept;
 	void SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept;
 	void SetUVInfo(const UVInfo& uvInfo) noexcept;
-	void SetIndexCount(std::uint32_t indexCount) noexcept;
 
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept final;

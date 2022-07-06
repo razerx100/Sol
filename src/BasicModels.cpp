@@ -11,7 +11,7 @@ void SetUVToVertices(
 }
 
 // Triangle
-Triangle::Triangle() noexcept {
+Triangle::Triangle(std::uint32_t indexCount) noexcept : Model{ indexCount } {
 	Init();
 }
 
@@ -38,7 +38,7 @@ void TriangleInputs::Init() noexcept {
 }
 
 // Cube
-Cube::Cube() noexcept {
+Cube::Cube(std::uint32_t indexCount) noexcept : Model{ indexCount } {
 	Init();
 }
 
@@ -95,7 +95,7 @@ void CubeInputs::Init() noexcept {
 }
 
 // Quad
-Quad::Quad() noexcept {
+Quad::Quad(std::uint32_t indexCount) noexcept : Model{ indexCount } {
 	Init();
 }
 

@@ -25,13 +25,9 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 }
 
 // Model
-Model::Model() noexcept
+Model::Model(std::uint32_t indexCount) noexcept
 	: m_textureIndex(0u), m_modelMatrix(DirectX::XMMatrixIdentity()),
-	m_uvInfo{}, m_indexCount(0u) {}
-
-void Model::SetIndexCount(std::uint32_t indexCount) noexcept {
-	m_indexCount = indexCount;
-}
+	m_uvInfo{}, m_indexCount{ indexCount } {}
 
 std::uint32_t Model::GetIndexCount() const noexcept {
 	return m_indexCount;
