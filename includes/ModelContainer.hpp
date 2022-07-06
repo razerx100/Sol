@@ -7,12 +7,14 @@
 
 class ModelContainer {
 public:
-	void AddModel(std::shared_ptr<Model> model);
+	void AddModels(
+		std::vector<std::shared_ptr<Model>> models, std::unique_ptr<ModelInputs> modelInputs
+	) noexcept;
 
-	void SubmitModelsToRenderer() const noexcept;
-	void ClearModelBuffers() noexcept;
+	void SubmitModelsToRenderer() noexcept;
 
 private:
-	std::vector<std::shared_ptr<Model>> m_models;
+	std::vector<std::unique_ptr<ModelInputs>> m_modelInputs;
+	std::vector<std::vector<std::shared_ptr<Model>>> m_models;
 };
 #endif

@@ -1,6 +1,7 @@
 #include <BasicModels.hpp>
 
 #include <DirectXMath.h>
+#include <Sol.hpp>
 
 void SetUVToVertices(
 	std::vector<Vertex>& vertices, const std::vector<DirectX::XMFLOAT2>& uvs
@@ -9,11 +10,20 @@ void SetUVToVertices(
 		vertices[index].uv = uvs[index];
 }
 
+// Triangle
 Triangle::Triangle() noexcept {
 	Init();
 }
 
 void Triangle::Init() noexcept {
+	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+}
+
+TriangleInputs::TriangleInputs() noexcept {
+	Init();
+}
+
+void TriangleInputs::Init() noexcept {
 	m_vertices.resize(3);
 	m_vertices[0].position = { 0.f, 1.f, 0.f };
 	m_vertices[1].position = { -1.f, -1.f, 0.f };
@@ -24,20 +34,24 @@ void Triangle::Init() noexcept {
 
 	SetUVToVertices(m_vertices, uvs);
 
-	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
-
 	m_indices = { 0u, 1u, 2u, 2u, 1u, 0u };
 }
 
+// Cube
 Cube::Cube() noexcept {
 	Init();
 }
 
 void Cube::Init() noexcept {
-
-	constexpr float side = 1.0f / 2.0f;
-
 	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+}
+
+CubeInputs::CubeInputs() noexcept {
+	Init();
+}
+
+void CubeInputs::Init() noexcept {
+	constexpr float side = 1.0f / 2.0f;
 
 	m_vertices.resize(24);
 	m_vertices[0].position = { -side,-side,-side };// 0 near side
@@ -80,14 +94,21 @@ void Cube::Init() noexcept {
 	};
 }
 
+// Quad
 Quad::Quad() noexcept {
 	Init();
 }
 
 void Quad::Init() noexcept {
-	constexpr float side = 1.0f / 2.0f;
-
 	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+}
+
+QuadInputs::QuadInputs() noexcept {
+	Init();
+}
+
+void QuadInputs::Init() noexcept {
+	constexpr float side = 1.0f / 2.0f;
 
 	m_vertices.resize(8u);
 	m_vertices[0].position = { -side, side, 0.f };

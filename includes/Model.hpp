@@ -10,16 +10,8 @@ struct Vertex {
 	DirectX::XMFLOAT2 uv;
 };
 
-class Model : public IModel {
+class ModelInputs : public IModelInputs {
 public:
-	Model() noexcept;
-
-	void ResetVerticesAndIndices() noexcept;
-
-	void SetTextureIndex(size_t index) noexcept;
-	void SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept;
-	void SetUVInfo(const UVInfo& uvInfo) noexcept;
-
 	[[nodiscard]]
 	std::unique_ptr<std::uint8_t> GetVertexData() const noexcept final;
 	[[nodiscard]]
@@ -30,25 +22,13 @@ public:
 	std::unique_ptr<std::uint8_t> GetIndexData() const noexcept final;
 	[[nodiscard]]
 	size_t GetIndexBufferSize() const noexcept final;
-	[[nodiscard]]
-	size_t GetIndexCount() const noexcept final;
-	[[nodiscard]]
-	std::uint32_t GetTextureIndex() const noexcept final;
-	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
-	[[nodiscard]]
-	UVInfo GetUVInfo() const noexcept final;
 
-	void SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept;
-	void AddTransformation(const DirectX::XMMATRIX& transform) noexcept;
+	[[nodiscard]]
+	std::uint32_t GetIndexCount() const noexcept;
 
 protected:
-	std::uint32_t m_textureIndex;
 	std::vector<Vertex> m_vertices;
 	std::vector<std::uint16_t> m_indices;
-	DirectX::XMMATRIX m_modelMatrix;
-
-	UVInfo m_uvInfo;
 
 private:
 	template<typename T>
@@ -61,5 +41,34 @@ private:
 
 		return data;
 	}
+};
+
+class Model : public IModel {
+public:
+	Model() noexcept;
+
+	void SetTextureIndex(size_t index) noexcept;
+	void SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept;
+	void SetUVInfo(const UVInfo& uvInfo) noexcept;
+	void SetIndexCount(std::uint32_t indexCount) noexcept;
+
+	[[nodiscard]]
+	std::uint32_t GetIndexCount() const noexcept final;
+	[[nodiscard]]
+	std::uint32_t GetTextureIndex() const noexcept final;
+	[[nodiscard]]
+	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
+	[[nodiscard]]
+	UVInfo GetUVInfo() const noexcept final;
+
+	void SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept;
+	void AddTransformation(const DirectX::XMMATRIX& transform) noexcept;
+
+protected:
+	std::uint32_t m_textureIndex;
+	DirectX::XMMATRIX m_modelMatrix;
+
+	UVInfo m_uvInfo;
+	std::uint32_t m_indexCount;
 };
 #endif

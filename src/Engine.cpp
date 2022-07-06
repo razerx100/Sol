@@ -65,7 +65,7 @@ Engine::Engine()
 	Sol::renderer->ProcessData();
 
 	Sol::app->SetResources();
-	Sol::modelContainer->ClearModelBuffers();
+	Sol::modelContainer.reset();
 }
 
 Engine::~Engine() noexcept {
@@ -75,7 +75,6 @@ Engine::~Engine() noexcept {
 	Sol::app.reset();
 	Sol::renderer.reset();
 	Sol::sharedData.reset();
-	Sol::modelContainer.reset();
 	Sol::window.reset();
 	Sol::ioMan.reset();
 	Sol::threadPool.reset();

@@ -12,9 +12,9 @@ public:
 	void PhysicsUpdate();
 
 private:
-	void AddModel(std::shared_ptr<class Model> model) noexcept;
+	void AddModels(std::vector<std::shared_ptr<class Model>>&& models) noexcept;
 
 private:
-	std::vector<std::weak_ptr<class Model>> m_models;
+	std::vector<std::shared_ptr<class Model>> m_models;
 };
 #endif

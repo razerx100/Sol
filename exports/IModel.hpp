@@ -13,9 +13,9 @@ struct UVInfo {
 	float vRatio;
 };
 
-class IModel {
+class IModelInputs {
 public:
-	virtual ~IModel() = default;
+	virtual ~IModelInputs() = default;
 
 	[[nodiscard]]
 	virtual std::unique_ptr<std::uint8_t> GetVertexData() const noexcept = 0;
@@ -27,8 +27,14 @@ public:
 	virtual std::unique_ptr<std::uint8_t> GetIndexData() const noexcept = 0;
 	[[nodiscard]]
 	virtual size_t GetIndexBufferSize() const noexcept = 0;
+};
+
+class IModel {
+public:
+	virtual ~IModel() = default;
+
 	[[nodiscard]]
-	virtual size_t GetIndexCount() const noexcept = 0;
+	virtual std::uint32_t GetIndexCount() const noexcept = 0;
 	[[nodiscard]]
 	virtual std::uint32_t GetTextureIndex() const noexcept = 0;
 	[[nodiscard]]

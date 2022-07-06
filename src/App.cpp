@@ -37,9 +37,15 @@ App::App() {
 		"dogeBig", std::move(dogeBigTex.data), dogeBigTex.width, dogeBigTex.height
 	);
 
-	std::shared_ptr<Cube> cube0 = std::make_unique<Cube>();
-	std::shared_ptr<Cube> cube1 = std::make_unique<Cube>();
-	std::shared_ptr<Quad> quad = std::make_unique<Quad>();
+	auto cubes = AddAndGetModels<Cube, CubeInputs>(2u);
+	auto quads = AddAndGetModels<Quad, QuadInputs>(1u);
+
+	AddModels(std::move(cubes));
+	AddModels(std::move(quads));
+
+	auto& cube0 = m_models[0];
+	auto& cube1 = m_models[1];
+	auto& quad = m_models[2];
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
@@ -59,10 +65,6 @@ App::App() {
 	quad->AddTransformation(
 		DirectX::XMMatrixTranslation(0.5, 0.f, 0.f)
 	);
-
-	AddModel(std::move(cube0));
-	AddModel(std::move(cube1));
-	AddModel(std::move(quad));
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
@@ -93,11 +95,11 @@ void App::SetResources() {
 	auto cyan = Sol::textureAtlas->GetUVInfo("Cyan");
 	auto doge = Sol::textureAtlas->GetUVInfo("doge");
 
-	m_models[0].lock()->SetUVInfo(
+	m_models[0]->SetUVInfo(
 		fuchsia.uOffset, fuchsia.vOffset, fuchsia.uRatio, fuchsia.vRatio
 	);
-	m_models[1].lock()->SetUVInfo(cyan.uOffset, cyan.vOffset, cyan.uRatio, cyan.vRatio);
-	m_models[2].lock()->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
+	m_models[1]->SetUVInfo(cyan.uOffset, cyan.vOffset, cyan.uRatio, cyan.vRatio);
+	m_models[2]->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
 }
 
 void App::PerFrameUpdate() {
@@ -106,12 +108,12 @@ void App::PerFrameUpdate() {
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
 		auto doge = Sol::textureAtlas->GetUVInfo("dogeBig");
 
-		m_models[2].lock()->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
+		m_models[2]->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
 	}
 	else if(pKeyboardRef->AreKeysPressed(2, SKeyCodes::R, SKeyCodes::One)) {
 		auto segs = Sol::textureAtlas->GetUVInfo("segs");
 
-		m_models[2].lock()->SetUVInfo(segs.uOffset, segs.vOffset, segs.uRatio, segs.vRatio);
+		m_models[2]->SetUVInfo(segs.uOffset, segs.vOffset, segs.uRatio, segs.vRatio);
 	}
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))
@@ -140,12 +142,12 @@ void App::PhysicsUpdate() {
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
-		m_models[1].lock()->AddTransformation(
+		m_models[1]->AddTransformation(
 			DirectX::XMMatrixTranslation(-0.1f, 0.f, 0.3f)
 		);
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::S, SKeyCodes::Two))
-		m_models[1].lock()->AddTransformation(
+		m_models[1]->AddTransformation(
 			DirectX::XMMatrixTranslation(0.1f, 0.f, -0.3f)
 		);
 
@@ -197,8 +199,7 @@ void App::PhysicsUpdate() {
 	}
 }
 
-void App::AddModel(std::shared_ptr<Model> model) noexcept {
-	Sol::modelContainer->AddModel(model);
-
-	m_models.emplace_back(std::move(model));
+void App::AddModels(std::vector<std::shared_ptr<Model>>&& models) noexcept {
+	for (auto& model : models)
+		m_models.emplace_back(std::move(model));
 }

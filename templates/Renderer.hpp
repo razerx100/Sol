@@ -27,7 +27,9 @@ public:
 
 	virtual void SetThreadPool(std::shared_ptr<IThreadPool> threadPoolArg) noexcept = 0;
 	virtual void SetBackgroundColour(const std::array<float, 4>& colour) noexcept = 0;
-	virtual void SubmitModel(std::shared_ptr<IModel> model) = 0;
+	virtual void SubmitModels(
+		std::vector<std::shared_ptr<IModel>>&& models, std::unique_ptr<IModelInputs> modelInputs
+	) = 0;
 	virtual void Render() = 0;
 	virtual void WaitForAsyncTasks() = 0;
 
