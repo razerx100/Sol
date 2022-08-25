@@ -13,28 +13,14 @@ struct UVInfo {
 	float vRatio;
 };
 
-class IModelInputs {
-public:
-	virtual ~IModelInputs() = default;
-
-	[[nodiscard]]
-	virtual std::unique_ptr<std::uint8_t> GetVertexData() const noexcept = 0;
-	[[nodiscard]]
-	virtual size_t GetVertexStrideSize() const noexcept = 0;
-	[[nodiscard]]
-	virtual size_t GetVertexBufferSize() const noexcept = 0;
-	[[nodiscard]]
-	virtual std::unique_ptr<std::uint8_t> GetIndexData() const noexcept = 0;
-	[[nodiscard]]
-	virtual size_t GetIndexBufferSize() const noexcept = 0;
-};
-
 class IModel {
 public:
 	virtual ~IModel() = default;
 
 	[[nodiscard]]
 	virtual std::uint32_t GetIndexCount() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::uint32_t GetIndexOffset() const noexcept = 0;
 	[[nodiscard]]
 	virtual std::uint32_t GetTextureIndex() const noexcept = 0;
 	[[nodiscard]]

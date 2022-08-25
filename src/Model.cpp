@@ -1,23 +1,19 @@
 #include <Model.hpp>
 
-std::unique_ptr<std::uint8_t> ModelInputs::GetVertexData() const noexcept {
-	return GetDataFromVector(m_vertices);
-}
-
-size_t ModelInputs::GetVertexStrideSize() const noexcept {
-	return sizeof(Vertex);
+const std::vector<Vertex>& ModelInputs::GetVertexData() const noexcept {
+	return m_vertices;
 }
 
 size_t ModelInputs::GetVertexBufferSize() const noexcept {
-	return GetVertexStrideSize() * std::size(m_vertices);
+	return sizeof(Vertex) * std::size(m_vertices);
 }
 
-std::unique_ptr<std::uint8_t> ModelInputs::GetIndexData() const noexcept {
-	return GetDataFromVector(m_indices);
+const std::vector<std::uint32_t>& ModelInputs::GetIndexData() const noexcept {
+	return m_indices;
 }
 
 size_t ModelInputs::GetIndexBufferSize() const noexcept {
-	return sizeof(std::uint16_t) * std::size(m_indices);
+	return sizeof(std::uint32_t) * std::size(m_indices);
 }
 
 std::uint32_t ModelInputs::GetIndexCount() const noexcept {
@@ -27,7 +23,7 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 // Model
 Model::Model(std::uint32_t indexCount) noexcept
 	: m_textureIndex(0u), m_modelMatrix(DirectX::XMMatrixIdentity()),
-	m_uvInfo{}, m_indexCount{ indexCount } {}
+	m_uvInfo{}, m_indexCount{ indexCount }, m_indexOffset{ 0u } {}
 
 std::uint32_t Model::GetIndexCount() const noexcept {
 	return m_indexCount;
@@ -66,4 +62,12 @@ void Model::SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept {
 
 void Model::AddTransformation(const DirectX::XMMATRIX& transform) noexcept {
 	m_modelMatrix *= transform;
+}
+
+void Model::SetIndexOffset(std::uint32_t indexOffset) noexcept {
+	m_indexOffset = indexOffset;
+}
+
+std::uint32_t Model::GetIndexOffset() const noexcept {
+	return m_indexOffset;
 }

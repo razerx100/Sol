@@ -10,37 +10,23 @@ struct Vertex {
 	DirectX::XMFLOAT2 uv;
 };
 
-class ModelInputs : public IModelInputs {
+class ModelInputs {
 public:
 	[[nodiscard]]
-	std::unique_ptr<std::uint8_t> GetVertexData() const noexcept final;
+	const std::vector<Vertex>& GetVertexData() const noexcept;
 	[[nodiscard]]
-	size_t GetVertexStrideSize() const noexcept final;
+	size_t GetVertexBufferSize() const noexcept;
 	[[nodiscard]]
-	size_t GetVertexBufferSize() const noexcept final;
+	const std::vector<std::uint32_t>& GetIndexData() const noexcept;
 	[[nodiscard]]
-	std::unique_ptr<std::uint8_t> GetIndexData() const noexcept final;
-	[[nodiscard]]
-	size_t GetIndexBufferSize() const noexcept final;
+	size_t GetIndexBufferSize() const noexcept;
 
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept;
 
 protected:
 	std::vector<Vertex> m_vertices;
-	std::vector<std::uint16_t> m_indices;
-
-private:
-	template<typename T>
-	static std::unique_ptr<std::uint8_t> GetDataFromVector(const std::vector<T>& vec) noexcept {
-		size_t dataSize = std::size(vec) * sizeof(T);
-
-		auto data = std::unique_ptr<std::uint8_t>(new std::uint8_t[dataSize]);
-
-		memcpy(data.get(), std::data(vec), dataSize);
-
-		return data;
-	}
+	std::vector<std::uint32_t> m_indices;
 };
 
 class Model : public IModel {
@@ -50,9 +36,12 @@ public:
 	void SetTextureIndex(size_t index) noexcept;
 	void SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept;
 	void SetUVInfo(const UVInfo& uvInfo) noexcept;
+	void SetIndexOffset(std::uint32_t indexOffset) noexcept;
 
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept final;
+	[[nodiscard]]
+	std::uint32_t GetIndexOffset() const noexcept final;
 	[[nodiscard]]
 	std::uint32_t GetTextureIndex() const noexcept final;
 	[[nodiscard]]
@@ -64,10 +53,13 @@ public:
 	void AddTransformation(const DirectX::XMMATRIX& transform) noexcept;
 
 protected:
-	std::uint32_t m_textureIndex;
 	DirectX::XMMATRIX m_modelMatrix;
+
+private:
+	std::uint32_t m_textureIndex;
 
 	UVInfo m_uvInfo;
 	std::uint32_t m_indexCount;
+	std::uint32_t m_indexOffset;
 };
 #endif

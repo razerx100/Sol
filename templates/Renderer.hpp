@@ -10,7 +10,10 @@
 
 class Renderer {
 public:
-	using Resolution = std::pair<std::uint64_t, std::uint64_t>;
+	struct Resolution {
+		std::uint64_t width;
+		std::uint64_t height;
+	};
 
 	virtual ~Renderer() = default;
 
@@ -21,14 +24,15 @@ public:
 
 	[[nodiscard]] // Returns index of the resource in Resource Heap
 	virtual size_t RegisterResource(
-		std::unique_ptr<std::uint8_t> textureData,
-		size_t width, size_t height, bool components16bits = false
+		std::unique_ptr<std::uint8_t> textureData, size_t width, size_t height
 	) = 0;
 
 	virtual void SetThreadPool(std::shared_ptr<IThreadPool> threadPoolArg) noexcept = 0;
 	virtual void SetBackgroundColour(const std::array<float, 4>& colour) noexcept = 0;
-	virtual void SubmitModels(
-		std::vector<std::shared_ptr<IModel>>&& models, std::unique_ptr<IModelInputs> modelInputs
+	virtual void SubmitModels(std::vector<std::shared_ptr<IModel>>&& models) = 0;
+	virtual void SubmitModelInputs(
+		std::unique_ptr<std::uint8_t> vertices, size_t vertexBufferSize, size_t strideSize,
+		std::unique_ptr<std::uint8_t> indices, size_t indexBufferSize
 	) = 0;
 	virtual void Render() = 0;
 	virtual void WaitForAsyncTasks() = 0;
