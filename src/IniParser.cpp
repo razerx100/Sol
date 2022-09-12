@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <exception>
 
-IniParser::IniParser(std::string fileName)
-    : m_fileName(std::move(fileName)) {
-    if (!m_fileName.ends_with(".ini"))
+IniParser::IniParser(std::wstring fileName)
+    : m_fileName{ std::move(fileName) } {
+    if (!m_fileName.ends_with(L".ini"))
         throw std::runtime_error("Extention isn't .ini");
 }
 

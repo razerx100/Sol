@@ -1,7 +1,7 @@
 #include <ConfigManager.hpp>
 
-ConfigManager::ConfigManager(const std::string& fileName)
-	: m_parser(fileName) {}
+ConfigManager::ConfigManager(const std::wstring& fileName)
+	: m_parser{ fileName } {}
 
 ConfigManager::~ConfigManager() noexcept {
 	m_parser.WriteBack();

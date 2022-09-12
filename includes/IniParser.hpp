@@ -10,7 +10,7 @@ class IniParser {
     using Sections = std::unordered_map<std::string, ValueMap>;
 
 public:
-    IniParser(std::string fileName);
+    IniParser(std::wstring fileName);
 
     void Parse() noexcept;
     void AddOrUpdateValue(
@@ -44,6 +44,6 @@ private:
 
 private:
     Sections m_sections;
-    std::string m_fileName;
+    std::wstring m_fileName;
 };
 #endif

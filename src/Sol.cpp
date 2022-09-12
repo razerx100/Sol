@@ -79,7 +79,7 @@ namespace Sol {
 		threadPool = std::shared_ptr<IThreadPool>(CreateVenusInstance(threadCount));
 	}
 
-	void InitConfigManager(const std::string& fileName) {
+	void InitConfigManager(const std::wstring& fileName) {
 		configManager = std::make_unique<ConfigManager>(fileName);
 	}
 

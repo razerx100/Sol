@@ -37,8 +37,7 @@ public:
 	virtual void Render() = 0;
 	virtual void WaitForAsyncTasks() = 0;
 
-	virtual void SetShaderPath(const char* path) noexcept = 0;
-	virtual void InitResourceBasedObjects() = 0;
+	virtual void SetShaderPath(const wchar_t* path) noexcept = 0;
 	virtual void ProcessData() = 0;
 
 	virtual void SetSharedDataContainer(

@@ -11,7 +11,7 @@ class ConfigManager {
 	};
 
 public:
-	ConfigManager(const std::string& fileName);
+	ConfigManager(const std::wstring& fileName);
 	~ConfigManager() noexcept;
 
 	void ReadConfigFile() noexcept;

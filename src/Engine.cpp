@@ -8,7 +8,7 @@
 Engine::Engine()
 	: m_appName("Sol") {
 
-	Sol::InitConfigManager("config.ini");
+	Sol::InitConfigManager(L"config.ini");
 	Sol::configManager->ReadConfigFile();
 
 	Sol::InitThreadPool(8u);
@@ -24,7 +24,7 @@ Engine::Engine()
 		m_appName.c_str(),
 		Sol::configManager->GetWindowName()
 	);
-	Sol::window->SetWindowIcon("resources/icon/Sol.ico");
+	Sol::window->SetWindowIcon(L"resources/icon/Sol.ico");
 	Sol::window->SetInputManager(Sol::ioMan);
 
 	Sol::window->SetTitle(
@@ -38,8 +38,7 @@ Engine::Engine()
 		1920u, 1080u,
 		Sol::configManager->GetRendererName()
 	);
-	Sol::renderer->SetShaderPath("resources/shaders/");
-	Sol::renderer->InitResourceBasedObjects();
+	Sol::renderer->SetShaderPath(L"resources/shaders/");
 	Sol::renderer->SetThreadPool(Sol::threadPool);
 	Sol::renderer->SetSharedDataContainer(Sol::sharedData);
 	Sol::renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });

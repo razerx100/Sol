@@ -42,7 +42,7 @@ namespace Sol {
 	void InitModelContainer();
 	void InitTextureAtlas();
 	void InitThreadPool(size_t threadCount);
-	void InitConfigManager(const std::string& fileName);
+	void InitConfigManager(const std::wstring& fileName);
 	void InitSharedData();
 }
 #endif
