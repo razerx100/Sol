@@ -108,9 +108,23 @@ FetchContent_MakeAvailable(Luna)
 
 message(STATUS "Fetched Luna")
 
+message(STATUS "Fetching Europa....")
+
+FetchContent_Declare(
+    Europa
+    GIT_REPOSITORY https://github.com/razerx100/Europa.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(Europa)
+
+message(STATUS "Fetched Europa")
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
     Venus Pluto GaiaX Terra Luna
 )
+
+add_dependencies(${PROJECT_NAME} GLSL HLSL)
 
 set(ICON_PATH /resources/icon/Sol.ico)
 

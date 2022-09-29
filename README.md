@@ -7,9 +7,7 @@ Manager module/executable which dynamically links to different modules to form a
 3. [Terra](https://github.com/razerx100/Terra).
 4. [Luna](https://github.com/razerx100/Luna).
 5. [Venus](https://github.com/razerx100/Venus).
-
-## Library used
-1. [Europa](https://github.com/razerx100/Europa).
+6. [Europa](https://github.com/razerx100/Europa).
 
 ## Third party library used
 1. [DirectXMath](https://github.com/microsoft/DirectXMath).
@@ -21,9 +19,6 @@ Run the appropriate Setup script to either pull from master or dev branch. The s
 ## Resources
 ### Default Window Icon
 Default window icon location is {executable_directory}/resources/icon/Sol.ico.
-
-### Shader Location
-Put the compiled shaders into {executable_directory}/resources/shaders/ directory.
 
 ## Executable icon
 To change the executable icon for Windows, add the path to the icon in ***icon/win32ExecutableIcon.rc***. 
