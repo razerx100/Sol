@@ -1,12 +1,19 @@
 cmake_minimum_required(VERSION 3.21)
 
+message(STATUS "Starting project setup....")
+
 project(Sol
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
+set(CPP_STANDARD 20)
+
+set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+message(STATUS "Platform : ${PLATFORM}")
+message(STATUS "CPP Standard : ${CPP_STANDARD}")
 
 if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
@@ -41,6 +48,8 @@ endif()
 
 include(FetchContent)
 
+message(STATUS "Fetching Venus....")
+
 FetchContent_Declare(
     Venus
     GIT_REPOSITORY https://github.com/razerx100/Venus.git
@@ -48,6 +57,10 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(Venus)
+
+message(STATUS "Fetched Venus")
+
+message(STATUS "Fetching Pluto....")
 
 FetchContent_Declare(
     Pluto
@@ -57,6 +70,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Pluto)
 
+message(STATUS "Fetched Pluto")
+
+message(STATUS "Fetching GaiaX from branch ${BRANCH}....")
+
 FetchContent_Declare(
     GaiaX
     GIT_REPOSITORY https://github.com/razerx100/GaiaX.git
@@ -64,6 +81,10 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(GaiaX)
+
+message(STATUS "Fetched GaiaX")
+
+message(STATUS "Fetching Terra from branch ${BRANCH}....")
 
 FetchContent_Declare(
     Terra
@@ -73,6 +94,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Terra)
 
+message(STATUS "Fetched Terra")
+
+message(STATUS "Fetching Luna....")
+
 FetchContent_Declare(
     Luna
     GIT_REPOSITORY https://github.com/razerx100/Luna.git
@@ -81,8 +106,49 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Luna)
 
+message(STATUS "Fetched Luna")
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
     Venus Pluto GaiaX Terra Luna
 )
+
+set(ICON_PATH /resources/icon/Sol.ico)
+
+file(
+    GENERATE
+    OUTPUT
+     "buildIcon.cmake"
+    CONTENT
+     [[
+       if(NOT EXISTS ${ICON_PATH})
+           file(WRITE ${ICON_PATH})
+       endif()
+     ]]
+)
+
+add_custom_target(
+    Icon
+    ALL
+    DEPENDS
+     ${CMAKE_BINARY_DIR}/${ICON_PATH}
+)
+
+add_custom_command(
+    TARGET
+     Icon
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND}
+     -DICON_PATH=${CMAKE_BINARY_DIR}/${ICON_PATH} -P buildIcon.cmake
+)
+
+add_custom_command(
+    TARGET
+     Icon
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+     -E copy ${CMAKE_BINARY_DIR}/${ICON_PATH} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/${ICON_PATH}
+)
+
+add_dependencies(${PROJECT_NAME} Icon)
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
