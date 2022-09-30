@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <optional>
 
 struct STexture {
 	STexture() = default;
@@ -25,7 +26,9 @@ struct STexture {
 };
 
 namespace TextureLoader {
-	STexture LoadTextureFromFile(const std::string& fileName);
-};
+	[[nodiscard]]
+	std::optional<STexture> LoadTextureFromFile(const std::string& fileName) noexcept;
 
+	void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept;
+};
 #endif

@@ -9,7 +9,7 @@
 #include <DirectXMath.h>
 
 App::App() {
-	RGBA8 red = { 255u, 0u, 0u, 1u };
+	RGBA8 red{ 255u, 0u, 0u, 255u };
 
 	ColourTexture& colourManager = Sol::textureAtlas->GetColourTextureManager();
 
@@ -19,23 +19,9 @@ App::App() {
 	colourManager.AddColour("Green", DirectX::Colors::Green);
 	colourManager.AddColour("Blue", DirectX::Colors::Blue);
 
-	STexture segsTex = TextureLoader::LoadTextureFromFile("resources/textures/segs.jpg");
-
-	Sol::textureAtlas->AddTexture(
-		"segs", std::move(segsTex.data), segsTex.width, segsTex.height
-	);
-
-	STexture dogeTex = TextureLoader::LoadTextureFromFile("resources/textures/doge1.jpg");
-
-	Sol::textureAtlas->AddTexture(
-		"doge", std::move(dogeTex.data), dogeTex.width, dogeTex.height
-	);
-
-	STexture dogeBigTex = TextureLoader::LoadTextureFromFile("resources/textures/doge.jpg");
-
-	Sol::textureAtlas->AddTexture(
-		"dogeBig", std::move(dogeBigTex.data), dogeBigTex.width, dogeBigTex.height
-	);
+	TextureLoader::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
+	TextureLoader::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
+	TextureLoader::AddTextureToAtlas("resources/textures/doge.jpg", "dogeBig");
 
 	auto cubes = AddAndGetModels<Cube, CubeInputs>(2u);
 	auto quads = AddAndGetModels<Quad, QuadInputs>(1u);

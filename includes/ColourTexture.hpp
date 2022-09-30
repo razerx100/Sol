@@ -7,9 +7,9 @@
 #include <DirectXMath.h>
 
 template<typename T>
-struct RGBA {
-	RGBA() = default;
-	constexpr RGBA(T _r, T _g, T _b, T _a) noexcept : r(_r), g(_g), b(_b), a(_a) {}
+struct _RGBA {
+	_RGBA() = default;
+	constexpr _RGBA(T _r, T _g, T _b, T _a) noexcept : r(_r), g(_g), b(_b), a(_a) {}
 
 	T r;
 	T g;
@@ -17,8 +17,8 @@ struct RGBA {
 	T a;
 };
 
-using RGBA8 = RGBA<std::uint8_t>;
-using RGBA16 = RGBA<std::uint16_t>;
+using RGBA8 = _RGBA<std::uint8_t>;
+using RGBA16 = _RGBA<std::uint16_t>;
 
 class ColourTexture {
 public:
@@ -48,7 +48,7 @@ private:
 
 public:
 	template<std::integral From>
-	void AddColour(const std::string& name, const RGBA<From>& colour) noexcept {
+	void AddColour(const std::string& name, const _RGBA<From>& colour) noexcept {
 		m_colourNames.emplace_back(name);
 
 		if (m_16bitsComponent)
@@ -59,7 +59,7 @@ public:
 
 private:
 	template<std::integral T>
-	void MemCopyToTexture(std::vector<RGBA<T>>& unproccessedColour) noexcept {
+	void MemCopyToTexture(std::vector<_RGBA<T>>& unproccessedColour) noexcept {
 		size_t bytesPerPixel = m_16bitsComponent ? 8u : 4u;
 
 		for (size_t index = 0u; index < std::size(unproccessedColour); ++index) {
@@ -71,14 +71,14 @@ private:
 			);
 		}
 
-		unproccessedColour = std::vector<RGBA<T>>();
+		unproccessedColour = std::vector<_RGBA<T>>();
 	}
 
 	template<std::integral To>
-	RGBA<To> ColourCast(const DirectX::XMFLOAT4& colour) noexcept {
+	_RGBA<To> ColourCast(const DirectX::XMFLOAT4& colour) noexcept {
 		constexpr size_t multiplier = std::numeric_limits<To>::max();
 
-		RGBA<To> transformedColour = {};
+		_RGBA<To> transformedColour = {};
 		transformedColour.r = static_cast<To>(colour.x * multiplier);
 		transformedColour.g = static_cast<To>(colour.y * multiplier);
 		transformedColour.b = static_cast<To>(colour.z * multiplier);
@@ -88,14 +88,14 @@ private:
 	}
 
 	template<std::integral To, std::integral From>
-	RGBA<To> ColourCast(const RGBA<From>& colour) noexcept {
+	_RGBA<To> ColourCast(const _RGBA<From>& colour) noexcept {
 		constexpr size_t multiplier = std::numeric_limits<To>::max();
 		constexpr size_t divisor = std::numeric_limits<From>::max();
 
 		if constexpr (multiplier == divisor)
 			return colour;
 		else {
-			RGBA<To> transformedColour = {};
+			_RGBA<To> transformedColour = {};
 			transformedColour.r =
 				static_cast<To>(static_cast<float>(colour.r) / divisor * multiplier);
 			transformedColour.g =

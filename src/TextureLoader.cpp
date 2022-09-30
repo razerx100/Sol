@@ -1,6 +1,9 @@
 #include <TextureLoader.hpp>
 #include <array>
 #include <SolThrowMacros.hpp>
+#include <cassert>
+
+#include <Sol.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -11,7 +14,8 @@ namespace TextureLoader {
 		".gif", ".pic", ".pgm", ".ppm"
 	};
 
-	void ExtensionCheck(const std::string& fileName) {
+	[[nodiscard]]
+	bool ExtensionCheck(const std::string& fileName) noexcept {
 		bool hasOneSupported = false;
 		for (const std::string& extension : extensions)
 			if (fileName.ends_with(extension)) {
@@ -20,14 +24,15 @@ namespace TextureLoader {
 				break;
 			}
 
-		if (!hasOneSupported)
-			SOL_GENERIC_THROW("Unsupported texture format.");
+		return hasOneSupported;
 	}
 
-	STexture LoadTextureFromFile(const std::string& fileName) {
-		ExtensionCheck(fileName);
+	std::optional<STexture> LoadTextureFromFile(const std::string& fileName) noexcept {
+		const bool extensionSupport = ExtensionCheck(fileName);
+		assert(extensionSupport && "Texture extention not supported.");
 
-		STexture texture;
+		if (!extensionSupport)
+			return {};
 
 		int width = 0;
 		int height = 0;
@@ -37,10 +42,27 @@ namespace TextureLoader {
 
 		stbi_uc* data = stbi_load(fileName.c_str(), &width, &height, &componentCount, 4u);
 
-		texture.data = std::unique_ptr<std::uint8_t>(reinterpret_cast<std::uint8_t*>(data));
-		texture.width = static_cast<std::uint32_t>(width);
-		texture.height = static_cast<std::uint32_t>(height);
+		if (data != nullptr) {
+			STexture texture;
+			texture.data = std::unique_ptr<std::uint8_t>(reinterpret_cast<std::uint8_t*>(data));
+			texture.width = static_cast<std::uint32_t>(width);
+			texture.height = static_cast<std::uint32_t>(height);
 
-		return texture;
+			return texture;
+		}
+		else
+			return {};
+	}
+
+	void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept {
+		auto tex = TextureLoader::LoadTextureFromFile(fileName);
+
+		if (tex) {
+			STexture& refTex = *tex;
+
+			Sol::textureAtlas->AddTexture(
+				texName, std::move(refTex.data), refTex.width, refTex.height
+			);
+		}
 	}
 };
