@@ -28,5 +28,7 @@ public:
 
 	[[nodiscard]]
 	virtual DirectX::XMMATRIX GetModelMatrix() const noexcept = 0;
+	[[nodiscard]]
+	virtual DirectX::XMFLOAT3 GetModelOffset() const noexcept = 0;
 };
 #endif

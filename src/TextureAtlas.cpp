@@ -21,11 +21,8 @@ void TextureAtlas::AddTexture(
 }
 
 void TextureAtlas::CreateAtlas() noexcept {
-	// Add white as default colour
-	m_colourTextureManager.AddColour("White", RGBA8{ 235u, 235u, 235u, 255u });
-
-	// Create and add colour texture
-	m_colourTextureManager.CreateTexture();
+	// Add white as default colour  and Create
+	m_colourTextureManager.AddColour("White", RGBA8{ 235u, 235u, 235u, 255u }).CreateTexture();
 
 	const std::string coloursTexName = "Colours";
 

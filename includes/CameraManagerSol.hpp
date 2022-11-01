@@ -26,7 +26,7 @@ class PerspectiveCamera : public _BaseCamera {
 public:
 	PerspectiveCamera() noexcept;
 
-	void SetWorldForwardDirection(bool positiveZ) noexcept;
+	PerspectiveCamera& SetWorldForwardDirection(bool positiveZ) noexcept;
 	void SetTravelSpeed(float travelSpeed) noexcept;
 	void SetRotationSpeed(float rotationSpeed) noexcept;
 
@@ -74,9 +74,6 @@ public:
 
 	[[nodiscard]]
 	PerspectiveCameraEuler* GetEulerCamera(size_t cameraIndex) const;
-
-private:
-	void CheckIndexValidity(size_t index) const;
 
 private:
 	std::vector<std::unique_ptr<_BaseCamera>> m_cameras;

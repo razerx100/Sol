@@ -48,9 +48,21 @@ public:
 	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
 	[[nodiscard]]
 	UVInfo GetUVInfo() const noexcept final;
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept final;
 
-	void SetModelMatrix(const DirectX::XMMATRIX& modelMatrix) noexcept;
-	void AddTransformation(const DirectX::XMMATRIX& transform) noexcept;
+	Model& RotateXDegree(float angle) noexcept;
+	Model& RotateYDegree(float angle) noexcept;
+	Model& RotateZDegree(float angle) noexcept;
+	Model& RotateXRadian(float angle) noexcept;
+	Model& RotateYRadian(float angle) noexcept;
+	Model& RotateZRadian(float angle) noexcept;
+
+	Model& MoveTowardsX(float delta) noexcept;
+	Model& MoveTowardsY(float delta) noexcept;
+	Model& MoveTowardsZ(float delta) noexcept;
+
+	void Rotate(const DirectX::XMVECTOR& rotationAxis, float angleRadian) noexcept;
 
 protected:
 	DirectX::XMMATRIX m_modelMatrix;
@@ -61,5 +73,6 @@ private:
 	UVInfo m_uvInfo;
 	std::uint32_t m_indexCount;
 	std::uint32_t m_indexOffset;
+	DirectX::XMFLOAT3 m_modelOffset;
 };
 #endif

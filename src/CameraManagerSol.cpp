@@ -26,15 +26,15 @@ PerspectiveCamera::PerspectiveCamera() noexcept
 	m_cameraFocusDirection(m_worldForwardDirection),
 	m_upVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)), m_travelSpeed(5.f), m_rotationSpeed(5.f) {}
 
-void PerspectiveCamera::SetWorldForwardDirection(
-	bool positiveZ
-) noexcept {
+PerspectiveCamera& PerspectiveCamera::SetWorldForwardDirection(bool positiveZ) noexcept {
 	if (positiveZ)
 		m_worldForwardDirection = XMVectorSet(0.f, 0.f, 1.f, 0.f);
 	else
 		m_worldForwardDirection = XMVectorSet(0.f, 0.f, -1.f, 0.f);
 
 	m_cameraFocusDirection = m_worldForwardDirection;
+
+	return *this;
 }
 
 void PerspectiveCamera::SetTravelSpeed(float travelSpeed) noexcept {
@@ -125,7 +125,7 @@ size_t CameraManagerSol::AddEulerCameraAndGetIndex(
 }
 
 void CameraManagerSol::SetCurrentCameraIndex(size_t cameraIndex) {
-	CheckIndexValidity(cameraIndex);
+	assert(std::size(m_cameras) > cameraIndex && "There is no camera at the specified index.");
 
 	m_currentCameraIndex = cameraIndex;
 }
@@ -138,18 +138,12 @@ void CameraManagerSol::SetCamera() const noexcept {
 }
 
 PerspectiveCameraEuler* CameraManagerSol::GetEulerCamera(size_t cameraIndex) const {
-	CheckIndexValidity(cameraIndex);
+	assert(std::size(m_cameras) > cameraIndex && "There is no camera at the specified index.");
 
 	PerspectiveCameraEuler* camera =
 		dynamic_cast<PerspectiveCameraEuler*>(m_cameras.at(cameraIndex).get());
 
-	if (!camera)
-		SOL_GENERIC_THROW("Camera at the specified index isn't a Euler Camera.");
+	assert(camera && "Camera at the specified index isn't a Euler Camera.");
 
 	return camera;
-}
-
-void CameraManagerSol::CheckIndexValidity(size_t index) const {
-	if (std::size(m_cameras) <= index)
-		SOL_GENERIC_THROW("There is no camera at the specified index.");
 }

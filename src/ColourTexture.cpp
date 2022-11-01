@@ -3,7 +3,7 @@
 ColourTexture::ColourTexture() noexcept
 	: m_16bitsComponent(false) {}
 
-void ColourTexture::AddColour(
+ColourTexture& ColourTexture::AddColour(
 	const std::string& name, const DirectX::XMVECTORF32& colour
 ) noexcept {
 	m_colourNames.emplace_back(name);
@@ -15,6 +15,8 @@ void ColourTexture::AddColour(
 		m_unprocessedColourU16.emplace_back(ColourCast<std::uint16_t>(colourF4));
 	else
 		m_unprocessedColourU8.emplace_back(ColourCast<std::uint8_t>(colourF4));
+
+	return *this;
 }
 
 void ColourTexture::CreateTexture() noexcept {

@@ -11,13 +11,12 @@
 App::App() {
 	RGBA8 red{ 255u, 0u, 0u, 255u };
 
-	ColourTexture& colourManager = Sol::textureAtlas->GetColourTextureManager();
-
-	colourManager.AddColour("Fuchsia", DirectX::Colors::Fuchsia);
-	colourManager.AddColour("Cyan", DirectX::Colors::Cyan);
-	colourManager.AddColour("Red", red);
-	colourManager.AddColour("Green", DirectX::Colors::Green);
-	colourManager.AddColour("Blue", DirectX::Colors::Blue);
+	Sol::textureAtlas->GetColourTextureManager()
+		.AddColour("Fuchsia", DirectX::Colors::Fuchsia)
+		.AddColour("Cyan", DirectX::Colors::Cyan)
+		.AddColour("Red", red)
+		.AddColour("Green", DirectX::Colors::Green)
+		.AddColour("Blue", DirectX::Colors::Blue);
 
 	TextureLoader::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureLoader::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
@@ -26,8 +25,7 @@ App::App() {
 	auto cubes = AddAndGetModels<Cube, CubeInputs>(2u);
 	auto quads = AddAndGetModels<Quad, QuadInputs>(1u);
 
-	AddModels(std::move(cubes));
-	AddModels(std::move(quads));
+	AddModels(std::move(cubes)).AddModels(std::move(quads));
 
 	auto& cube0 = m_models[0];
 	auto& cube1 = m_models[1];
@@ -37,27 +35,16 @@ App::App() {
 	cube1->SetTextureIndex(0u);
 	quad->SetTextureIndex(0u);
 
-	DirectX::XMVECTOR rotAxis = { 0.f, 1.f, 0.f, 0.f };
-
-	cube1->AddTransformation(
-		DirectX::XMMatrixRotationAxis(rotAxis, DirectX::XMConvertToRadians(45))
-		* DirectX::XMMatrixTranslation(-0.1f, 0.f, 0.3f)
-	);
-
-	cube0->AddTransformation(
-		DirectX::XMMatrixRotationAxis(rotAxis, DirectX::XMConvertToRadians(45))
-	);
-
-	quad->AddTransformation(
-		DirectX::XMMatrixTranslation(0.5, 0.f, 0.f)
-	);
+	cube1->RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
+	cube0->RotateYDegree(45.f);
+	quad->MoveTowardsX(2.5f);
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
 
 	PerspectiveCameraEuler camera1;
-	camera1.SetWorldForwardDirection(true);
-	camera1.SetCameraPosition(cameraPosition);
+
+	camera1.SetWorldForwardDirection(true).SetCameraPosition(cameraPosition);
 
 	size_t camera1Index = AMods::cameraManager->AddEulerCameraAndGetIndex(
 		std::make_unique<PerspectiveCameraEuler>(camera1)
@@ -66,8 +53,7 @@ App::App() {
 	cameraPosition.z = 1.f;
 
 	PerspectiveCameraEuler camera2;
-	camera2.SetWorldForwardDirection(false);
-	camera2.SetCameraPosition(cameraPosition);
+	camera2.SetWorldForwardDirection(false).SetCameraPosition(cameraPosition);
 
 	size_t camera2Index = AMods::cameraManager->AddEulerCameraAndGetIndex(
 		std::make_unique<PerspectiveCameraEuler>(camera2)
@@ -128,14 +114,10 @@ void App::PhysicsUpdate() {
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
-		m_models[1]->AddTransformation(
-			DirectX::XMMatrixTranslation(-0.1f, 0.f, 0.3f)
-		);
+		m_models[1]->MoveTowardsX(-0.1f).MoveTowardsZ(0.3f);
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::S, SKeyCodes::Two))
-		m_models[1]->AddTransformation(
-			DirectX::XMMatrixTranslation(0.1f, 0.f, -0.3f)
-		);
+		m_models[1]->MoveTowardsX(0.1f).MoveTowardsZ(-0.3f);
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::W)) {
 		auto camera = AMods::cameraManager->GetEulerCamera(0u);
@@ -185,7 +167,9 @@ void App::PhysicsUpdate() {
 	}
 }
 
-void App::AddModels(std::vector<std::shared_ptr<Model>>&& models) noexcept {
+App& App::AddModels(std::vector<std::shared_ptr<Model>>&& models) noexcept {
 	for (auto& model : models)
 		m_models.emplace_back(std::move(model));
+
+	return *this;
 }

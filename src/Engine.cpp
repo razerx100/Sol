@@ -109,6 +109,7 @@ int Engine::Run() {
 
 			Sol::window->UpdateIndependentInputs();
 			Sol::app->PerFrameUpdate();
+			Sol::renderer->Update();
 			Sol::renderer->Render();
 		}
 

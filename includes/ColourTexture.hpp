@@ -24,7 +24,9 @@ class ColourTexture {
 public:
 	ColourTexture() noexcept;
 
-	void AddColour(const std::string& name, const DirectX::XMVECTORF32& colour) noexcept;
+	ColourTexture& AddColour(
+		const std::string& name, const DirectX::XMVECTORF32& colour
+	) noexcept;
 	void CreateTexture() noexcept;
 
 	void SetIfComponentsAre16bits(bool component16bits) noexcept;
@@ -48,13 +50,15 @@ private:
 
 public:
 	template<std::integral From>
-	void AddColour(const std::string& name, const _RGBA<From>& colour) noexcept {
+	ColourTexture& AddColour(const std::string& name, const _RGBA<From>& colour) noexcept {
 		m_colourNames.emplace_back(name);
 
 		if (m_16bitsComponent)
 			m_unprocessedColourU16.emplace_back(ColourCast<std::uint16_t>(colour));
 		else
 			m_unprocessedColourU8.emplace_back(ColourCast<std::uint8_t>(colour));
+
+		return *this;
 	}
 
 private:
