@@ -60,9 +60,16 @@ template<class model, class input>
 std::vector<std::shared_ptr<Model>> AddAndGetModels(std::uint32_t instances) noexcept {
 	auto modelInputs = std::make_unique<input>();
 
+	ModelBoundingBox genericBoundingBox{};
+	genericBoundingBox.Calculate(modelInputs->GetVertexData());
+
 	std::vector<std::shared_ptr<Model>> models;
-	for (size_t index = 0u; index < instances; ++index)
-		models.emplace_back(std::make_shared<model>(modelInputs->GetIndexCount()));
+	for (size_t index = 0u; index < instances; ++index) {
+		auto modelPtr = std::make_shared<model>(modelInputs->GetIndexCount());
+		modelPtr->GetBoundingBox().SetBoundingCube(genericBoundingBox.GetBoundingCube());
+
+		models.emplace_back(std::move(modelPtr));
+	}
 
 	Sol::modelContainer->AddModels(models, std::move(modelInputs));
 

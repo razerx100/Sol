@@ -1,8 +1,7 @@
 #ifndef I_MODEL_HPP_
 #define I_MODEL_HPP_
 #include <cstdint>
-#include <vector>
-#include <memory>
+#include <array>
 
 #include <DirectXMath.h>
 
@@ -30,5 +29,7 @@ public:
 	virtual DirectX::XMMATRIX GetModelMatrix() const noexcept = 0;
 	[[nodiscard]]
 	virtual DirectX::XMFLOAT3 GetModelOffset() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::array<DirectX::XMFLOAT3, 8u> GetBoundingBox() const noexcept = 0;
 };
 #endif

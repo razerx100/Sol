@@ -16,7 +16,7 @@ Triangle::Triangle(std::uint32_t indexCount) noexcept : Model{ indexCount } {
 }
 
 void Triangle::Init() noexcept {
-	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
 }
 
 TriangleInputs::TriangleInputs() noexcept {
@@ -43,7 +43,7 @@ Cube::Cube(std::uint32_t indexCount) noexcept : Model{ indexCount } {
 }
 
 void Cube::Init() noexcept {
-	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
 }
 
 CubeInputs::CubeInputs() noexcept {
@@ -100,7 +100,7 @@ Quad::Quad(std::uint32_t indexCount) noexcept : Model{ indexCount } {
 }
 
 void Quad::Init() noexcept {
-	m_modelMatrix *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
 }
 
 QuadInputs::QuadInputs() noexcept {

@@ -35,9 +35,9 @@ App::App() {
 	cube1->SetTextureIndex(0u);
 	quad->SetTextureIndex(0u);
 
-	cube1->RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
-	cube0->RotateYDegree(45.f);
-	quad->MoveTowardsX(2.5f);
+	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
+	cube0->GetTransform().RotateYDegree(45.f);
+	quad->GetTransform().MoveTowardsX(2.5f);
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
@@ -114,10 +114,10 @@ void App::PhysicsUpdate() {
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
-		m_models[1]->MoveTowardsX(-0.1f).MoveTowardsZ(0.3f);
+		m_models[1]->GetTransform().MoveTowardsX(-0.1f).MoveTowardsZ(0.3f);
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::S, SKeyCodes::Two))
-		m_models[1]->MoveTowardsX(0.1f).MoveTowardsZ(-0.3f);
+		m_models[1]->GetTransform().MoveTowardsX(0.1f).MoveTowardsZ(-0.3f);
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::W)) {
 		auto camera = AMods::cameraManager->GetEulerCamera(0u);
