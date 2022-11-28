@@ -12,6 +12,11 @@ struct UVInfo {
 	float vRatio;
 };
 
+struct ModelBounds {
+	DirectX::XMFLOAT3 positiveAxes;
+	DirectX::XMFLOAT3 negativeAxes;
+};
+
 class IModel {
 public:
 	virtual ~IModel() = default;
@@ -30,6 +35,6 @@ public:
 	[[nodiscard]]
 	virtual DirectX::XMFLOAT3 GetModelOffset() const noexcept = 0;
 	[[nodiscard]]
-	virtual std::array<DirectX::XMFLOAT3, 8u> GetBoundingBox() const noexcept = 0;
+	virtual ModelBounds GetBoundingBox() const noexcept = 0;
 };
 #endif

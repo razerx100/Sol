@@ -63,18 +63,16 @@ private:
 
 class ModelBoundingBox {
 public:
-	using CubeType = std::array<DirectX::XMFLOAT3, 8u>;
-
 	ModelBoundingBox() noexcept;
 
 	void Calculate(const std::vector<Vertex>& vertices) noexcept;
-	void SetBoundingCube(const CubeType& cube) noexcept;
+	void SetBoundingCube(const ModelBounds& bounds) noexcept;
 
 	[[nodiscard]]
-	const CubeType& GetBoundingCube() const noexcept;
+	ModelBounds GetBoundingCube() const noexcept;
 
 private:
-	CubeType m_boundingCube;
+	ModelBounds m_boundingCube;
 };
 
 class Model : public IModel {
@@ -99,7 +97,7 @@ public:
 	[[nodiscard]]
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept final;
 	[[nodiscard]]
-	std::array<DirectX::XMFLOAT3, 8u> GetBoundingBox() const noexcept final;
+	ModelBounds GetBoundingBox() const noexcept final;
 
 	[[nodiscard]]
 	ModelTransform& GetTransform() noexcept;

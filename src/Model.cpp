@@ -69,7 +69,7 @@ DirectX::XMMATRIX& Model::GetModelMatrixRef() noexcept {
 	return m_transform.GetModelMatrixRef();
 }
 
-std::array<DirectX::XMFLOAT3, 8u> Model::GetBoundingBox() const noexcept {
+ModelBounds Model::GetBoundingBox() const noexcept {
 	return m_boundingBox.GetBoundingCube();
 }
 
@@ -89,8 +89,8 @@ ModelBoundingBox& Model::GetBoundingBox() noexcept {
 ModelBoundingBox::ModelBoundingBox() noexcept : m_boundingCube{} {}
 
 void ModelBoundingBox::Calculate(const std::vector<Vertex>& vertices) noexcept {
-	DirectX::XMFLOAT3 maxPositiveAxes{};
-	DirectX::XMFLOAT3 maxNegativeAxes{};
+	DirectX::XMFLOAT3& maxPositiveAxes = m_boundingCube.positiveAxes;
+	DirectX::XMFLOAT3& maxNegativeAxes = m_boundingCube.negativeAxes;
 
 	for (const auto& vertex : vertices) {
 		maxPositiveAxes.x = std::max(vertex.position.x, maxPositiveAxes.x);
@@ -101,26 +101,13 @@ void ModelBoundingBox::Calculate(const std::vector<Vertex>& vertices) noexcept {
 		maxNegativeAxes.y = std::min(vertex.position.y, maxNegativeAxes.y);
 		maxNegativeAxes.z = std::min(vertex.position.z, maxNegativeAxes.z);
 	}
-
-	// -x, +y, -z -> +x, +y, -z
-	// -x, -y, -z -> +x, -y, -z
-	// -x, +y, +z -> +x, +y, +z
-	// -x, -y, +z -> +x, -y, +z
-	m_boundingCube[0] = { maxNegativeAxes.x, maxPositiveAxes.y, maxNegativeAxes.z };
-	m_boundingCube[1] = { maxPositiveAxes.x, maxPositiveAxes.y, maxNegativeAxes.z };
-	m_boundingCube[2] = { maxPositiveAxes.x, maxNegativeAxes.y, maxNegativeAxes.z };
-	m_boundingCube[3] = { maxNegativeAxes.x, maxNegativeAxes.y, maxNegativeAxes.z };
-	m_boundingCube[4] = { maxNegativeAxes.x, maxPositiveAxes.y, maxPositiveAxes.z };
-	m_boundingCube[5] = { maxPositiveAxes.x, maxPositiveAxes.y, maxPositiveAxes.z };
-	m_boundingCube[6] = { maxPositiveAxes.x, maxNegativeAxes.y, maxPositiveAxes.z };
-	m_boundingCube[7] = { maxNegativeAxes.x, maxNegativeAxes.y, maxPositiveAxes.z };
 }
 
-void ModelBoundingBox::SetBoundingCube(const CubeType& cube) noexcept{
-	m_boundingCube = cube;
+void ModelBoundingBox::SetBoundingCube(const ModelBounds& bounds) noexcept{
+	m_boundingCube = bounds;
 }
 
-const ModelBoundingBox::CubeType& ModelBoundingBox::GetBoundingCube() const noexcept {
+ModelBounds ModelBoundingBox::GetBoundingCube() const noexcept {
 	return m_boundingCube;
 }
 
