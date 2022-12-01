@@ -111,6 +111,8 @@ void App::PerFrameUpdate() {
 }
 
 void App::PhysicsUpdate() {
+	constexpr float cameraMoveSpeed = 0.001f;
+
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
 	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
@@ -120,39 +122,39 @@ void App::PhysicsUpdate() {
 		m_models[1]->GetTransform().MoveTowardsX(0.1f).MoveTowardsZ(-0.3f);
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::W)) {
-		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
-		camera->MoveForward(AMods::frameTime->GetDeltaTime());
+		camera->MoveForward(cameraMoveSpeed).MoveCamera();
 	}
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::S)) {
-		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
-		camera->MoveBackward(AMods::frameTime->GetDeltaTime());
+		camera->MoveBackward(cameraMoveSpeed).MoveCamera();
 	}
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::A)) {
-		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
-		camera->MoveLeft(AMods::frameTime->GetDeltaTime());
+		camera->MoveLeft(cameraMoveSpeed).MoveCamera();
 	}
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::D)) {
-		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
-		camera->MoveRight(AMods::frameTime->GetDeltaTime());
+		camera->MoveRight(cameraMoveSpeed).MoveCamera();
 	}
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::T)) {
-		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
-		camera->MoveUp(AMods::frameTime->GetDeltaTime());
+		camera->MoveUp(cameraMoveSpeed).MoveCamera();
 	}
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::G)) {
-		auto camera = AMods::cameraManager->GetEulerCamera(0u);
+		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
-		camera->MoveDown(AMods::frameTime->GetDeltaTime());
+		camera->MoveDown(cameraMoveSpeed).MoveCamera();
 	}
 
 	IGamepad* pGamepadRef = Sol::ioMan->GetGamepad();
@@ -161,9 +163,8 @@ void App::PhysicsUpdate() {
 		auto camera = AMods::cameraManager->GetEulerCamera(0u);
 
 		auto& [magnitude, offsetX, offsetY] = *thumbStickData;
-		float deltaTime = AMods::frameTime->GetDeltaTime();
 
-		camera->LookAround(offsetX * deltaTime * 3.f , -1.f * offsetY * deltaTime * 3.f);
+		camera->LookAround(offsetX * 0.001f, -1.f * offsetY * 0.0001f);
 	}
 }
 

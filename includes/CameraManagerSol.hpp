@@ -45,19 +45,30 @@ class PerspectiveCameraEuler final : public PerspectiveCamera {
 public:
 	PerspectiveCameraEuler() noexcept;
 
-	void MoveLeft(float deltaTime) noexcept;
-	void MoveRight(float deltaTime) noexcept;
-	void MoveUp(float deltaTime) noexcept;
-	void MoveDown(float deltaTime) noexcept;
-	void MoveForward(float deltaTime) noexcept;
-	void MoveBackward(float deltaTime) noexcept;
+	[[nodiscard]]
+	PerspectiveCameraEuler& MoveLeft(float offset) noexcept;
+	[[nodiscard]]
+	PerspectiveCameraEuler& MoveRight(float offset) noexcept;
+	[[nodiscard]]
+	PerspectiveCameraEuler& MoveUp(float offset) noexcept;
+	[[nodiscard]]
+	PerspectiveCameraEuler& MoveDown(float offset) noexcept;
+	[[nodiscard]]
+	PerspectiveCameraEuler& MoveForward(float offset) noexcept;
+	[[nodiscard]]
+	PerspectiveCameraEuler& MoveBackward(float offset) noexcept;
+
+	void MoveCamera() noexcept;
 
 	void LookAround(float offsetX, float offsetY) noexcept;
 
 private:
-	void MoveCamera(DirectX::XMVECTOR& translateVector) noexcept;
+	void MoveX(float offset) noexcept;
+	void MoveY(float offset) noexcept;
+	void MoveZ(float offset) noexcept;
 
 private:
+	DirectX::XMVECTOR m_translateVector;
 	float m_pitch;
 	float m_yaw;
 };
@@ -74,6 +85,8 @@ public:
 
 	[[nodiscard]]
 	PerspectiveCameraEuler* GetEulerCamera(size_t cameraIndex) const;
+	[[nodiscard]]
+	PerspectiveCameraEuler* GetFirstEulerCamera() const;
 
 private:
 	std::vector<std::unique_ptr<_BaseCamera>> m_cameras;

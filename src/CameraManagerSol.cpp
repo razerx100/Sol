@@ -54,46 +54,65 @@ XMMATRIX PerspectiveCamera::GetViewMatrix() const noexcept {
 }
 
 // Perspective Camera with Euler's Rotation
-PerspectiveCameraEuler::PerspectiveCameraEuler() noexcept :  m_pitch(0.f), m_yaw(0.f) {}
+PerspectiveCameraEuler::PerspectiveCameraEuler() noexcept
+	: m_translateVector{ XMVectorSet(0.f, 0.f, 0.f, 0.f) }, m_pitch{ 0.f }, m_yaw{ 0.f } {}
 
-void PerspectiveCameraEuler::MoveLeft(float deltaTime) noexcept {
-	XMVECTOR translateVector = XMVectorSet(-deltaTime, 0.f, 0.f, 0.f);
-	MoveCamera(translateVector);
+PerspectiveCameraEuler& PerspectiveCameraEuler::MoveLeft(float offset) noexcept {
+	MoveX(-offset);
+
+	return *this;
 }
 
-void PerspectiveCameraEuler::MoveRight(float deltaTime) noexcept {
-	XMVECTOR translateVector = XMVectorSet(deltaTime, 0.f, 0.f, 0.f);
-	MoveCamera(translateVector);
+PerspectiveCameraEuler& PerspectiveCameraEuler::MoveRight(float offset) noexcept {
+	MoveX(offset);
+
+	return *this;
 }
 
-void PerspectiveCameraEuler::MoveUp(float deltaTime) noexcept {
-	XMVECTOR translateVector = XMVectorSet(0.f, deltaTime, 0.f, 0.f);
-	MoveCamera(translateVector);
+PerspectiveCameraEuler& PerspectiveCameraEuler::MoveUp(float offset) noexcept {
+	MoveY(offset);
+
+	return *this;
 }
 
-void PerspectiveCameraEuler::MoveDown(float deltaTime) noexcept {
-	XMVECTOR translateVector = XMVectorSet(0.f, -deltaTime, 0.f, 0.f);
-	MoveCamera(translateVector);
+PerspectiveCameraEuler& PerspectiveCameraEuler::MoveDown(float offset) noexcept {
+	MoveY(-offset);
+
+	return *this;
 }
 
-void PerspectiveCameraEuler::MoveForward(float deltaTime) noexcept {
-	XMVECTOR translateVector = XMVectorSet(0.f, 0.f, deltaTime, 0.f);
-	MoveCamera(translateVector);
+PerspectiveCameraEuler& PerspectiveCameraEuler::MoveForward(float offset) noexcept {
+	MoveZ(offset);
+
+	return *this;
 }
 
-void PerspectiveCameraEuler::MoveBackward(float deltaTime) noexcept {
-	XMVECTOR translateVector = XMVectorSet(0.f, 0.f, -deltaTime, 0.f);
-	MoveCamera(translateVector);
+PerspectiveCameraEuler& PerspectiveCameraEuler::MoveBackward(float offset) noexcept {
+	MoveZ(-offset);
+
+	return *this;
 }
 
-void PerspectiveCameraEuler::MoveCamera(XMVECTOR& translateVector) noexcept {
-	translateVector = XMVector3Transform(
-		translateVector,
+void PerspectiveCameraEuler::MoveX(float offset) noexcept {
+	m_translateVector = XMVectorSet(offset, 0.f, 0.f, 0.f);
+}
+
+void PerspectiveCameraEuler::MoveY(float offset) noexcept {
+	m_translateVector = XMVectorSet(0.f, offset, 0.f, 0.f);
+}
+
+void PerspectiveCameraEuler::MoveZ(float offset) noexcept {
+	m_translateVector = XMVectorSet(0.f, 0.f, offset, 0.f);
+}
+
+void PerspectiveCameraEuler::MoveCamera() noexcept {
+	m_translateVector = XMVector3Transform(
+		m_translateVector,
 		XMMatrixRotationRollPitchYaw(m_pitch, m_yaw, 0.f) *
 		XMMatrixScaling(m_travelSpeed, m_travelSpeed, m_travelSpeed)
 	);
 
-	m_cameraPosition += translateVector;
+	m_cameraPosition += m_translateVector;
 }
 
 void PerspectiveCameraEuler::LookAround(float offsetX, float offsetY) noexcept {
@@ -146,4 +165,8 @@ PerspectiveCameraEuler* CameraManagerSol::GetEulerCamera(size_t cameraIndex) con
 	assert(camera && "Camera at the specified index isn't a Euler Camera.");
 
 	return camera;
+}
+
+PerspectiveCameraEuler* CameraManagerSol::GetFirstEulerCamera() const {
+	return GetEulerCamera(0u);
 }
