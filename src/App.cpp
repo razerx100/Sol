@@ -4,7 +4,6 @@
 
 #include <BasicModels.hpp>
 #include <Sol.hpp>
-#include <AppModules.hpp>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 

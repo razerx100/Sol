@@ -3,12 +3,11 @@
 
 #include <Sol.hpp>
 #include <DirectXMath.h>
-#include <AppModules.hpp>
 
 Engine::Engine()
 	: m_appName("Sol") {
 
-	Sol::InitConfigManager(L"config.ini");
+	Sol::objectManager.CreateObject(Sol::configManager, { L"config.ini" }, 0u);
 	Sol::configManager->ReadConfigFile();
 
 	Sol::InitThreadPool(8u);
@@ -45,12 +44,12 @@ Engine::Engine()
 
 	AMods::InitAppModules();
 
-	Sol::InitModelContainer();
-	Sol::InitTextureAtlas();
+	Sol::objectManager.CreateObject(Sol::modelContainer, 0u);
+	Sol::objectManager.CreateObject(Sol::textureAtlas, 0u);
 
 	Sol::window->SetRenderer(Sol::renderer);
 
-	Sol::InitApp();
+	Sol::objectManager.CreateObject(Sol::app, 1u);
 
 	Sol::textureAtlas->CreateAtlas();
 
@@ -68,15 +67,7 @@ Engine::Engine()
 }
 
 Engine::~Engine() noexcept {
-	AMods::ResetAppModules();
-	Sol::configManager.reset();
-	Sol::textureAtlas.reset();
-	Sol::app.reset();
-	Sol::renderer.reset();
-	Sol::sharedData.reset();
-	Sol::window.reset();
-	Sol::ioMan.reset();
-	Sol::threadPool.reset();
+	Sol::objectManager.StartDestruction();
 }
 
 int Engine::Run() {

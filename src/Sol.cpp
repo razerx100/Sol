@@ -7,8 +7,19 @@
 
 #include <Sol.hpp>
 
+namespace AMods {
+	std::unique_ptr<FrameTime> frameTime;
+	std::unique_ptr<CameraManagerSol> cameraManager;
+
+	void InitAppModules() {
+		Sol::objectManager.CreateObject(frameTime, 0u);
+		Sol::objectManager.CreateObject(cameraManager, 0u);
+	}
+}
+
 namespace Sol {
 	// Variables
+	ObjectManager objectManager;
 	std::unique_ptr<App> app;
 	std::shared_ptr<InputManager> ioMan;
 	std::unique_ptr<Window> window;
@@ -20,13 +31,9 @@ namespace Sol {
 	std::shared_ptr<ISharedDataContainer> sharedData;
 
 	// Functions
-	void InitApp() {
-		app = std::make_unique<App>();
-	}
-
 	void InitIoMan(std::string moduleName) {
 		if (moduleName == "Pluto")
-			ioMan = std::shared_ptr<InputManager>(CreatePlutoInstance());
+			objectManager.CreateObject(ioMan, CreatePlutoInstance(), 3u);
 	}
 
 	void InitWindow(
@@ -34,9 +41,7 @@ namespace Sol {
 		std::string moduleName
 	) {
 		if (moduleName == "Luna")
-			window = std::unique_ptr<Window>(
-				CreateLunaInstance(width, height, name)
-				);
+			objectManager.CreateObject(window, CreateLunaInstance(width, height, name), 3u);
 	}
 
 	void InitRenderer(
@@ -48,42 +53,30 @@ namespace Sol {
 		std::uint8_t bufferCount
 	) {
 		if (moduleName == "Gaia")
-			renderer = std::shared_ptr<Renderer>(
-				CreateGaiaInstance(
+			objectManager.CreateObject(
+				renderer, CreateGaiaInstance(
 					appName,
 					windowHandle,
 					width, height,
 					bufferCount
-				)
+				), 2u
 			);
 		else if (moduleName == "Terra")
-			renderer = std::shared_ptr<Renderer>(
-				CreateTerraInstance(
+			objectManager.CreateObject(
+				renderer, CreateTerraInstance(
 					appName,
 					windowHandle, moduleHandle,
 					width, height,
 					bufferCount
-				)
+				), 2u
 			);
 	}
 
-	void InitModelContainer() {
-		modelContainer = std::make_unique<ModelContainer>();
-	}
-
-	void InitTextureAtlas() {
-		textureAtlas = std::make_unique<TextureAtlas>();
-	}
-
 	void InitThreadPool(size_t threadCount) {
-		threadPool = std::shared_ptr<IThreadPool>(CreateVenusInstance(threadCount));
-	}
-
-	void InitConfigManager(const std::wstring& fileName) {
-		configManager = std::make_unique<ConfigManager>(fileName);
+		objectManager.CreateObject(threadPool, CreateVenusInstance(threadCount), 3u);
 	}
 
 	void InitSharedData() {
-		sharedData = std::make_shared<SharedDataContainer>();
+		objectManager.CreateObject<SharedDataContainer>(sharedData, 3u);
 	}
 }

@@ -2,6 +2,7 @@
 #define CONFIG_MANAGER_HPP_
 #include <IniParser.hpp>
 #include <array>
+#include <optional>
 
 class ConfigManager {
 	const std::unordered_map<std::string, std::string> DEFAULTMODULES = {
@@ -11,7 +12,12 @@ class ConfigManager {
 	};
 
 public:
-	ConfigManager(const std::wstring& fileName);
+	struct Args {
+		std::optional<std::wstring> fileName;
+	};
+
+public:
+	ConfigManager(Args& arguments);
 	~ConfigManager() noexcept;
 
 	void ReadConfigFile() noexcept;

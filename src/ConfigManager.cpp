@@ -1,7 +1,7 @@
 #include <ConfigManager.hpp>
 
-ConfigManager::ConfigManager(const std::wstring& fileName)
-	: m_parser{ fileName } {}
+ConfigManager::ConfigManager(Args& arguments)
+	: m_parser{ std::move(arguments.fileName.value()) } {}
 
 ConfigManager::~ConfigManager() noexcept {
 	m_parser.WriteBack();

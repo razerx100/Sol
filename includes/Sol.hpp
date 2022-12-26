@@ -6,14 +6,25 @@
 #include <Window.hpp>
 #include <IThreadPool.hpp>
 #include <ConfigManager.hpp>
+#include <TimeManager.hpp>
+#include <ObjectManager.hpp>
 
 #include <Renderer.hpp>
 #include <ModelContainer.hpp>
 #include <TextureAtlas.hpp>
 #include <SharedDataContainer.hpp>
+#include <CameraManagerSol.hpp>
+
+namespace AMods {
+	extern std::unique_ptr<FrameTime> frameTime;
+	extern std::unique_ptr<CameraManagerSol> cameraManager;
+
+	void InitAppModules();
+}
 
 namespace Sol {
 	// Variables
+	extern ObjectManager objectManager;
 	extern std::unique_ptr<App> app;
 	extern std::shared_ptr<InputManager> ioMan;
 	extern std::unique_ptr<Window> window;
@@ -25,7 +36,6 @@ namespace Sol {
 	extern std::shared_ptr<ISharedDataContainer> sharedData;
 
 	// Initialization functions
-	void InitApp();
 	void InitIoMan(std::string moduleName = "Pluto");
 	void InitWindow(
 		std::uint32_t width, std::uint32_t height, const char* name,
@@ -39,10 +49,7 @@ namespace Sol {
 		std::string moduleName = "Gaia",
 		std::uint8_t bufferCount = 2u
 	);
-	void InitModelContainer();
-	void InitTextureAtlas();
 	void InitThreadPool(size_t threadCount);
-	void InitConfigManager(const std::wstring& fileName);
 	void InitSharedData();
 }
 #endif
