@@ -19,12 +19,11 @@ namespace AMods {
 	extern std::unique_ptr<FrameTime> frameTime;
 	extern std::unique_ptr<CameraManagerSol> cameraManager;
 
-	void InitAppModules();
+	void InitAppModules(ObjectManager& om);
 }
 
 namespace Sol {
 	// Variables
-	extern ObjectManager objectManager;
 	extern std::unique_ptr<App> app;
 	extern std::shared_ptr<InputManager> ioMan;
 	extern std::unique_ptr<Window> window;
@@ -36,12 +35,13 @@ namespace Sol {
 	extern std::shared_ptr<ISharedDataContainer> sharedData;
 
 	// Initialization functions
-	void InitIoMan(std::string moduleName = "Pluto");
+	void InitIoMan(ObjectManager& om, std::string moduleName = "Pluto");
 	void InitWindow(
-		std::uint32_t width, std::uint32_t height, const char* name,
+		ObjectManager& om, std::uint32_t width, std::uint32_t height, const char* name,
 		std::string moduleName = "Luna"
 	);
 	void InitRenderer(
+		ObjectManager& om,
 		const char* appName,
 		void* windowHandle,
 		void* moduleHandle,
@@ -49,7 +49,7 @@ namespace Sol {
 		std::string moduleName = "Gaia",
 		std::uint8_t bufferCount = 2u
 	);
-	void InitThreadPool(size_t threadCount);
-	void InitSharedData();
+	void InitThreadPool(ObjectManager& om, size_t threadCount);
+	void InitSharedData(ObjectManager& om);
 }
 #endif

@@ -7,20 +7,20 @@
 Engine::Engine()
 	: m_appName("Sol") {
 
-	Sol::objectManager.CreateObject(Sol::configManager, { L"config.ini" }, 0u);
+	m_objectManager.CreateObject(Sol::configManager, { L"config.ini" }, 0u);
 	Sol::configManager->ReadConfigFile();
 
-	Sol::InitThreadPool(8u);
-	Sol::InitSharedData();
+	Sol::InitThreadPool(m_objectManager, 8u);
+	Sol::InitSharedData(m_objectManager);
 
-	Sol::InitIoMan(Sol::configManager->GeIOName());
+	Sol::InitIoMan(m_objectManager, Sol::configManager->GeIOName());
 	Sol::ioMan->AddDeviceSupport(DeviceType::Keyboard);
 	Sol::ioMan->AddDeviceSupport(DeviceType::Mouse);
 	Sol::ioMan->AddDeviceSupport(DeviceType::Gamepad);
 
 	Sol::InitWindow(
-		1920u, 1080u,
-		m_appName.c_str(),
+		m_objectManager,
+		1920u, 1080u, m_appName.c_str(),
 		Sol::configManager->GetWindowName()
 	);
 	Sol::window->SetWindowIcon(L"resources/icon/Sol.ico");
@@ -31,6 +31,7 @@ Engine::Engine()
 	);
 
 	Sol::InitRenderer(
+		m_objectManager,
 		m_appName.c_str(),
 		Sol::window->GetWindowHandle(),
 		Sol::window->GetModuleInstance(),
@@ -42,14 +43,14 @@ Engine::Engine()
 	Sol::renderer->SetSharedDataContainer(Sol::sharedData);
 	Sol::renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
-	AMods::InitAppModules();
+	AMods::InitAppModules(m_objectManager);
 
-	Sol::objectManager.CreateObject(Sol::modelContainer, 0u);
-	Sol::objectManager.CreateObject(Sol::textureAtlas, 0u);
+	m_objectManager.CreateObject(Sol::modelContainer, 0u);
+	m_objectManager.CreateObject(Sol::textureAtlas, 0u);
 
 	Sol::window->SetRenderer(Sol::renderer);
 
-	Sol::objectManager.CreateObject(Sol::app, 1u);
+	m_objectManager.CreateObject(Sol::app, 1u);
 
 	Sol::textureAtlas->CreateAtlas();
 
@@ -64,10 +65,6 @@ Engine::Engine()
 
 	Sol::app->SetResources();
 	Sol::modelContainer.reset();
-}
-
-Engine::~Engine() noexcept {
-	Sol::objectManager.StartDestruction();
 }
 
 int Engine::Run() {

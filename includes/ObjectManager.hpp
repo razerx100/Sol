@@ -25,6 +25,12 @@ class ObjectManager {
     };
 
 public:
+    ObjectManager() noexcept : m_cleanedUp{ false } {}
+    ~ObjectManager() noexcept {
+        if (!m_cleanedUp)
+            StartCleanUp();
+    }
+
     template<HasNoArgs T, Base_of<T> G>
     void CreateObject(std::unique_ptr<G>& emptyPtr, std::uint32_t priorityLevel) {
         emptyPtr = std::make_unique<T>();
@@ -114,7 +120,7 @@ public:
         _createDestructor(emptyPtr, priorityLevel);
     }
 
-    void StartDestruction() noexcept {
+    void StartCleanUp() noexcept {
         std::ranges::sort(
             m_destructionPriorities,
             [](const Priority& p1, const Priority& p2) {return p1.priority < p2.priority; }
@@ -122,6 +128,8 @@ public:
 
         for (auto& priority : m_destructionPriorities)
             priority.destructor();
+
+        m_cleanedUp = true;
     }
 
 private:
@@ -136,5 +144,6 @@ private:
 
 private:
     std::vector<Priority> m_destructionPriorities;
+    bool m_cleanedUp;
 };
 #endif
