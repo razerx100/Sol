@@ -72,7 +72,7 @@ FetchContent_MakeAvailable(Pluto)
 
 message(STATUS "Fetched Pluto")
 
-message(STATUS "Fetching GaiaX from branch ${BRANCH}....")
+message(STATUS "Fetching GaiaX from the branch ${BRANCH}....")
 
 FetchContent_Declare(
     GaiaX
@@ -84,7 +84,7 @@ FetchContent_MakeAvailable(GaiaX)
 
 message(STATUS "Fetched GaiaX")
 
-message(STATUS "Fetching Terra from branch ${BRANCH}....")
+message(STATUS "Fetching Terra from the branch ${BRANCH}....")
 
 FetchContent_Declare(
     Terra
@@ -108,12 +108,12 @@ FetchContent_MakeAvailable(Luna)
 
 message(STATUS "Fetched Luna")
 
-message(STATUS "Fetching Europa....")
+message(STATUS "Fetching Europa from the branch ${BRANCH}....")
 
 FetchContent_Declare(
     Europa
     GIT_REPOSITORY https://github.com/razerx100/Europa.git
-    GIT_TAG master
+    GIT_TAG ${BRANCH}
 )
 
 FetchContent_MakeAvailable(Europa)
