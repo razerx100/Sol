@@ -181,7 +181,7 @@ void TextureAtlas::CreateAtlas() noexcept {
 	m_unprocessedData = std::vector<TextureInfo>();
 }
 
-TextureAtlas::UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept {
+UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept {
 	auto data = m_uvInfoMap.find(name);
 
 	if (data != std::end(m_uvInfoMap))

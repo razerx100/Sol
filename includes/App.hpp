@@ -12,9 +12,6 @@ public:
 	void PhysicsUpdate();
 
 private:
-	App& AddModels(std::vector<std::shared_ptr<class Model>>&& models) noexcept;
-
-private:
 	std::vector<std::shared_ptr<class Model>> m_models;
 };
 #endif

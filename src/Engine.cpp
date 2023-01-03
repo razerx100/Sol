@@ -45,7 +45,7 @@ Engine::Engine()
 
 	AMods::InitAppModules(m_objectManager);
 
-	m_objectManager.CreateObject(Sol::modelContainer, 0u);
+	m_objectManager.CreateObject(Sol::modelProcessor, 0u);
 	m_objectManager.CreateObject(Sol::textureAtlas, 0u);
 
 	Sol::window->SetRenderer(Sol::renderer);
@@ -54,7 +54,7 @@ Engine::Engine()
 
 	Sol::textureAtlas->CreateAtlas();
 
-	Sol::modelContainer->SubmitModelsToRenderer();
+	Sol::modelProcessor->Process();
 
 	size_t textureIndex = Sol::renderer->RegisterResource(
 		Sol::textureAtlas->MoveTexture(),
@@ -64,7 +64,8 @@ Engine::Engine()
 	Sol::renderer->ProcessData();
 
 	Sol::app->SetResources();
-	Sol::modelContainer.reset();
+
+	Sol::modelProcessor.reset();
 }
 
 int Engine::Run() {

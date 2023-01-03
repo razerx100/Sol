@@ -2,6 +2,11 @@
 #include <ranges>
 #include <algorithm>
 
+ModelInputs::ModelInputs(const std::string& name) noexcept
+	: m_name{ name } {}
+
+void ModelInputs::InitData() noexcept {}
+
 const std::vector<Vertex>& ModelInputs::GetVertexData() const noexcept {
 	return m_vertices;
 }
@@ -23,8 +28,8 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 }
 
 // Model
-Model::Model(std::uint32_t indexCount) noexcept
-	: m_textureIndex{ 0u }, m_uvInfo{}, m_indexCount{ indexCount }, m_indexOffset{ 0u } {}
+Model::Model() noexcept
+	: m_textureIndex{ 0u }, m_uvInfo{}, m_indexCount{ 0u }, m_indexOffset{ 0u } {}
 
 std::uint32_t Model::GetIndexCount() const noexcept {
 	return m_indexCount;
@@ -36,6 +41,10 @@ DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
 
 void Model::SetTextureIndex(size_t index) noexcept {
 	m_textureIndex = static_cast<std::uint32_t>(index);
+}
+
+void Model::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
+	m_boundingBox = boundingBox;
 }
 
 std::uint32_t Model::GetTextureIndex() const noexcept {
@@ -59,6 +68,10 @@ UVInfo Model::GetUVInfo() const noexcept {
 
 void Model::SetIndexOffset(std::uint32_t indexOffset) noexcept {
 	m_indexOffset = indexOffset;
+}
+
+void Model::SetIndexCount(std::uint32_t indexCount) noexcept {
+	m_indexCount = indexCount;
 }
 
 std::uint32_t Model::GetIndexOffset() const noexcept {

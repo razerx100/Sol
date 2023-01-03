@@ -10,6 +10,7 @@
 #include <TextureLoader.hpp>
 
 #include <DirectXMath.h>
+#include <IModel.hpp>
 #include <ColourTexture.hpp>
 
 struct UVU32 {
@@ -26,14 +27,6 @@ struct UVU32 {
 };
 
 class TextureAtlas {
-public:
-	struct UVInfo {
-		float uOffset;
-		float vOffset;
-		float uRatio;
-		float vRatio;
-	};
-
 public:
 	TextureAtlas() noexcept;
 

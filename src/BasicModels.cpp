@@ -10,20 +10,18 @@ void SetUVToVertices(
 		vertices[index].uv = uvs[index];
 }
 
-// Triangle
-Triangle::Triangle(std::uint32_t indexCount) noexcept : Model{ indexCount } {
-	Init();
+OneThirdModel::OneThirdModel() noexcept {
+	InitData();
 }
 
-void Triangle::Init() noexcept {
+void OneThirdModel::InitData() noexcept {
 	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
 }
 
-TriangleInputs::TriangleInputs() noexcept {
-	Init();
-}
+// Triangle
+TriangleInputs::TriangleInputs() noexcept : ModelInputs{ "Triangle" } {}
 
-void TriangleInputs::Init() noexcept {
+void TriangleInputs::InitData() noexcept {
 	m_vertices.resize(3);
 	m_vertices[0].position = { 0.f, 1.f, 0.f };
 	m_vertices[1].position = { -1.f, -1.f, 0.f };
@@ -38,19 +36,9 @@ void TriangleInputs::Init() noexcept {
 }
 
 // Cube
-Cube::Cube(std::uint32_t indexCount) noexcept : Model{ indexCount } {
-	Init();
-}
+CubeInputs::CubeInputs() noexcept : ModelInputs{ "Cube" } {}
 
-void Cube::Init() noexcept {
-	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
-}
-
-CubeInputs::CubeInputs() noexcept {
-	Init();
-}
-
-void CubeInputs::Init() noexcept {
+void CubeInputs::InitData() noexcept {
 	constexpr float side = 1.0f / 2.0f;
 
 	m_vertices.resize(24);
@@ -95,19 +83,9 @@ void CubeInputs::Init() noexcept {
 }
 
 // Quad
-Quad::Quad(std::uint32_t indexCount) noexcept : Model{ indexCount } {
-	Init();
-}
+QuadInputs::QuadInputs() noexcept : ModelInputs{ "Quad" } {}
 
-void Quad::Init() noexcept {
-	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
-}
-
-QuadInputs::QuadInputs() noexcept {
-	Init();
-}
-
-void QuadInputs::Init() noexcept {
+void QuadInputs::InitData() noexcept {
 	constexpr float side = 1.0f / 2.0f;
 
 	m_vertices.resize(8u);

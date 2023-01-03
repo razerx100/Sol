@@ -1,8 +1,9 @@
 #ifndef MODEL_HPP_
 #define MODEL_HPP_
 #include <vector>
-#include <cstring>
+#include <string>
 #include <array>
+#include <concepts>
 
 #include <IModel.hpp>
 
@@ -13,6 +14,12 @@ struct Vertex {
 
 class ModelInputs {
 public:
+	ModelInputs() = default;
+	ModelInputs(const std::string& name) noexcept;
+
+	virtual ~ModelInputs() = default;
+	virtual void InitData() noexcept;
+
 	[[nodiscard]]
 	const std::vector<Vertex>& GetVertexData() const noexcept;
 	[[nodiscard]]
@@ -25,9 +32,18 @@ public:
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept;
 
+	template<std::derived_from<ModelInputs> T>
+	[[nodiscard]]
+	static std::string GetName() noexcept {
+		static T modelInput;
+
+		return modelInput.m_name;
+	}
+
 protected:
 	std::vector<Vertex> m_vertices;
 	std::vector<std::uint32_t> m_indices;
+	std::string m_name;
 };
 
 class ModelTransform {
@@ -77,12 +93,15 @@ private:
 
 class Model : public IModel {
 public:
-	Model(std::uint32_t indexCount) noexcept;
+	Model() noexcept;
+	virtual ~Model() = default;
 
 	void SetTextureIndex(size_t index) noexcept;
 	void SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept;
 	void SetUVInfo(const UVInfo& uvInfo) noexcept;
 	void SetIndexOffset(std::uint32_t indexOffset) noexcept;
+	void SetIndexCount(std::uint32_t indexCount) noexcept;
+	void SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept;
 
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept final;

@@ -21,23 +21,6 @@ App::App() {
 	TextureLoader::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
 	TextureLoader::AddTextureToAtlas("resources/textures/doge.jpg", "dogeBig");
 
-	auto cubes = AddAndGetModels<Cube, CubeInputs>(2u);
-	auto quads = AddAndGetModels<Quad, QuadInputs>(1u);
-
-	AddModels(std::move(cubes)).AddModels(std::move(quads));
-
-	auto& cube0 = m_models[0];
-	auto& cube1 = m_models[1];
-	auto& quad = m_models[2];
-
-	cube0->SetTextureIndex(0u);
-	cube1->SetTextureIndex(0u);
-	quad->SetTextureIndex(0u);
-
-	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
-	cube0->GetTransform().RotateYDegree(45.f);
-	quad->GetTransform().MoveTowardsX(2.5f);
-
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
 
@@ -59,66 +42,46 @@ App::App() {
 	);
 
 	AMods::cameraManager->SetCurrentCameraIndex(camera1Index);
+
+	auto cube0 = std::make_shared<OneThirdModel>();
+	auto cube1 = std::make_shared<OneThirdModel>();
+	auto triangle0 = std::make_shared<OneThirdModel>();
+
+	cube0->SetTextureIndex(0u);
+	cube1->SetTextureIndex(0u);
+	triangle0->SetTextureIndex(0u);
+
+	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
+	cube0->GetTransform().RotateYDegree(45.f);
+	triangle0->GetTransform().MoveTowardsX(2.5f);
+
+	m_models.emplace_back(cube0);
+	m_models.emplace_back(cube1);
+	m_models.emplace_back(triangle0);
+
+	std::wstring pixelShader0 = L"PixelShader";
+
+	Sol::modelProcessor->AddModel<CubeInputs>(std::move(cube0), pixelShader0);
+	Sol::modelProcessor->AddModel<CubeInputs>(std::move(cube1), pixelShader0);
+	Sol::modelProcessor->AddModel<TriangleInputs>(std::move(triangle0), pixelShader0);
 }
 
 void App::SetResources() {
 	auto fuchsia = Sol::textureAtlas->GetUVInfo("Fuchsia");
 	auto cyan = Sol::textureAtlas->GetUVInfo("Cyan");
-	auto doge = Sol::textureAtlas->GetUVInfo("doge");
+	auto red = Sol::textureAtlas->GetUVInfo("Red");
 
-	m_models[0]->SetUVInfo(
-		fuchsia.uOffset, fuchsia.vOffset, fuchsia.uRatio, fuchsia.vRatio
-	);
-	m_models[1]->SetUVInfo(cyan.uOffset, cyan.vOffset, cyan.uRatio, cyan.vRatio);
-	m_models[2]->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
+	m_models[0]->SetUVInfo(fuchsia);
+	m_models[1]->SetUVInfo(cyan);
+	m_models[2]->SetUVInfo(red);
 }
 
-void App::PerFrameUpdate() {
-	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
-
-	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::One)) {
-		auto doge = Sol::textureAtlas->GetUVInfo("dogeBig");
-
-		m_models[2]->SetUVInfo(doge.uOffset, doge.vOffset, doge.uRatio, doge.vRatio);
-	}
-	else if(pKeyboardRef->AreKeysPressed(2, SKeyCodes::R, SKeyCodes::One)) {
-		auto segs = Sol::textureAtlas->GetUVInfo("segs");
-
-		m_models[2]->SetUVInfo(segs.uOffset, segs.vOffset, segs.uRatio, segs.vRatio);
-	}
-
-	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::Alt, SKeyCodes::D))
-		Sol::window->SetTitle("Alt + D");
-
-	IMouse* pMouseRef = Sol::ioMan->GetMouse();
-
-	if (pMouseRef->AreButtonsPressed(2, MouseButtons::X1, MouseButtons::Middle))
-		Sol::window->SetTitle("Left + Right");
-
-	IGamepad* pGamepadRef = Sol::ioMan->GetGamepad();
-
-	if (pGamepadRef->AreButtonsPressed(2, XBoxButton::START, XBoxButton::X))
-		Sol::window->SetTitle("Start + A");
-
-	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::UpArrow))
-		AMods::cameraManager->SetCurrentCameraIndex(0u);
-
-	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::F, SKeyCodes::DownArrow))
-		AMods::cameraManager->SetCurrentCameraIndex(1u);
-
-	AMods::cameraManager->SetCamera();
-}
+void App::PerFrameUpdate() {}
 
 void App::PhysicsUpdate() {
 	constexpr float cameraMoveSpeed = 0.001f;
 
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
-
-	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::W, SKeyCodes::Two))
-		m_models[1]->GetTransform().MoveTowardsX(-0.1f).MoveTowardsZ(0.3f);
-
-	if (pKeyboardRef->AreKeysPressed(2, SKeyCodes::S, SKeyCodes::Two))
-		m_models[1]->GetTransform().MoveTowardsX(0.1f).MoveTowardsZ(-0.3f);
 
 	if (pKeyboardRef->IsKeyPressed(SKeyCodes::W)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
@@ -165,11 +128,6 @@ void App::PhysicsUpdate() {
 
 		camera->LookAround(offsetX * 0.001f, -1.f * offsetY * 0.0001f);
 	}
-}
 
-App& App::AddModels(std::vector<std::shared_ptr<Model>>&& models) noexcept {
-	for (auto& model : models)
-		m_models.emplace_back(std::move(model));
-
-	return *this;
+	AMods::cameraManager->SetCamera();
 }
