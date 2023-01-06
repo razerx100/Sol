@@ -46,6 +46,7 @@ Engine::Engine()
 	AMods::InitAppModules(m_objectManager);
 
 	m_objectManager.CreateObject(Sol::modelProcessor, 0u);
+	m_objectManager.CreateObject(Sol::modelContainer, 0u);
 	m_objectManager.CreateObject(Sol::textureAtlas, 0u);
 
 	Sol::window->SetRenderer(Sol::renderer);
@@ -64,6 +65,7 @@ Engine::Engine()
 	Sol::renderer->ProcessData();
 
 	Sol::app->SetResources();
+	Sol::modelContainer->SetResources();
 
 	Sol::modelProcessor.reset();
 }
@@ -87,6 +89,7 @@ int Engine::Run() {
 
 			if (accumulatedElapsedTime >= updateDelta) {
 				while (accumulatedElapsedTime >= updateDelta) {
+					Sol::modelContainer->PhysicsUpdate();
 					Sol::app->PhysicsUpdate();
 					accumulatedElapsedTime -= updateDelta;
 				}

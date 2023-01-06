@@ -1,10 +1,10 @@
-#ifndef MODEL_CONTAINER_HPP_
-#define MODEL_CONTAINER_HPP_
+#ifndef MODEL_PROCESSOR_HPP_
+#define MODEL_PROCESSOR_HPP_
 #include <memory>
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <concepts>
+#include <SolConcepts.hpp>
 
 #include <Model.hpp>
 
@@ -18,7 +18,7 @@ class ModelProcessor {
 public:
 	ModelProcessor() noexcept;
 
-	template<std::derived_from<ModelInputs> T>
+	template<DerivedWithoutArgs<ModelInputs> T>
 	void AddModel(
 		std::shared_ptr<Model> model, std::wstring pixelShader
 	) noexcept {
@@ -26,6 +26,19 @@ public:
 
 		if (!FindModelInput(inputName))
 			AddModelInput(std::make_unique<T>(), inputName);
+
+		_addModel(std::move(model), inputName, pixelShader);
+	}
+
+	template<DerivedWithArgs<ModelInputs> T>
+	void AddModel(
+		std::shared_ptr<Model> model, const typename T::Args& arguments,
+		std::wstring pixelShader
+	) noexcept {
+		std::string inputName = ModelInputs::GetName<T>(arguments);
+
+		if (!FindModelInput(inputName))
+			AddModelInput(std::make_unique<T>(arguments), inputName);
 
 		_addModel(std::move(model), inputName, pixelShader);
 	}

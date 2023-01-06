@@ -5,18 +5,7 @@
 #include <functional>
 #include <ranges>
 #include <algorithm>
-#include <concepts>
-
-template<typename T>
-concept HasArgs = requires() {
-    typename T::Args;
-};
-
-template<typename T>
-concept HasNoArgs = !HasArgs<T>;
-
-template <class _Base, class _Derived>
-concept Base_of = std::derived_from<_Derived, _Base>;
+#include <SolConcepts.hpp>
 
 class ObjectManager {
     struct Priority {

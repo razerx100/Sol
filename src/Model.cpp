@@ -74,6 +74,10 @@ void Model::SetIndexCount(std::uint32_t indexCount) noexcept {
 	m_indexCount = indexCount;
 }
 
+void Model::SetResources() {}
+
+void Model::PhysicsUpdate() noexcept {}
+
 std::uint32_t Model::GetIndexOffset() const noexcept {
 	return m_indexOffset;
 }

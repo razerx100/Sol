@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <concepts>
+#include <SolConcepts.hpp>
 
 #include <IModel.hpp>
 
@@ -32,10 +33,18 @@ public:
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept;
 
-	template<std::derived_from<ModelInputs> T>
+	template<DerivedWithoutArgs<ModelInputs> T>
 	[[nodiscard]]
 	static std::string GetName() noexcept {
 		static T modelInput;
+
+		return modelInput.m_name;
+	}
+
+	template<DerivedWithArgs<ModelInputs> T>
+	[[nodiscard]]
+	static std::string GetName(const typename T::Args& arguments) noexcept {
+		static T modelInput{ arguments };
 
 		return modelInput.m_name;
 	}
@@ -102,6 +111,9 @@ public:
 	void SetIndexOffset(std::uint32_t indexOffset) noexcept;
 	void SetIndexCount(std::uint32_t indexCount) noexcept;
 	void SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept;
+
+	virtual void SetResources();
+	virtual void PhysicsUpdate() noexcept;
 
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept final;

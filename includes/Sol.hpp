@@ -11,6 +11,7 @@
 
 #include <Renderer.hpp>
 #include <ModelProcessor.hpp>
+#include <ModelContainer.hpp>
 #include <TextureAtlas.hpp>
 #include <SharedDataContainer.hpp>
 #include <CameraManagerSol.hpp>
@@ -29,6 +30,7 @@ namespace Sol {
 	extern std::unique_ptr<Window> window;
 	extern std::shared_ptr<Renderer> renderer;
 	extern std::unique_ptr<ModelProcessor> modelProcessor;
+	extern std::unique_ptr<ModelContainer> modelContainer;
 	extern std::unique_ptr<TextureAtlas> textureAtlas;
 	extern std::shared_ptr<IThreadPool> threadPool;
 	extern std::unique_ptr<ConfigManager> configManager;

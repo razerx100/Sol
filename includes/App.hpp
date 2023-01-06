@@ -2,6 +2,9 @@
 #define APP_HPP_
 #include <vector>
 #include <memory>
+#include <string>
+
+class Model;
 
 class App {
 public:
@@ -10,8 +13,5 @@ public:
 	void SetResources();
 	void PerFrameUpdate();
 	void PhysicsUpdate();
-
-private:
-	std::vector<std::shared_ptr<class Model>> m_models;
 };
 #endif

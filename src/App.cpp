@@ -1,9 +1,7 @@
-#include <App.hpp>
-#include <string>
 #include <TextureLoader.hpp>
 
+#include <App.hpp>
 #include <BasicModels.hpp>
-#include <Sol.hpp>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
@@ -45,36 +43,28 @@ App::App() {
 
 	auto cube0 = std::make_shared<OneThirdModel>();
 	auto cube1 = std::make_shared<OneThirdModel>();
-	auto triangle0 = std::make_shared<OneThirdModel>();
+	auto sphere0 = std::make_shared<ModelWithArrow>();
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
-	triangle0->SetTextureIndex(0u);
+	sphere0->SetTextureIndex(0u);
 
 	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
 	cube0->GetTransform().RotateYDegree(45.f);
-	triangle0->GetTransform().MoveTowardsX(2.5f);
+	sphere0->GetTransform().MoveTowardsX(2.5f);
 
-	m_models.emplace_back(cube0);
-	m_models.emplace_back(cube1);
-	m_models.emplace_back(triangle0);
+	cube0->SetTextureName("Fuchsia");
+	cube1->SetTextureName("Cyan");
+	sphere0->SetTextureName("Green");
 
 	std::wstring pixelShader0 = L"PixelShader";
 
-	Sol::modelProcessor->AddModel<CubeInputs>(std::move(cube0), pixelShader0);
-	Sol::modelProcessor->AddModel<CubeInputs>(std::move(cube1), pixelShader0);
-	Sol::modelProcessor->AddModel<TriangleInputs>(std::move(triangle0), pixelShader0);
+	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube0), pixelShader0);
+	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube1), pixelShader0);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere0), { 64u, 64u }, pixelShader0);
 }
 
-void App::SetResources() {
-	auto fuchsia = Sol::textureAtlas->GetUVInfo("Fuchsia");
-	auto cyan = Sol::textureAtlas->GetUVInfo("Cyan");
-	auto red = Sol::textureAtlas->GetUVInfo("Red");
-
-	m_models[0]->SetUVInfo(fuchsia);
-	m_models[1]->SetUVInfo(cyan);
-	m_models[2]->SetUVInfo(red);
-}
+void App::SetResources() {}
 
 void App::PerFrameUpdate() {}
 
