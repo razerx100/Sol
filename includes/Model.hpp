@@ -71,11 +71,9 @@ public:
 	ModelTransform& MoveTowardsZ(float delta) noexcept;
 
 	void Rotate(const DirectX::XMVECTOR& rotationAxis, float angleRadian) noexcept;
+	void MultiplyModelMatrix(const DirectX::XMMATRIX& matrix) noexcept;
+	void AddToModelOffset(const DirectX::XMFLOAT3& offset) noexcept;
 
-	[[nodiscard]]
-	DirectX::XMMATRIX& GetModelMatrixRef() noexcept;
-	[[nodiscard]]
-	DirectX::XMFLOAT3& GetModelOffsetRef() noexcept;
 	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept;
 	[[nodiscard]]
@@ -112,8 +110,13 @@ public:
 	void SetIndexCount(std::uint32_t indexCount) noexcept;
 	void SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept;
 
+	void SetVelocityDirection(const DirectX::XMFLOAT3& direction) noexcept;
+	void SetVelocity(float velocity) noexcept;
+	void SetAcceleration(float acceleration) noexcept;
+
+	void PhysicsUpdate() noexcept;
+
 	virtual void SetResources();
-	virtual void PhysicsUpdate() noexcept;
 
 	[[nodiscard]]
 	std::uint32_t GetIndexCount() const noexcept final;
@@ -136,8 +139,7 @@ public:
 	ModelBoundingBox& GetBoundingBox() noexcept;
 
 protected:
-	[[nodiscard]]
-	DirectX::XMMATRIX& GetModelMatrixRef() noexcept;
+	virtual void _physicsUpdate() noexcept;
 
 private:
 	std::uint32_t m_textureIndex;
@@ -147,5 +149,9 @@ private:
 	std::uint32_t m_indexOffset;
 	ModelTransform m_transform;
 	ModelBoundingBox m_boundingBox;
+
+	DirectX::XMFLOAT3 m_modelVelocityDirection;
+	float m_modelVelocity;
+	float m_modelAcceleration;
 };
 #endif

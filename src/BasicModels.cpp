@@ -26,37 +26,36 @@ void OneThirdModel::SetResources() {
 }
 
 void OneThirdModel::InitData() noexcept {
-	GetModelMatrixRef() *= DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(0.3f, 0.3f, 0.3f));
 }
 
-void ModelWithArrow::PhysicsUpdate() noexcept {
+void ModelWithPhysics::_physicsUpdate() noexcept {
 	static constexpr float modelMoveSpeed = 0.03f;
 
 	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::UpArrow)) {
-		auto& transform = GetTransform();
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::UpArrow))
+		SetVelocityDirection({ 0.f, 0.f, 1.f });
 
-		transform.MoveTowardsZ(modelMoveSpeed);
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::DownArrow))
+		SetVelocityDirection({ 0.f, 0.f, -1.f });
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::LeftArrow))
+		SetVelocityDirection({ -1.f, 0.f, 0.f });
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::RightArrow))
+		SetVelocityDirection({ 1.f, 0.f, 0.f });
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::Enter))
+		SetVelocity(0.01f);
+
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::SpaceBar)) {
+		SetVelocity(0.f);
+		SetAcceleration(0.f);
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::DownArrow)) {
-		auto& transform = GetTransform();
-
-		transform.MoveTowardsZ(-modelMoveSpeed);
-	}
-
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::LeftArrow)) {
-		auto& transform = GetTransform();
-
-		transform.MoveTowardsX(-modelMoveSpeed);
-	}
-
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::RightArrow)) {
-		auto& transform = GetTransform();
-
-		transform.MoveTowardsX(modelMoveSpeed);
-	}
+	if (pKeyboardRef->IsKeyPressed(SKeyCodes::ShiftLeft))
+		SetAcceleration(0.005f);
 }
 
 // Triangle

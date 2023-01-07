@@ -43,7 +43,7 @@ App::App() {
 
 	auto cube0 = std::make_shared<OneThirdModel>();
 	auto cube1 = std::make_shared<OneThirdModel>();
-	auto sphere0 = std::make_shared<ModelWithArrow>();
+	auto sphere0 = std::make_shared<ModelWithPhysics>();
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);

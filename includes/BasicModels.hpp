@@ -23,9 +23,9 @@ private:
 	std::string m_textureName;
 };
 
-class ModelWithArrow : public OneThirdModel {
+class ModelWithPhysics : public OneThirdModel {
 public:
-	virtual void PhysicsUpdate() noexcept override;
+	virtual void _physicsUpdate() noexcept override;
 };
 
 class TriangleInputs final : public ModelInputs {
