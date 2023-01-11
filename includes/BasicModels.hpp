@@ -1,68 +1,91 @@
 #ifndef BASIC_MODELS_HPP_
 #define BASIC_MODELS_HPP_
-#include <memory>
-#include <concepts>
-#include <string>
-#include <optional>
-
 #include <Model.hpp>
-#include <Sol.hpp>
 
-class OneThirdModel : public Model {
+class ModelWithVelocity : public Model {
 public:
-	OneThirdModel() noexcept;
+	ModelWithVelocity() noexcept;
+
+	void SetVelocityDirection(const DirectX::XMFLOAT3& direction) noexcept;
+	void SetVelocitySpeed(float velocitySpeed) noexcept;
+	void SetAcceleration(float acceleration) noexcept;
+
+	void PhysicsUpdate() noexcept final;
+
+protected:
+	virtual void _physicsUpdate() noexcept;
+
+protected:
+	DirectX::XMFLOAT3 m_modelVelocityDirection;
+	float m_modelVelocitySpeed;
+	float m_modelAcceleration;
+};
+
+class ScalableModel : public Model {
+public:
+	ScalableModel(float scale) noexcept;
 
 	virtual void SetResources() override;
 
 	void SetTextureName(const std::string& texName) noexcept;
 
 private:
-	void InitData() noexcept;
-
-private:
 	std::string m_textureName;
 };
 
-class ModelWithPhysics : public OneThirdModel {
+class OrbitingModel : public ScalableModel {
 public:
-	virtual void _physicsUpdate() noexcept override;
+	OrbitingModel(float scale) noexcept;
+
+	void MeasureRadius() noexcept;
+
+	void PhysicsUpdate() noexcept final;
+
+protected:
+	virtual DirectX::XMFLOAT3 SetAngularVelocity() noexcept;
+
+protected:
+	float m_angle;
+	float m_radius;
 };
 
-class TriangleInputs final : public ModelInputs {
+class OrbitModelXC : public OrbitingModel {
 public:
-	TriangleInputs() noexcept;
+	using OrbitingModel::OrbitingModel;
 
-	void InitData() noexcept override;
+protected:
+	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
 };
 
-class CubeInputs final : public ModelInputs {
+class OrbitModelXAC : public OrbitingModel {
 public:
-	CubeInputs() noexcept;
+	using OrbitingModel::OrbitingModel;
 
-	void InitData() noexcept override;
+protected:
+	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
 };
 
-class QuadInputs final : public ModelInputs {
+class OrbitModelYC : public OrbitingModel {
 public:
-	QuadInputs() noexcept;
+	using OrbitingModel::OrbitingModel;
 
-	void InitData() noexcept override;
+protected:
+	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
 };
 
-class SphereInputs final : public ModelInputs {
+class OrbitModelTLC : public OrbitingModel {
 public:
-	struct Args {
-		std::optional<std::uint32_t> latDiv;
-		std::optional<std::uint32_t> longDiv;
-	};
+	using OrbitingModel::OrbitingModel;
 
+protected:
+	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
+};
+
+class OrbitModelTRC : public OrbitingModel {
 public:
-	SphereInputs(const Args& arguments) noexcept;
+	using OrbitingModel::OrbitingModel;
 
-	void InitData() noexcept override;
-
-private:
-	std::uint32_t m_latitudeDivision;
-	std::uint32_t m_longitudeDivision;
+protected:
+	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
 };
 #endif

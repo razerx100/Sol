@@ -29,9 +29,7 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 
 // Model
 Model::Model() noexcept
-	: m_textureIndex{ 0u }, m_uvInfo{}, m_indexCount{ 0u }, m_indexOffset{ 0u },
-	m_modelVelocityDirection{ 0.f, 0.f, 0.f }, m_modelVelocity{ 0.f },
-	m_modelAcceleration{ 0.f } {}
+	: m_textureIndex{ 0u }, m_uvInfo{}, m_indexCount{ 0u }, m_indexOffset{ 0u } {}
 
 std::uint32_t Model::GetIndexCount() const noexcept {
 	return m_indexCount;
@@ -76,34 +74,9 @@ void Model::SetIndexCount(std::uint32_t indexCount) noexcept {
 	m_indexCount = indexCount;
 }
 
-void Model::SetVelocityDirection(const DirectX::XMFLOAT3& direction) noexcept {
-	m_modelVelocityDirection = direction;
-}
-
-void Model::SetVelocity(float velocity) noexcept {
-	m_modelVelocity = velocity;
-}
-
-void Model::SetAcceleration(float acceleration) noexcept {
-	m_modelAcceleration = acceleration;
-}
-
 void Model::SetResources() {}
 
-void Model::PhysicsUpdate() noexcept {
-	_physicsUpdate();
-
-	DirectX::XMFLOAT3 offset{ 0.f, 0.f, 0.f };
-	m_modelVelocity += m_modelAcceleration;
-
-	offset.x = m_modelVelocityDirection.x * m_modelVelocity;
-	offset.y = m_modelVelocityDirection.y * m_modelVelocity;
-	offset.z = m_modelVelocityDirection.z * m_modelVelocity;
-
-	m_transform.AddToModelOffset(offset);
-}
-
-void Model::_physicsUpdate() noexcept {}
+void Model::PhysicsUpdate() noexcept {}
 
 std::uint32_t Model::GetIndexOffset() const noexcept {
 	return m_indexOffset;
@@ -171,6 +144,10 @@ void ModelTransform::AddToModelOffset(const DirectX::XMFLOAT3& offset) noexcept 
 	m_modelOffset.x += offset.x;
 	m_modelOffset.y += offset.y;
 	m_modelOffset.z += offset.z;
+}
+
+void ModelTransform::SetModelOffset(const DirectX::XMFLOAT3& offset) noexcept {
+	m_modelOffset = offset;
 }
 
 void ModelTransform::Rotate(

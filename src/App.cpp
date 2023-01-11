@@ -1,7 +1,9 @@
 #include <TextureLoader.hpp>
 
 #include <App.hpp>
+#include <Sol.hpp>
 #include <BasicModels.hpp>
+#include <BasicModelInputs.hpp>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
@@ -13,7 +15,9 @@ App::App() {
 		.AddColour("Cyan", DirectX::Colors::Cyan)
 		.AddColour("Red", red)
 		.AddColour("Green", DirectX::Colors::Green)
-		.AddColour("Blue", DirectX::Colors::Blue);
+		.AddColour("Blue", DirectX::Colors::Blue)
+		.AddColour("White", DirectX::Colors::White)
+		.AddColour("Yellow", DirectX::Colors::Yellow);
 
 	TextureLoader::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureLoader::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
@@ -41,27 +45,57 @@ App::App() {
 
 	AMods::cameraManager->SetCurrentCameraIndex(camera1Index);
 
-	auto cube0 = std::make_shared<OneThirdModel>();
-	auto cube1 = std::make_shared<OneThirdModel>();
-	auto sphere0 = std::make_shared<ModelWithPhysics>();
+	auto cube0 = std::make_shared<ScalableModel>(0.3f);
+	auto cube1 = std::make_shared<ScalableModel>(0.3f);
+	auto sphere0 = std::make_shared<OrbitModelXC>(0.1f);
+	auto sphere1 = std::make_shared<OrbitModelXAC>(0.1f);
+	auto sphere2 = std::make_shared<OrbitModelYC>(0.1f);
+	auto sphere3 = std::make_shared<OrbitModelTLC>(0.1f);
+	auto sphere4 = std::make_shared<OrbitModelTRC>(0.1f);
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
 	sphere0->SetTextureIndex(0u);
+	sphere1->SetTextureIndex(0u);
+	sphere2->SetTextureIndex(0u);
+	sphere3->SetTextureIndex(0u);
+	sphere4->SetTextureIndex(0u);
 
-	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.5f);
+	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.1f);
 	cube0->GetTransform().RotateYDegree(45.f);
-	sphere0->GetTransform().MoveTowardsX(2.5f);
+
+	sphere0->GetTransform().MoveTowardsX(8.f);
+	sphere0->MeasureRadius();
+
+	sphere1->GetTransform().MoveTowardsX(6.5f);
+	sphere1->MeasureRadius();
+
+	sphere2->GetTransform().MoveTowardsY(5.5f);
+	sphere2->MeasureRadius();
+
+	sphere3->GetTransform().MoveTowardsX(6.5f);
+	sphere3->MeasureRadius();
+
+	sphere4->GetTransform().MoveTowardsX(6.5f);
+	sphere4->MeasureRadius();
 
 	cube0->SetTextureName("Fuchsia");
 	cube1->SetTextureName("Cyan");
 	sphere0->SetTextureName("Green");
+	sphere1->SetTextureName("White");
+	sphere2->SetTextureName("Red");
+	sphere3->SetTextureName("Yellow");
+	sphere4->SetTextureName("Cyan");
 
 	std::wstring pixelShader0 = L"PixelShader";
 
 	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube0), pixelShader0);
 	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube1), pixelShader0);
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere0), { 64u, 64u }, pixelShader0);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere1), { 64u, 64u }, pixelShader0);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere2), { 64u, 64u }, pixelShader0);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere3), { 64u, 64u }, pixelShader0);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 64u, 64u }, pixelShader0);
 }
 
 void App::SetResources() {}

@@ -22,7 +22,8 @@ void TextureAtlas::AddTexture(
 
 void TextureAtlas::CreateAtlas() noexcept {
 	// Add white as default colour  and Create
-	m_colourTextureManager.AddColour("White", RGBA8{ 235u, 235u, 235u, 255u }).CreateTexture();
+	m_colourTextureManager.AddColour("Default", RGBA8{ 235u, 235u, 235u, 255u })
+		.CreateTexture();
 
 	const std::string coloursTexName = "Colours";
 
@@ -187,7 +188,7 @@ UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept {
 	if (data != std::end(m_uvInfoMap))
 		return data->second;
 	else {
-		auto defaultColour = m_uvInfoMap.find("White");
+		auto defaultColour = m_uvInfoMap.find("Default");
 
 		if (defaultColour != std::end(m_uvInfoMap)) [[likely]]
 			return defaultColour->second;
