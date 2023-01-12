@@ -35,7 +35,7 @@ public:
 	template<DerivedWithoutArgs<ModelInputs> T>
 	[[nodiscard]]
 	static std::string GetName() noexcept {
-		static T modelInput;
+		T modelInput{};
 
 		return modelInput.m_name;
 	}
@@ -43,7 +43,7 @@ public:
 	template<DerivedWithArgs<ModelInputs> T>
 	[[nodiscard]]
 	static std::string GetName(const typename T::Args& arguments) noexcept {
-		static T modelInput{ arguments };
+		T modelInput{ arguments };
 
 		return modelInput.m_name;
 	}

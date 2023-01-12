@@ -47,6 +47,8 @@ protected:
 protected:
 	float m_angle;
 	float m_radius;
+	float m_modelDirectionX;
+	float m_modelDirectionY;
 };
 
 class OrbitModelXC : public OrbitingModel {
@@ -58,30 +60,6 @@ protected:
 };
 
 class OrbitModelXAC : public OrbitingModel {
-public:
-	using OrbitingModel::OrbitingModel;
-
-protected:
-	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
-};
-
-class OrbitModelYC : public OrbitingModel {
-public:
-	using OrbitingModel::OrbitingModel;
-
-protected:
-	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
-};
-
-class OrbitModelTLC : public OrbitingModel {
-public:
-	using OrbitingModel::OrbitingModel;
-
-protected:
-	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
-};
-
-class OrbitModelTRC : public OrbitingModel {
 public:
 	using OrbitingModel::OrbitingModel;
 

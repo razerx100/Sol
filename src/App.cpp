@@ -49,9 +49,9 @@ App::App() {
 	auto cube1 = std::make_shared<ScalableModel>(0.3f);
 	auto sphere0 = std::make_shared<OrbitModelXC>(0.1f);
 	auto sphere1 = std::make_shared<OrbitModelXAC>(0.1f);
-	auto sphere2 = std::make_shared<OrbitModelYC>(0.1f);
-	auto sphere3 = std::make_shared<OrbitModelTLC>(0.1f);
-	auto sphere4 = std::make_shared<OrbitModelTRC>(0.1f);
+	auto sphere2 = std::make_shared<OrbitModelXC>(0.1f);
+	auto sphere3 = std::make_shared<OrbitModelXC>(0.1f);
+	auto sphere4 = std::make_shared<OrbitModelXC>(0.1f);
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
@@ -73,10 +73,10 @@ App::App() {
 	sphere2->GetTransform().MoveTowardsY(5.5f);
 	sphere2->MeasureRadius();
 
-	sphere3->GetTransform().MoveTowardsX(6.5f);
+	sphere3->GetTransform().MoveTowardsX(6.5f).MoveTowardsY(6.5f);
 	sphere3->MeasureRadius();
 
-	sphere4->GetTransform().MoveTowardsX(6.5f);
+	sphere4->GetTransform().MoveTowardsX(3.5f).MoveTowardsY(-5.5f);
 	sphere4->MeasureRadius();
 
 	cube0->SetTextureName("Fuchsia");
@@ -95,7 +95,7 @@ App::App() {
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere1), { 64u, 64u }, pixelShader0);
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere2), { 64u, 64u }, pixelShader0);
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere3), { 64u, 64u }, pixelShader0);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 64u, 64u }, pixelShader0);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 16u, 16u }, pixelShader0);
 }
 
 void App::SetResources() {}

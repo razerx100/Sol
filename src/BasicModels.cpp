@@ -53,7 +53,8 @@ void ScalableModel::SetResources() {
 
 // Orbit
 OrbitingModel::OrbitingModel(float scale) noexcept
-	: ScalableModel{ scale }, m_angle{ 0.f }, m_radius{ 0.f } {}
+	: ScalableModel{ scale }, m_angle{ 0.f }, m_radius{ 0.f }, m_modelDirectionX{ 0.f },
+	m_modelDirectionY{ 0.f } {}
 
 void OrbitingModel::PhysicsUpdate() noexcept {
 	static constexpr float speedModifier = 0.05f;
@@ -72,6 +73,10 @@ void OrbitingModel::MeasureRadius() noexcept {
 		std::pow(modelLocation.x, 2.f) + std::pow(modelLocation.y, 2.f) +
 		std::pow(modelLocation.z, 2.f)
 	);
+
+	// Direction of X and Y decides the orbit direction
+	m_modelDirectionX = modelLocation.x / m_radius;
+	m_modelDirectionY = modelLocation.y / m_radius;
 }
 
 DirectX::XMFLOAT3 OrbitingModel::SetAngularVelocity() noexcept {
@@ -81,8 +86,8 @@ DirectX::XMFLOAT3 OrbitingModel::SetAngularVelocity() noexcept {
 // Orbit XC
 DirectX::XMFLOAT3 OrbitModelXC::SetAngularVelocity() noexcept {
 	return {
-		std::sin(m_angle) * m_radius,
-		0.f,
+		m_modelDirectionX * std::sin(m_angle) * m_radius,
+		m_modelDirectionY * std::sin(m_angle) * m_radius,
 		std::cos(m_angle) * m_radius
 	};
 }
@@ -90,35 +95,8 @@ DirectX::XMFLOAT3 OrbitModelXC::SetAngularVelocity() noexcept {
 // Orbit XAC
 DirectX::XMFLOAT3 OrbitModelXAC::SetAngularVelocity() noexcept {
 	return {
-		std::cos(m_angle) * m_radius,
-		0.f,
+		m_modelDirectionX * std::cos(m_angle) * m_radius,
+		m_modelDirectionY * std::cos(m_angle) * m_radius,
 		std::sin(m_angle) * m_radius
-	};
-}
-
-// Orbit YC
-DirectX::XMFLOAT3 OrbitModelYC::SetAngularVelocity() noexcept {
-	return {
-		0.f,
-		std::sin(m_angle) * m_radius,
-		std::cos(m_angle) * m_radius
-	};
-}
-
-// Orbit TLC
-DirectX::XMFLOAT3 OrbitModelTLC::SetAngularVelocity() noexcept {
-	return {
-		std::sin(m_angle) * m_radius,
-		std::sin(m_angle) * m_radius,
-		std::cos(m_angle) * m_radius
-	};
-}
-
-// Orbit TRC
-DirectX::XMFLOAT3 OrbitModelTRC::SetAngularVelocity() noexcept {
-	return {
-		-std::sin(m_angle) * m_radius,
-		std::sin(m_angle) * m_radius,
-		std::cos(m_angle) * m_radius
 	};
 }

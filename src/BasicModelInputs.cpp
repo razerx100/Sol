@@ -19,7 +19,7 @@ void TriangleInputs::InitData() noexcept {
 	m_vertices[2].position = { 1.f, -1.f, 0.f };
 
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
-	static std::vector<DirectX::XMFLOAT2> uvs { 3u, singleColourUV };
+	std::vector<DirectX::XMFLOAT2> uvs { 3u, singleColourUV };
 
 	SetUVToVertices(m_vertices, uvs);
 
@@ -59,7 +59,7 @@ void CubeInputs::InitData() noexcept {
 	m_vertices[23].position = { side,side,side };// 23
 
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
-	static std::vector<DirectX::XMFLOAT2> uvs { 24u, singleColourUV };
+	std::vector<DirectX::XMFLOAT2> uvs { 24u, singleColourUV };
 
 	SetUVToVertices(m_vertices, uvs);
 
@@ -89,7 +89,7 @@ void QuadInputs::InitData() noexcept {
 	m_vertices[6].position = { -side, -side, 0.f };
 	m_vertices[7].position = { side, -side, 0.f };
 
-	static std::vector<DirectX::XMFLOAT2> uvs {
+	std::vector<DirectX::XMFLOAT2> uvs {
 		{0.f, 0.f}, {1.f, 0.f},
 		{0.f, 1.f}, {1.f, 1.f},
 		{1.f, 0.f}, {0.f, 0.f},
@@ -105,7 +105,11 @@ void QuadInputs::InitData() noexcept {
 
 // Sphere
 SphereInputs::SphereInputs(const Args& arguments) noexcept
-	: ModelInputs{ "Sphere" }, m_latitudeDivision{ arguments.latDiv.value() },
+	: ModelInputs{
+		"Sphere" + std::to_string(arguments.latDiv.value()) + "x" +
+		std::to_string(arguments.longDiv.value())
+	},
+	m_latitudeDivision{ arguments.latDiv.value() },
 	m_longitudeDivision{ arguments.longDiv.value() } {}
 
 void SphereInputs::InitData() noexcept {
@@ -146,7 +150,7 @@ void SphereInputs::InitData() noexcept {
 
 	// UV
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
-	static std::vector<DirectX::XMFLOAT2> uvs { std::size(m_vertices), singleColourUV};
+	std::vector<DirectX::XMFLOAT2> uvs { std::size(m_vertices), singleColourUV};
 
 	SetUVToVertices(m_vertices, uvs);
 
