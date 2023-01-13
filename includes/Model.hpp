@@ -58,12 +58,12 @@ class ModelTransform {
 public:
 	ModelTransform() noexcept;
 
-	ModelTransform& RotateXDegree(float angle) noexcept;
-	ModelTransform& RotateYDegree(float angle) noexcept;
-	ModelTransform& RotateZDegree(float angle) noexcept;
-	ModelTransform& RotateXRadian(float angle) noexcept;
-	ModelTransform& RotateYRadian(float angle) noexcept;
-	ModelTransform& RotateZRadian(float angle) noexcept;
+	ModelTransform& RotatePitchDegree(float angle) noexcept;
+	ModelTransform& RotateYawDegree(float angle) noexcept;
+	ModelTransform& RotateRollDegree(float angle) noexcept;
+	ModelTransform& RotatePitchRadian(float angle) noexcept;
+	ModelTransform& RotateYawRadian(float angle) noexcept;
+	ModelTransform& RotateRollRadian(float angle) noexcept;
 
 	ModelTransform& MoveTowardsX(float delta) noexcept;
 	ModelTransform& MoveTowardsY(float delta) noexcept;

@@ -33,6 +33,7 @@ private:
 	std::string m_textureName;
 };
 
+// Revolving around 0, 0, 0
 class OrbitingModel : public ScalableModel {
 public:
 	OrbitingModel(float scale) noexcept;
@@ -42,7 +43,8 @@ public:
 	void PhysicsUpdate() noexcept final;
 
 protected:
-	virtual DirectX::XMFLOAT3 SetAngularVelocity() noexcept;
+	[[nodiscard]]
+	virtual DirectX::XMFLOAT3 GetAngularOffset() noexcept = 0;
 
 protected:
 	float m_angle;
@@ -51,19 +53,21 @@ protected:
 	float m_modelDirectionY;
 };
 
-class OrbitModelXC : public OrbitingModel {
+class OrbitModelClock : public OrbitingModel {
 public:
 	using OrbitingModel::OrbitingModel;
 
-protected:
-	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
+private:
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetAngularOffset() noexcept final;
 };
 
-class OrbitModelXAC : public OrbitingModel {
+class OrbitModelAntiClock : public OrbitingModel {
 public:
 	using OrbitingModel::OrbitingModel;
 
-protected:
-	DirectX::XMFLOAT3 SetAngularVelocity() noexcept final;
+private:
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetAngularOffset() noexcept final;
 };
 #endif

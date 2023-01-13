@@ -17,7 +17,8 @@ App::App() {
 		.AddColour("Green", DirectX::Colors::Green)
 		.AddColour("Blue", DirectX::Colors::Blue)
 		.AddColour("White", DirectX::Colors::White)
-		.AddColour("Yellow", DirectX::Colors::Yellow);
+		.AddColour("Yellow", DirectX::Colors::Yellow)
+		.AddColour("Orange", DirectX::Colors::Orange);
 
 	TextureLoader::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureLoader::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
@@ -47,11 +48,11 @@ App::App() {
 
 	auto cube0 = std::make_shared<ScalableModel>(0.3f);
 	auto cube1 = std::make_shared<ScalableModel>(0.3f);
-	auto sphere0 = std::make_shared<OrbitModelXC>(0.1f);
-	auto sphere1 = std::make_shared<OrbitModelXAC>(0.1f);
-	auto sphere2 = std::make_shared<OrbitModelXC>(0.1f);
-	auto sphere3 = std::make_shared<OrbitModelXC>(0.1f);
-	auto sphere4 = std::make_shared<OrbitModelXC>(0.1f);
+	auto sphere0 = std::make_shared<OrbitModelClock>(0.1f);
+	auto sphere1 = std::make_shared<OrbitModelAntiClock>(0.1f);
+	auto sphere2 = std::make_shared<OrbitModelClock>(0.1f);
+	auto sphere3 = std::make_shared<OrbitModelClock>(0.1f);
+	auto sphere4 = std::make_shared<OrbitModelClock>(0.1f);
 
 	cube0->SetTextureIndex(0u);
 	cube1->SetTextureIndex(0u);
@@ -61,8 +62,8 @@ App::App() {
 	sphere3->SetTextureIndex(0u);
 	sphere4->SetTextureIndex(0u);
 
-	cube1->GetTransform().RotateYDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.1f);
-	cube0->GetTransform().RotateYDegree(45.f);
+	cube1->GetTransform().RotateYawDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.1f);
+	cube0->GetTransform().RotateYawDegree(45.f);
 
 	sphere0->GetTransform().MoveTowardsX(8.f);
 	sphere0->MeasureRadius();
@@ -85,7 +86,7 @@ App::App() {
 	sphere1->SetTextureName("White");
 	sphere2->SetTextureName("Red");
 	sphere3->SetTextureName("Yellow");
-	sphere4->SetTextureName("Cyan");
+	sphere4->SetTextureName("Orange");
 
 	std::wstring pixelShader0 = L"PixelShader";
 

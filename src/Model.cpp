@@ -156,37 +156,31 @@ void ModelTransform::Rotate(
 	m_modelMatrix *= DirectX::XMMatrixRotationAxis(rotationAxis, angleRadian);
 }
 
-ModelTransform& ModelTransform::RotateXDegree(float angle) noexcept {
-	Rotate({ 1.f, 0.f, 0.f, 0.f }, DirectX::XMConvertToRadians(angle));
-
-	return *this;
+ModelTransform& ModelTransform::RotatePitchDegree(float angle) noexcept {
+	return RotatePitchRadian(DirectX::XMConvertToRadians(angle));
 }
 
-ModelTransform& ModelTransform::RotateYDegree(float angle) noexcept {
-	Rotate({ 0.f, 1.f, 0.f, 0.f }, DirectX::XMConvertToRadians(angle));
-
-	return *this;
+ModelTransform& ModelTransform::RotateYawDegree(float angle) noexcept {
+	return RotateYawRadian(DirectX::XMConvertToRadians(angle));
 }
 
-ModelTransform& ModelTransform::RotateZDegree(float angle) noexcept {
-	Rotate({ 0.f, 0.f, 1.f, 0.f }, DirectX::XMConvertToRadians(angle));
-
-	return *this;
+ModelTransform& ModelTransform::RotateRollDegree(float angle) noexcept {
+	return RotateRollRadian(DirectX::XMConvertToRadians(angle));
 }
 
-ModelTransform& ModelTransform::RotateXRadian(float angle) noexcept {
+ModelTransform& ModelTransform::RotatePitchRadian(float angle) noexcept {
 	Rotate({ 1.f, 0.f, 0.f, 0.f }, angle);
 
 	return *this;
 }
 
-ModelTransform& ModelTransform::RotateYRadian(float angle) noexcept {
+ModelTransform& ModelTransform::RotateYawRadian(float angle) noexcept {
 	Rotate({ 0.f, 1.f, 0.f, 0.f }, angle);
 
 	return *this;
 }
 
-ModelTransform& ModelTransform::RotateZRadian(float angle) noexcept {
+ModelTransform& ModelTransform::RotateRollRadian(float angle) noexcept {
 	Rotate({ 0.f, 0.f, 1.f, 0.f }, angle);
 
 	return *this;

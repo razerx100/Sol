@@ -59,7 +59,7 @@ OrbitingModel::OrbitingModel(float scale) noexcept
 void OrbitingModel::PhysicsUpdate() noexcept {
 	static constexpr float speedModifier = 0.05f;
 
-	DirectX::XMFLOAT3 offset = SetAngularVelocity();
+	const DirectX::XMFLOAT3 offset = GetAngularOffset();
 	GetTransform().SetModelOffset(offset);
 
 	m_angle += speedModifier;
@@ -79,12 +79,8 @@ void OrbitingModel::MeasureRadius() noexcept {
 	m_modelDirectionY = modelLocation.y / m_radius;
 }
 
-DirectX::XMFLOAT3 OrbitingModel::SetAngularVelocity() noexcept {
-	return GetTransform().GetModelOffset();
-}
-
-// Orbit XC
-DirectX::XMFLOAT3 OrbitModelXC::SetAngularVelocity() noexcept {
+// Orbit ClockWise
+DirectX::XMFLOAT3 OrbitModelClock::GetAngularOffset() noexcept {
 	return {
 		m_modelDirectionX * std::sin(m_angle) * m_radius,
 		m_modelDirectionY * std::sin(m_angle) * m_radius,
@@ -92,8 +88,8 @@ DirectX::XMFLOAT3 OrbitModelXC::SetAngularVelocity() noexcept {
 	};
 }
 
-// Orbit XAC
-DirectX::XMFLOAT3 OrbitModelXAC::SetAngularVelocity() noexcept {
+// Orbit Anti-Clockwise
+DirectX::XMFLOAT3 OrbitModelAntiClock::GetAngularOffset() noexcept {
 	return {
 		m_modelDirectionX * std::cos(m_angle) * m_radius,
 		m_modelDirectionY * std::cos(m_angle) * m_radius,
