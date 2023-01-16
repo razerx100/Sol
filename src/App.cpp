@@ -1,4 +1,4 @@
-#include <TextureLoader.hpp>
+#include <TextureTools.hpp>
 
 #include <App.hpp>
 #include <Sol.hpp>
@@ -20,9 +20,9 @@ App::App() {
 		.AddColour("Yellow", DirectX::Colors::Yellow)
 		.AddColour("Orange", DirectX::Colors::Orange);
 
-	TextureLoader::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
-	TextureLoader::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
-	TextureLoader::AddTextureToAtlas("resources/textures/doge.jpg", "dogeBig");
+	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
+	TextureTool::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
+	TextureTool::AddTextureToAtlas("resources/textures/doge.jpg", "dogeBig");
 
 	// Add two cameras
 	DirectX::XMFLOAT3 cameraPosition = { 0.f, 0.f, -1.f };
@@ -53,17 +53,11 @@ App::App() {
 	auto sphere2 = std::make_shared<OrbitModelClock>(0.1f);
 	auto sphere3 = std::make_shared<OrbitModelClock>(0.1f);
 	auto sphere4 = std::make_shared<OrbitModelClock>(0.1f);
-
-	cube0->SetTextureIndex(0u);
-	cube1->SetTextureIndex(0u);
-	sphere0->SetTextureIndex(0u);
-	sphere1->SetTextureIndex(0u);
-	sphere2->SetTextureIndex(0u);
-	sphere3->SetTextureIndex(0u);
-	sphere4->SetTextureIndex(0u);
+	auto quad0 = std::make_shared<ScalableModel>(0.5f);
 
 	cube1->GetTransform().RotateYawDegree(45.f).MoveTowardsZ(-0.5f).MoveTowardsX(-1.1f);
 	cube0->GetTransform().RotateYawDegree(45.f);
+	quad0->GetTransform().MoveTowardsX(1.5f);
 
 	sphere0->GetTransform().MoveTowardsX(8.f);
 	sphere0->MeasureRadius();
@@ -80,13 +74,13 @@ App::App() {
 	sphere4->GetTransform().MoveTowardsX(3.5f).MoveTowardsY(-5.5f);
 	sphere4->MeasureRadius();
 
-	cube0->SetTextureName("Fuchsia");
-	cube1->SetTextureName("Cyan");
-	sphere0->SetTextureName("Green");
-	sphere1->SetTextureName("White");
-	sphere2->SetTextureName("Red");
-	sphere3->SetTextureName("Yellow");
-	sphere4->SetTextureName("Orange");
+	cube0->SetTextureFromAtlas("Fuchsia");
+	cube1->SetTextureFromAtlas("Cyan");
+	sphere0->SetTextureFromAtlas("Green");
+	sphere1->SetTextureFromAtlas("White");
+	sphere2->SetTextureFromAtlas("Red");
+	sphere3->SetTextureFromAtlas("Yellow");
+	sphere4->SetTextureFromAtlas("Orange");
 
 	std::wstring pixelShader0 = L"PixelShader";
 
@@ -97,6 +91,18 @@ App::App() {
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere2), { 64u, 64u }, pixelShader0);
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere3), { 64u, 64u }, pixelShader0);
 	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 16u, 16u }, pixelShader0);
+
+	auto dogeTex = TextureTool::LoadTextureFromFile("resources/textures/doge.jpg");
+	if (dogeTex) {
+		STexture& dogeBig = dogeTex.value();
+		size_t texIndex = Sol::renderer->AddTexture(
+			std::move(dogeBig.data), dogeBig.width, dogeBig.height
+		);
+
+		quad0->SetTextureIndex(texIndex);
+	}
+
+	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), pixelShader0);
 }
 
 void App::SetResources() {}

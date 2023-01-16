@@ -68,7 +68,8 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 
 // Model
 Model::Model() noexcept
-	: m_textureIndex{ 0u }, m_uvInfo{}, m_indexCount{ 0u }, m_indexOffset{ 0u } {}
+	: m_textureIndex{ 0u }, m_uvInfo{ 0.f, 0.f, 1.f, 1.f }, m_indexCount{ 0u },
+	m_indexOffset{ 0u } {}
 
 std::uint32_t Model::GetIndexCount() const noexcept {
 	return m_indexCount;

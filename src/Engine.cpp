@@ -4,8 +4,7 @@
 #include <Sol.hpp>
 #include <DirectXMath.h>
 
-Engine::Engine()
-	: m_appName("Sol") {
+Engine::Engine() : m_appName("Sol") {
 
 	m_objectManager.CreateObject(Sol::configManager, { L"config.ini" }, 0u);
 	Sol::configManager->ReadConfigFile();
@@ -43,6 +42,8 @@ Engine::Engine()
 	Sol::renderer->SetSharedDataContainer(Sol::sharedData);
 	Sol::renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
+	TextureTool::AddDefaultTexture();
+
 	AMods::InitAppModules(m_objectManager);
 
 	m_objectManager.CreateObject(Sol::modelProcessor, 0u);
@@ -57,10 +58,11 @@ Engine::Engine()
 
 	Sol::modelProcessor->Process();
 
-	size_t textureIndex = Sol::renderer->RegisterResource(
+	const size_t atlasIndex = Sol::renderer->AddTexture(
 		Sol::textureAtlas->MoveTexture(),
 		Sol::textureAtlas->GetWidth(), Sol::textureAtlas->GetHeight()
 	);
+	Sol::textureAtlas->SetTextureIndex(atlasIndex);
 
 	Sol::renderer->ProcessData();
 

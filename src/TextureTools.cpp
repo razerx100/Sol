@@ -1,4 +1,4 @@
-#include <TextureLoader.hpp>
+#include <TextureTools.hpp>
 #include <array>
 #include <SolThrowMacros.hpp>
 #include <cassert>
@@ -8,7 +8,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-namespace TextureLoader {
+namespace TextureTool {
 	std::array<std::string, 11> extensions = {
 		".jpg", ".jpeg", ".png", ".bmp", ".hdr", ".psd", ".tga",
 		".gif", ".pic", ".pgm", ".ppm"
@@ -27,6 +27,7 @@ namespace TextureLoader {
 		return hasOneSupported;
 	}
 
+	[[nodiscard]]
 	std::optional<STexture> LoadTextureFromFile(const std::string& fileName) noexcept {
 		const bool extensionSupport = ExtensionCheck(fileName);
 		assert(extensionSupport && "Texture extention not supported.");
@@ -55,14 +56,25 @@ namespace TextureLoader {
 	}
 
 	void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept {
-		auto tex = TextureLoader::LoadTextureFromFile(fileName);
+		auto tex = LoadTextureFromFile(fileName);
 
 		if (tex) {
-			STexture& refTex = *tex;
+			STexture& refTex = tex.value();
 
 			Sol::textureAtlas->AddTexture(
 				texName, std::move(refTex.data), refTex.width, refTex.height
 			);
 		}
+	}
+
+	void AddDefaultTexture() noexcept {
+		DirectX::XMFLOAT4 defaultColour{ 0.f, 0.f, 0.f, 1.f };
+		const size_t texSize = sizeof(DirectX::XMFLOAT4);
+
+		auto defaultTex = std::unique_ptr<std::uint8_t>(new std::uint8_t[texSize]);
+		std::memcpy(defaultTex.get(), &defaultColour, texSize);
+
+		// Should always be zero
+		size_t defaultIndex = Sol::renderer->AddTexture(std::move(defaultTex), 1u, 1u);
 	}
 };

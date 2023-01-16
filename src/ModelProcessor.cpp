@@ -75,11 +75,11 @@ void ModelProcessor::Process() noexcept {
 		vertexBufferOffset += modelInput->GetVertexBufferSize();
 	}
 
-	Sol::renderer->SubmitModelInputs(
+	Sol::renderer->AddModelInputs(
 		std::move(vertexBufferData), vertexBufferSize,
 		std::move(indexBufferData), indexBufferSize
 	);
 
 	for (auto& modelSet : m_modelSets)
-		Sol::renderer->SubmitModelSet(std::move(modelSet.second), modelSet.first);
+		Sol::renderer->AddModelSet(std::move(modelSet.second), modelSet.first);
 }

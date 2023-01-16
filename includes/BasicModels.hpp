@@ -27,10 +27,10 @@ public:
 
 	virtual void SetResources() override;
 
-	void SetTextureName(const std::string& texName) noexcept;
+	void SetTextureFromAtlas(const std::string& texName) noexcept;
 
 private:
-	std::string m_textureName;
+	std::string m_subTextureName;
 };
 
 // Revolving around 0, 0, 0

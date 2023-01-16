@@ -6,11 +6,7 @@
 #include <TextureAtlas.hpp>
 
 TextureAtlas::TextureAtlas() noexcept :
-	m_width(0u), m_height(0u), m_16bitsComponent(false) {}
-
-ColourTexture& TextureAtlas::GetColourTextureManager() noexcept {
-	return m_colourTextureManager;
-}
+	m_width{ 0u }, m_height{ 0u }, m_16bitsComponent{ false }, m_atlasIndex{ 0u } {}
 
 void TextureAtlas::AddTexture(
 	const std::string& name, std::unique_ptr<std::uint8_t> texture,
@@ -18,6 +14,16 @@ void TextureAtlas::AddTexture(
 ) noexcept {
 	m_unprocessedData.emplace_back(name, width, height);
 	m_unprocessedTextures.emplace_back(std::move(texture));
+}
+
+void TextureAtlas::SetIfComponentsAre16bits(bool component16bits) noexcept {
+	m_16bitsComponent = component16bits;
+
+	m_colourTextureManager.SetIfComponentsAre16bits(component16bits);
+}
+
+void TextureAtlas::SetTextureIndex(size_t textureIndex) noexcept {
+	m_atlasIndex = textureIndex;
 }
 
 void TextureAtlas::CreateAtlas() noexcept {
@@ -182,6 +188,10 @@ void TextureAtlas::CreateAtlas() noexcept {
 	m_unprocessedData = std::vector<TextureInfo>();
 }
 
+ColourTexture& TextureAtlas::GetColourTextureManager() noexcept {
+	return m_colourTextureManager;
+}
+
 UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept {
 	auto data = m_uvInfoMap.find(name);
 
@@ -211,12 +221,6 @@ std::unique_ptr<std::uint8_t> TextureAtlas::MoveTexture() noexcept {
 
 bool TextureAtlas::IsTexture16bits() const noexcept {
 	return m_16bitsComponent;
-}
-
-void TextureAtlas::SetIfComponentsAre16bits(bool component16bits) noexcept {
-	m_16bitsComponent = component16bits;
-
-	m_colourTextureManager.SetIfComponentsAre16bits(component16bits);
 }
 
 bool TextureAtlas::ManagePartitions(
@@ -258,4 +262,8 @@ bool TextureAtlas::ManagePartitions(
 
 bool TextureAtlas::IsCoordSuitable(const UVU32& coord) const noexcept {
 	return coord.vEnd >= coord.vStart && coord.uEnd >= coord.uStart;
+}
+
+size_t TextureAtlas::GetTextureIndex() const noexcept {
+	return m_atlasIndex;
 }

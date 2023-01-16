@@ -7,7 +7,7 @@
 #include <memory>
 #include <concepts>
 #include <limits>
-#include <TextureLoader.hpp>
+#include <TextureTools.hpp>
 
 #include <DirectXMath.h>
 #include <IModel.hpp>
@@ -35,12 +35,12 @@ public:
 		std::uint32_t width, std::uint32_t height
 	) noexcept;
 	void SetIfComponentsAre16bits(bool component16bits) noexcept;
+	void SetTextureIndex(size_t textureIndex) noexcept;
 
 	void CreateAtlas() noexcept;
 
 	[[nodiscard]]
 	ColourTexture& GetColourTextureManager() noexcept;
-
 	[[nodiscard]]
 	UVInfo GetUVInfo(const std::string& name) const noexcept;
 	[[nodiscard]]
@@ -49,7 +49,8 @@ public:
 	std::uint32_t GetHeight() const noexcept;
 	[[nodiscard]]
 	bool IsTexture16bits() const noexcept;
-
+	[[nodiscard]]
+	size_t GetTextureIndex() const noexcept;
 	[[nodiscard]]
 	std::unique_ptr<std::uint8_t> MoveTexture() noexcept;
 
@@ -92,5 +93,6 @@ private:
 	std::vector<std::unique_ptr<std::uint8_t>> m_unprocessedTextures;
 
 	ColourTexture m_colourTextureManager;
+	size_t m_atlasIndex;
 };
 #endif
