@@ -76,7 +76,7 @@ void ModelProcessor::Process() noexcept {
 	}
 
 	Sol::renderer->SubmitModelInputs(
-		std::move(vertexBufferData), vertexBufferSize, sizeof(Vertex),
+		std::move(vertexBufferData), vertexBufferSize,
 		std::move(indexBufferData), indexBufferSize
 	);
 

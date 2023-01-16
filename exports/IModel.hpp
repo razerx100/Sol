@@ -1,7 +1,6 @@
 #ifndef I_MODEL_HPP_
 #define I_MODEL_HPP_
 #include <cstdint>
-#include <array>
 
 #include <DirectXMath.h>
 
@@ -15,6 +14,12 @@ struct UVInfo {
 struct ModelBounds {
 	DirectX::XMFLOAT3 positiveAxes;
 	DirectX::XMFLOAT3 negativeAxes;
+};
+
+struct Vertex {
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 normal;
+	DirectX::XMFLOAT2 uv;
 };
 
 class IModel {

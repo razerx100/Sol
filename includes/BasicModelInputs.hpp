@@ -38,6 +38,9 @@ public:
 	void InitData() noexcept override;
 
 private:
+	void CalculateNormals() noexcept;
+
+private:
 	std::uint32_t m_latitudeDivision;
 	std::uint32_t m_longitudeDivision;
 };

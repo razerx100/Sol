@@ -7,11 +7,6 @@
 
 #include <IModel.hpp>
 
-struct Vertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT2 uv;
-};
-
 class ModelInputs {
 public:
 	ModelInputs() = default;
@@ -47,6 +42,16 @@ public:
 
 		return modelInput.m_name;
 	}
+
+protected:
+	void CalculateNormalsIndependentFaces() noexcept;
+
+private:
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetFaceNormal(
+		const DirectX::XMFLOAT3& position1, const DirectX::XMFLOAT3& position2,
+		const DirectX::XMFLOAT3& position3
+	) const noexcept;
 
 protected:
 	std::vector<Vertex> m_vertices;

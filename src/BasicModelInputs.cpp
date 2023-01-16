@@ -13,17 +13,22 @@ void SetUVToVertices(
 TriangleInputs::TriangleInputs() noexcept : ModelInputs{ "Triangle" } {}
 
 void TriangleInputs::InitData() noexcept {
-	m_vertices.resize(3);
+	m_vertices.resize(6);
 	m_vertices[0].position = { 0.f, 1.f, 0.f };
 	m_vertices[1].position = { -1.f, -1.f, 0.f };
 	m_vertices[2].position = { 1.f, -1.f, 0.f };
+	m_vertices[3].position = { 0.f, 1.f, 0.f };
+	m_vertices[4].position = { -1.f, -1.f, 0.f };
+	m_vertices[5].position = { 1.f, -1.f, 0.f };
 
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { 3u, singleColourUV };
 
 	SetUVToVertices(m_vertices, uvs);
 
-	m_indices = { 0u, 1u, 2u, 2u, 1u, 0u };
+	m_indices = { 0u, 1u, 2u, 5u, 4u, 3u };
+
+	CalculateNormalsIndependentFaces();
 }
 
 // Cube
@@ -71,6 +76,8 @@ void CubeInputs::InitData() noexcept {
 			16u, 17u, 18u,		18u, 17u, 19u,
 			20u, 23u, 21u,		20u, 22u, 23u
 	};
+
+	CalculateNormalsIndependentFaces();
 }
 
 // Quad
@@ -101,6 +108,8 @@ void QuadInputs::InitData() noexcept {
 		0u, 1u, 2u, 2u, 1u, 3u,
 		6u, 7u, 5u, 5u, 4u, 6u
 	};
+
+	CalculateNormalsIndependentFaces();
 }
 
 // Sphere
@@ -154,6 +163,9 @@ void SphereInputs::InitData() noexcept {
 
 	SetUVToVertices(m_vertices, uvs);
 
+	// Normals
+	CalculateNormals();
+
 	// Indices
 	const auto calcIndex = [longDiv = m_longitudeDivision]
 	(std::uint32_t iLat, std::uint32_t iLong)->std::uint32_t {
@@ -198,4 +210,17 @@ void SphereInputs::InitData() noexcept {
 	m_indices.emplace_back(calcIndex(m_latitudeDivision - 2u, 0u));
 	m_indices.emplace_back(calcIndex(m_latitudeDivision - 2u, m_longitudeDivision - 1u));
 	m_indices.emplace_back(iSouthPole);
+}
+
+void SphereInputs::CalculateNormals() noexcept {
+	// A sphere's vertices are facing towards the outside from the centre. So, the normal
+	// of a vertex would be vertex's position vector - the position vector of the centre.
+	// Since the centre is at (0, 0, 0), the normal of a vertex would be its unit vector
+	for (Vertex& vertex : m_vertices) {
+		DirectX::XMVECTOR unitVector = DirectX::XMVector3Normalize(
+			DirectX::XMLoadFloat3(&vertex.position)
+		);
+
+		DirectX::XMStoreFloat3(&vertex.normal, unitVector);
+	}
 }
