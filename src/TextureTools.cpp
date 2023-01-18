@@ -68,10 +68,11 @@ namespace TextureTool {
 	}
 
 	void AddDefaultTexture() noexcept {
-		DirectX::XMFLOAT4 defaultColour{ 0.f, 0.f, 0.f, 1.f };
-		const size_t texSize = sizeof(DirectX::XMFLOAT4);
+		std::array<std::uint8_t, 4u> defaultColour{ 255u, 255u, 255u, 255u };
+		const size_t texSize = sizeof(std::uint8_t) * std::size(defaultColour);
 
 		auto defaultTex = std::unique_ptr<std::uint8_t>(new std::uint8_t[texSize]);
+
 		std::memcpy(defaultTex.get(), &defaultColour, texSize);
 
 		// Should always be zero

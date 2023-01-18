@@ -8,18 +8,6 @@
 #include <DirectXMath.h>
 
 App::App() {
-	RGBA8 red{ 255u, 0u, 0u, 255u };
-
-	Sol::textureAtlas->GetColourTextureManager()
-		.AddColour("Fuchsia", DirectX::Colors::Fuchsia)
-		.AddColour("Cyan", DirectX::Colors::Cyan)
-		.AddColour("Red", red)
-		.AddColour("Green", DirectX::Colors::Green)
-		.AddColour("Blue", DirectX::Colors::Blue)
-		.AddColour("White", DirectX::Colors::White)
-		.AddColour("Yellow", DirectX::Colors::Yellow)
-		.AddColour("Orange", DirectX::Colors::Orange);
-
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureTool::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
 	TextureTool::AddTextureToAtlas("resources/textures/doge.jpg", "dogeBig");
@@ -74,23 +62,77 @@ App::App() {
 	sphere4->GetTransform().MoveTowardsX(3.5f).MoveTowardsY(-5.5f);
 	sphere4->MeasureRadius();
 
-	cube0->SetTextureFromAtlas("Fuchsia");
-	cube1->SetTextureFromAtlas("Cyan");
-	sphere0->SetTextureFromAtlas("Green");
-	sphere1->SetTextureFromAtlas("White");
-	sphere2->SetTextureFromAtlas("Red");
-	sphere3->SetTextureFromAtlas("Yellow");
-	sphere4->SetTextureFromAtlas("Orange");
+	// Gold Cube
+	constexpr Material gold{
+		.ambient = { 0.24725f, 0.1995f, 0.0745f, 1.f },
+		.diffuse = { 0.75164f, 0.60648f, 0.22648f, 1.f },
+		.specular = { 0.628281f, 0.555802f, 0.366065f, 1.f },
+		.shininess = 51.2f
+	};
+	cube0->SetMaterial(gold);
 
-	std::wstring pixelShader0 = L"PixelShader";
+	// Cyan Rubber Cube
+	constexpr Material cyanRubber{
+		.ambient = { 0.f, 0.05f, 0.05f, 1.f },
+		.diffuse = { 0.4f, 0.5f, 0.5f, 1.f },
+		.specular = { 0.04f, 0.7f, 0.7f, 1.f },
+		.shininess = 10.f
+	};
+	cube1->SetMaterial(cyanRubber);
 
-	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube0), pixelShader0);
-	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube1), pixelShader0);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere0), { 64u, 64u }, pixelShader0);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere1), { 64u, 64u }, pixelShader0);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere2), { 64u, 64u }, pixelShader0);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere3), { 64u, 64u }, pixelShader0);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 16u, 16u }, pixelShader0);
+	// Lights
+	DirectX::XMFLOAT4 colourBuffer{};
+	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Green);
+	const Material green{
+		.ambient = colourBuffer,
+		.diffuse = colourBuffer,
+		.specular = { 1.f, 1.f, 1.f, 1.f }
+	};
+	sphere0->SetMaterial(green);
+
+	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::White);
+	const Material white{
+		.ambient = colourBuffer,
+		.diffuse = colourBuffer,
+		.specular = { 1.f, 1.f, 1.f, 1.f }
+	};
+	sphere1->SetMaterial(white);
+	sphere1->SetAsLightSource();
+
+	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Red);
+	const Material red{
+		.ambient = colourBuffer,
+		.diffuse = colourBuffer,
+		.specular = { 1.f, 1.f, 1.f, 1.f }
+	};
+	sphere2->SetMaterial(red);
+
+	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Yellow);
+	const Material yellow{
+		.ambient = colourBuffer,
+		.diffuse = colourBuffer,
+		.specular = { 1.f, 1.f, 1.f, 1.f }
+	};
+	sphere3->SetMaterial(yellow);
+
+	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Orange);
+	const Material orange{
+		.ambient = colourBuffer,
+		.diffuse = colourBuffer,
+		.specular = { 1.f, 1.f, 1.f, 1.f }
+	};
+	sphere4->SetMaterial(orange);
+
+	std::wstring lightShader = L"LightShader";
+	std::wstring withoutLightShader = L"WithoutLightShader";
+
+	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube0), lightShader);
+	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube1), lightShader);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere0), { 64u, 64u }, lightShader);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere1), { 64u, 64u }, withoutLightShader);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere2), { 64u, 64u }, lightShader);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere3), { 64u, 64u }, lightShader);
+	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 16u, 16u }, lightShader);
 
 	auto dogeTex = TextureTool::LoadTextureFromFile("resources/textures/doge.jpg");
 	if (dogeTex) {
@@ -102,7 +144,7 @@ App::App() {
 		quad0->SetTextureIndex(texIndex);
 	}
 
-	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), pixelShader0);
+	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), lightShader);
 }
 
 void App::SetResources() {}

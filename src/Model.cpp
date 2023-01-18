@@ -69,15 +69,7 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 // Model
 Model::Model() noexcept
 	: m_textureIndex{ 0u }, m_uvInfo{ 0.f, 0.f, 1.f, 1.f }, m_indexCount{ 0u },
-	m_indexOffset{ 0u } {}
-
-std::uint32_t Model::GetIndexCount() const noexcept {
-	return m_indexCount;
-}
-
-DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
-	return m_transform.GetModelMatrix();
-}
+	m_indexOffset{ 0u }, m_material{}, m_lightSource{ false } {}
 
 void Model::SetTextureIndex(size_t index) noexcept {
 	m_textureIndex = static_cast<std::uint32_t>(index);
@@ -85,10 +77,6 @@ void Model::SetTextureIndex(size_t index) noexcept {
 
 void Model::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
 	m_boundingBox = boundingBox;
-}
-
-std::uint32_t Model::GetTextureIndex() const noexcept {
-	return m_textureIndex;
 }
 
 void Model::SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept {
@@ -102,10 +90,6 @@ void Model::SetUVInfo(const UVInfo& uvInfo) noexcept {
 	m_uvInfo = uvInfo;
 }
 
-UVInfo Model::GetUVInfo() const noexcept {
-	return m_uvInfo;
-}
-
 void Model::SetIndexOffset(std::uint32_t indexOffset) noexcept {
 	m_indexOffset = indexOffset;
 }
@@ -114,9 +98,33 @@ void Model::SetIndexCount(std::uint32_t indexCount) noexcept {
 	m_indexCount = indexCount;
 }
 
+void Model::SetAsLightSource() noexcept {
+	m_lightSource = true;
+}
+
+void Model::SetMaterial(const Material& material) noexcept {
+	m_material = material;
+}
+
 void Model::SetResources() {}
 
 void Model::PhysicsUpdate() noexcept {}
+
+std::uint32_t Model::GetIndexCount() const noexcept {
+	return m_indexCount;
+}
+
+DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
+	return m_transform.GetModelMatrix();
+}
+
+UVInfo Model::GetUVInfo() const noexcept {
+	return m_uvInfo;
+}
+
+std::uint32_t Model::GetTextureIndex() const noexcept {
+	return m_textureIndex;
+}
 
 std::uint32_t Model::GetIndexOffset() const noexcept {
 	return m_indexOffset;
@@ -136,6 +144,14 @@ ModelTransform& Model::GetTransform() noexcept {
 
 ModelBoundingBox& Model::GetBoundingBox() noexcept {
 	return m_boundingBox;
+}
+
+Material Model::GetMaterial() const noexcept {
+	return m_material;
+}
+
+bool Model::IsLightSource() const noexcept {
+	return m_lightSource;
 }
 
 // Model Bounding Box

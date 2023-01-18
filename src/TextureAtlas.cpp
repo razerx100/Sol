@@ -18,8 +18,6 @@ void TextureAtlas::AddTexture(
 
 void TextureAtlas::SetIfComponentsAre16bits(bool component16bits) noexcept {
 	m_16bitsComponent = component16bits;
-
-	m_colourTextureManager.SetIfComponentsAre16bits(component16bits);
 }
 
 void TextureAtlas::SetTextureIndex(size_t textureIndex) noexcept {
@@ -27,17 +25,6 @@ void TextureAtlas::SetTextureIndex(size_t textureIndex) noexcept {
 }
 
 void TextureAtlas::CreateAtlas() noexcept {
-	// Add white as default colour  and Create
-	m_colourTextureManager.AddColour("Default", RGBA8{ 235u, 235u, 235u, 255u })
-		.CreateTexture();
-
-	const std::string coloursTexName = "Colours";
-
-	AddTexture(
-		coloursTexName, m_colourTextureManager.MoveTexture(),
-		m_colourTextureManager.GetWidth(), 1u
-	);
-
 	// sort textures by their width and if width are same then by height
 	auto predicate = [](const TextureInfo& var1, const TextureInfo& var2) noexcept {
 		if (var1.width == var2.width)
@@ -121,38 +108,6 @@ void TextureAtlas::CreateAtlas() noexcept {
 		m_uvInfoMap.insert_or_assign(name, uvInfo);
 	}
 
-	// Add individual colours' coordinates into the texture offset map, if they exist
-	// and remove the colours entry
-	if (m_colourTextureManager.IsThereAnyColours()) {
-		// Find colours in proccessedData
-		size_t coloursIndex = 0u;
-		for (; coloursIndex < std::size(m_unprocessedData); ++coloursIndex)
-			if (m_unprocessedData[coloursIndex].name == coloursTexName)
-				break;
-
-		m_uvInfoMap.erase(coloursTexName);
-
-		const UVU32& coloursTexOffset = processedData[coloursIndex];
-		const std::vector<std::string>& colourNames = m_colourTextureManager.GetNames();
-
-		for (size_t index = 0u; index < std::size(colourNames); ++index) {
-			// These are solid colour in a single pixel. So, we would want the coordinate
-			// of the pixel's data. So, subtracting 1 should be enough. There could be multiple
-			// colours, so index is added to the u start. Colours should be on a single line.
-
-			UVInfo uvInfo{
-				CoordToUV(
-					(coloursTexOffset.uStart + static_cast<std::uint32_t>(index)) * 2u - 1u,
-					m_width
-				),
-				CoordToUV(coloursTexOffset.vStart * 2u - 1u, m_height),
-				0.f, 0.f
-			};
-
-			m_uvInfoMap.insert_or_assign(colourNames[index], uvInfo);
-		}
-	}
-
 	size_t bytesPerPixel = m_16bitsComponent ? 8u : 4u;
 	size_t rowPitch = static_cast<size_t>(m_width) * bytesPerPixel;
 	size_t textureSize = rowPitch * m_height;
@@ -186,10 +141,6 @@ void TextureAtlas::CreateAtlas() noexcept {
 	// Clean up
 	m_unprocessedTextures = std::vector<std::unique_ptr<std::uint8_t>>();
 	m_unprocessedData = std::vector<TextureInfo>();
-}
-
-ColourTexture& TextureAtlas::GetColourTextureManager() noexcept {
-	return m_colourTextureManager;
 }
 
 UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept {

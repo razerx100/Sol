@@ -114,6 +114,8 @@ public:
 	void SetIndexOffset(std::uint32_t indexOffset) noexcept;
 	void SetIndexCount(std::uint32_t indexCount) noexcept;
 	void SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept;
+	void SetAsLightSource() noexcept;
+	void SetMaterial(const Material& material) noexcept;
 
 	virtual void PhysicsUpdate() noexcept;
 	virtual void SetResources();
@@ -132,6 +134,10 @@ public:
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept final;
 	[[nodiscard]]
 	ModelBounds GetBoundingBox() const noexcept final;
+	[[nodiscard]]
+	Material GetMaterial() const noexcept final;
+	[[nodiscard]]
+	bool IsLightSource() const noexcept final;
 
 	[[nodiscard]]
 	ModelTransform& GetTransform() noexcept;
@@ -146,5 +152,8 @@ private:
 	std::uint32_t m_indexOffset;
 	ModelTransform m_transform;
 	ModelBoundingBox m_boundingBox;
+
+	Material m_material;
+	bool m_lightSource;
 };
 #endif

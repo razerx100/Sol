@@ -11,7 +11,6 @@
 
 #include <DirectXMath.h>
 #include <IModel.hpp>
-#include <ColourTexture.hpp>
 
 struct UVU32 {
 	UVU32() = default;
@@ -39,8 +38,6 @@ public:
 
 	void CreateAtlas() noexcept;
 
-	[[nodiscard]]
-	ColourTexture& GetColourTextureManager() noexcept;
 	[[nodiscard]]
 	UVInfo GetUVInfo(const std::string& name) const noexcept;
 	[[nodiscard]]
@@ -92,7 +89,6 @@ private:
 	std::vector<TextureInfo> m_unprocessedData;
 	std::vector<std::unique_ptr<std::uint8_t>> m_unprocessedTextures;
 
-	ColourTexture m_colourTextureManager;
 	size_t m_atlasIndex;
 };
 #endif
