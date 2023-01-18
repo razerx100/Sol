@@ -128,11 +128,21 @@ App::App() {
 
 	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube0), lightShader);
 	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube1), lightShader);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere0), { 64u, 64u }, lightShader);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere1), { 64u, 64u }, withoutLightShader);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere2), { 64u, 64u }, lightShader);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere3), { 64u, 64u }, lightShader);
-	Sol::modelContainer->AddModel<SphereInputs>(std::move(sphere4), { 16u, 16u }, lightShader);
+	Sol::modelContainer->AddModel<SphereInputs>(
+		std::move(sphere0), { 64u, 64u }, withoutLightShader
+		);
+	Sol::modelContainer->AddModel<SphereInputs>(
+		std::move(sphere1), { 64u, 64u }, withoutLightShader
+		);
+	Sol::modelContainer->AddModel<SphereInputs>(
+		std::move(sphere2), { 64u, 64u }, withoutLightShader
+		);
+	Sol::modelContainer->AddModel<SphereInputs>(
+		std::move(sphere3), { 64u, 64u }, withoutLightShader
+		);
+	Sol::modelContainer->AddModel<SphereInputs>(
+		std::move(sphere4), { 16u, 16u }, withoutLightShader
+		);
 
 	auto dogeTex = TextureTool::LoadTextureFromFile("resources/textures/doge.jpg");
 	if (dogeTex) {
@@ -144,7 +154,7 @@ App::App() {
 		quad0->SetTextureIndex(texIndex);
 	}
 
-	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), lightShader);
+	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), withoutLightShader);
 }
 
 void App::SetResources() {}

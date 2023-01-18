@@ -69,7 +69,11 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 // Model
 Model::Model() noexcept
 	: m_textureIndex{ 0u }, m_uvInfo{ 0.f, 0.f, 1.f, 1.f }, m_indexCount{ 0u },
-	m_indexOffset{ 0u }, m_material{}, m_lightSource{ false } {}
+	m_indexOffset{ 0u }, m_material{
+		.ambient = { 1.f, 1.f, 1.f, 1.f },
+		.diffuse = { 1.f, 1.f, 1.f, 1.f },
+		.specular = { 1.f, 1.f, 1.f, 1.f }
+	}, m_lightSource{ false } {}
 
 void Model::SetTextureIndex(size_t index) noexcept {
 	m_textureIndex = static_cast<std::uint32_t>(index);
