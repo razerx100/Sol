@@ -50,6 +50,7 @@ namespace Sol {
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
+		RenderEngineType engineType,
 		std::string moduleName,
 		std::uint8_t bufferCount
 	) {
@@ -59,6 +60,7 @@ namespace Sol {
 					appName,
 					windowHandle,
 					width, height,
+					engineType,
 					bufferCount
 				), 2u
 			);
@@ -68,6 +70,7 @@ namespace Sol {
 					appName,
 					windowHandle, moduleHandle,
 					width, height,
+					engineType,
 					bufferCount
 				), 2u
 			);

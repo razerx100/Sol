@@ -1,6 +1,7 @@
 #include <Engine.hpp>
 #include <VenusInstance.hpp>
 
+#include <SolHelperFunctions.hpp>
 #include <Sol.hpp>
 #include <DirectXMath.h>
 
@@ -35,6 +36,7 @@ Engine::Engine() : m_appName("Sol") {
 		Sol::window->GetWindowHandle(),
 		Sol::window->GetModuleInstance(),
 		1920u, 1080u,
+		GetRenderEngineTypeFromConfig(),
 		Sol::configManager->GetRendererName()
 	);
 	Sol::renderer->SetShaderPath(L"resources/shaders/");

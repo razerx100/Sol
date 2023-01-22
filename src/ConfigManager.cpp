@@ -10,25 +10,36 @@ ConfigManager::~ConfigManager() noexcept {
 void ConfigManager::ReadConfigFile() noexcept {
 	m_parser.Parse();
 
-	if (!m_parser.DoesValueExist("Renderer", "Modules")) {
-		auto valueMap = DEFAULTMODULES.find("Renderer");
+	const std::string modules = "Modules";
+
+	if (std::string renderer = "Renderer"; !m_parser.DoesValueExist(renderer, modules)) {
+		auto valueMap = DEFAULTMODULES.find(renderer);
 
 		if (valueMap != std::end(DEFAULTMODULES))
-			m_parser.AddOrUpdateValue("Modules", valueMap->first, valueMap->second);
+			m_parser.AddOrUpdateValue(modules, valueMap->first, valueMap->second);
 	}
 
-	if (!m_parser.DoesValueExist("Window", "Modules")) {
-		auto valueMap = DEFAULTMODULES.find("Window");
+	if (std::string window = "Window"; !m_parser.DoesValueExist(window, modules)) {
+		auto valueMap = DEFAULTMODULES.find(window);
 
 		if (valueMap != std::end(DEFAULTMODULES))
-			m_parser.AddOrUpdateValue("Modules", valueMap->first, valueMap->second);
+			m_parser.AddOrUpdateValue(modules, valueMap->first, valueMap->second);
 	}
 
-	if (!m_parser.DoesValueExist("IO", "Modules")) {
-		auto valueMap = DEFAULTMODULES.find("IO");
+	if (std::string io = "IO"; !m_parser.DoesValueExist(io, modules)) {
+		auto valueMap = DEFAULTMODULES.find(io);
 
 		if (valueMap != std::end(DEFAULTMODULES))
-			m_parser.AddOrUpdateValue("Modules", valueMap->first, valueMap->second);
+			m_parser.AddOrUpdateValue(modules, valueMap->first, valueMap->second);
+	}
+
+	const std::string systems = "Systems";
+	if (std::string renderEngine = "RenderEngine";
+		!m_parser.DoesValueExist(renderEngine, systems)) {
+		auto valueMap = DEFAULTMODULES.find(renderEngine);
+
+		if (valueMap != std::end(DEFAULTMODULES))
+			m_parser.AddOrUpdateValue(systems, valueMap->first, valueMap->second);
 	}
 }
 
@@ -44,6 +55,10 @@ void ConfigManager::SetWindow(const std::string& name) noexcept {
 	m_parser.AddOrUpdateValue("Modules", "Window", name);
 }
 
+void ConfigManager::SetRenderEngine(const std::string& name) noexcept {
+	m_parser.AddOrUpdateValue("Systems", "RenderEngine", name);
+}
+
 std::string ConfigManager::GetRendererName() const noexcept {
 	return m_parser.GetValue("Renderer", "Modules");
 }
@@ -54,4 +69,8 @@ std::string ConfigManager::GeIOName() const noexcept {
 
 std::string ConfigManager::GetWindowName() const noexcept {
 	return m_parser.GetValue("Window", "Modules");
+}
+
+std::string ConfigManager::GetRenderEngine() const noexcept {
+	return m_parser.GetValue("RenderEngine", "Systems");
 }

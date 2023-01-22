@@ -9,6 +9,12 @@
 #include <IModel.hpp>
 #include <ISharedDataContainer.hpp>
 
+enum class RenderEngineType {
+	IndirectDraw,
+	IndividualDraw,
+	MeshShader
+};
+
 class Renderer {
 public:
 	struct Resolution {

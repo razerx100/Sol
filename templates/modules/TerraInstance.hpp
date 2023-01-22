@@ -2,11 +2,17 @@
 #define TERRA_INSTANCE_HPP_
 #include <Renderer.hpp>
 
-__declspec(dllimport) Renderer* __cdecl CreateTerraInstance(
+#ifdef BUILD_TERRA
+#define TERRA_DLL __declspec(dllexport)
+#else
+#define TERRA_DLL __declspec(dllimport)
+#endif
+
+TERRA_DLL Renderer* __cdecl CreateTerraInstance(
 	const char* appName,
 	void* windowHandle,
 	void* moduleHandle,
 	std::uint32_t width, std::uint32_t height,
-	std::uint32_t bufferCount = 2u
+	RenderEngineType engineType, std::uint32_t bufferCount = 2u
 );
 #endif

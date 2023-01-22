@@ -2,8 +2,7 @@
 #include <algorithm>
 #include <exception>
 
-IniParser::IniParser(std::wstring fileName)
-    : m_fileName{ std::move(fileName) } {
+IniParser::IniParser(std::wstring fileName) : m_fileName{ std::move(fileName) } {
     if (!m_fileName.ends_with(L".ini"))
         throw std::runtime_error("Extention isn't .ini");
 }
@@ -21,8 +20,7 @@ void IniParser::Parse() noexcept {
 
         if (std::size(strippedLine) >= 3u &&
             strippedLine.front() == '[' && strippedLine.back() == ']') {
-            std::string sectionName =
-                strippedLine.substr(1u, std::size(strippedLine) - 2u);
+            std::string sectionName = strippedLine.substr(1u, std::size(strippedLine) - 2u);
 
             m_sections.emplace(sectionName, ValueMap());
 
