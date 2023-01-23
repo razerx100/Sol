@@ -218,3 +218,7 @@ bool TextureAtlas::IsCoordSuitable(const UVU32& coord) const noexcept {
 size_t TextureAtlas::GetTextureIndex() const noexcept {
 	return m_atlasIndex;
 }
+
+bool TextureAtlas::DoesTextureExist() const noexcept {
+	return m_width;
+}

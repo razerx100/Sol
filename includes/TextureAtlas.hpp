@@ -47,6 +47,8 @@ public:
 	[[nodiscard]]
 	bool IsTexture16bits() const noexcept;
 	[[nodiscard]]
+	bool DoesTextureExist() const noexcept;
+	[[nodiscard]]
 	size_t GetTextureIndex() const noexcept;
 	[[nodiscard]]
 	std::unique_ptr<std::uint8_t> MoveTexture() noexcept;

@@ -60,11 +60,13 @@ Engine::Engine() : m_appName("Sol") {
 
 	Sol::modelProcessor->Process();
 
-	const size_t atlasIndex = Sol::renderer->AddTexture(
-		Sol::textureAtlas->MoveTexture(),
-		Sol::textureAtlas->GetWidth(), Sol::textureAtlas->GetHeight()
-	);
-	Sol::textureAtlas->SetTextureIndex(atlasIndex);
+	if (Sol::textureAtlas->DoesTextureExist()) {
+		const size_t atlasIndex = Sol::renderer->AddTexture(
+			Sol::textureAtlas->MoveTexture(),
+			Sol::textureAtlas->GetWidth(), Sol::textureAtlas->GetHeight()
+		);
+		Sol::textureAtlas->SetTextureIndex(atlasIndex);
+	}
 
 	Sol::renderer->ProcessData();
 
