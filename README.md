@@ -16,6 +16,15 @@ Manager module/executable which dynamically links to different modules to form a
 ## Instructions
 Run the appropriate Setup script to either pull from master or dev branch. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation.
 
+Use the ***config.ini*** file from the executable folder to change the modules at the start of the app. The file would be automatically generated, if it doesn't exist upon starting the app.
+
+Currently supported changeable modules/systems:
+[Modules] Renderer = Gaia
+[Modules] Renderer = Terra
+
+[Systems] RenderEngine = IndirectDraw
+[Systems] RenderEngine = IndividualDraw
+
 ## Resources
 ### Default Window Icon
 Default window icon location is {executable_directory}/resources/icon/Sol.ico.
