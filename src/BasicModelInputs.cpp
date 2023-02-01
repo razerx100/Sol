@@ -141,20 +141,20 @@ void SphereInputs::InitData() noexcept {
 				latBase, DirectX::XMMatrixRotationZ(longitudeAngle * iLong)
 			);
 
-			DirectX::XMFLOAT3 vertex{};
-			DirectX::XMStoreFloat3(&vertex, v);
+			Vertex vertex{};
+			DirectX::XMStoreFloat3(&vertex.position, v);
 			m_vertices.emplace_back(vertex);
 		}
 	}
 
 	// Cap vertices
 	const auto iNorthPole = static_cast<std::uint32_t>(std::size(m_vertices));
-	DirectX::XMFLOAT3 vertex{};
-	DirectX::XMStoreFloat3(&vertex, base);
+	Vertex vertex{};
+	DirectX::XMStoreFloat3(&vertex.position, base);
 	m_vertices.emplace_back(vertex);
 
 	const auto iSouthPole = static_cast<std::uint32_t>(std::size(m_vertices));
-	DirectX::XMStoreFloat3(&vertex, DirectX::XMVectorNegate(base));
+	DirectX::XMStoreFloat3(&vertex.position, DirectX::XMVectorNegate(base));
 	m_vertices.emplace_back(vertex);
 
 	// UV

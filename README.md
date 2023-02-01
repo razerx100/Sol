@@ -16,7 +16,7 @@ Manager module/executable which dynamically links to different modules to form a
 ## Instructions
 Run the appropriate Setup script to either pull from master or dev branch. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation.
 
-Use the ***config.ini*** file from the executable directory to change the modules at the start of the app. The file wwill be automatically generated, if it doesn't exist upon starting the app.
+Use the ***config.ini*** file from the executable directory to change the modules at the start of the app. The file will be automatically generated, if it doesn't exist upon starting the app.
 
 Currently supported changeable modules/systems:\
 [Modules] Renderer = Gaia\
