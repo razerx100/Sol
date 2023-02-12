@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE includes/ exports/ templates/
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot /W4)
+    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
 endif()
 
 if(PLATFORM STREQUAL "WINDOWS")
