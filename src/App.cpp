@@ -63,22 +63,31 @@ App::App() {
 	sphere4->MeasureRadius();
 
 	// Gold Cube
-	constexpr Material gold{
-		.ambient = { 0.24725f, 0.1995f, 0.0745f, 1.f },
-		.diffuse = { 0.75164f, 0.60648f, 0.22648f, 1.f },
-		.specular = { 0.628281f, 0.555802f, 0.366065f, 1.f },
-		.shininess = 51.2f
-	};
-	cube0->SetMaterial(gold);
 
-	// Cyan Rubber Cube
-	constexpr Material cyanRubber{
-		.ambient = { 0.f, 0.05f, 0.05f, 1.f },
-		.diffuse = { 0.4f, 0.5f, 0.5f, 1.f },
-		.specular = { 0.04f, 0.7f, 0.7f, 1.f },
-		.shininess = 10.f
-	};
-	cube1->SetMaterial(cyanRubber);
+	auto boxTex = TextureTool::LoadTextureFromFile("resources/textures/container2.png");
+	TextureTool::AddTextureToAtlas("resources/textures/container2.png", "Box");
+	cube0->SetTextureFromAtlas("Box");
+
+	auto boxSpecTex = TextureTool::LoadTextureFromFile(
+		"resources/textures/container2_specular.png"
+	);
+	if (boxTex) {
+		STexture& box = boxTex.value();
+		size_t texIndex = Sol::renderer->AddTexture(
+			std::move(box.data), box.width, box.height
+		);
+
+		cube1->SetDiffuseTexIndex(texIndex);
+	}
+	if (boxSpecTex) {
+		STexture& boxSpec = boxSpecTex.value();
+		size_t texIndex = Sol::renderer->AddTexture(
+			std::move(boxSpec.data), boxSpec.width, boxSpec.height
+		);
+
+		cube0->SetSpecularTexIndex(texIndex);
+		cube1->SetSpecularTexIndex(texIndex);
+	}
 
 	// Lights
 	DirectX::XMFLOAT4 colourBuffer{};
@@ -90,10 +99,9 @@ App::App() {
 	};
 	sphere0->SetMaterial(green);
 
-	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::White);
 	const Material white{
-		.ambient = colourBuffer,
-		.diffuse = colourBuffer,
+		.ambient = { 0.2f, 0.2f, 0.2f, 1.f },
+		.diffuse = { 0.5f, 0.5f, 0.5f, 1.f },
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	};
 	sphere1->SetMaterial(white);
@@ -126,8 +134,12 @@ App::App() {
 	std::wstring lightShader = L"LightShader";
 	std::wstring withoutLightShader = L"WithoutLightShader";
 
-	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube0), lightShader);
-	Sol::modelContainer->AddModel<CubeInputs>(std::move(cube1), lightShader);
+	Sol::modelContainer->AddModel<CubeInputs>(
+		std::move(cube0), { CubeUVMode::IndependentFaceTexture }, lightShader
+	);
+	Sol::modelContainer->AddModel<CubeInputs>(
+		std::move(cube1), { CubeUVMode::IndependentFaceTexture }, lightShader
+	);
 	Sol::modelContainer->AddModel<SphereInputs>(
 		std::move(sphere0), { 64u, 64u }, withoutLightShader
 		);
@@ -151,7 +163,7 @@ App::App() {
 			std::move(dogeBig.data), dogeBig.width, dogeBig.height
 		);
 
-		quad0->SetTextureIndex(texIndex);
+		quad0->SetDiffuseTexIndex(texIndex);
 	}
 
 	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), withoutLightShader);

@@ -11,11 +11,28 @@ public:
 	void InitData() noexcept override;
 };
 
+enum class CubeUVMode {
+	SingleColour,
+	IndependentFaceTexture
+};
+
 class CubeInputs final : public ModelInputs {
 public:
-	CubeInputs() noexcept;
+	struct Args {
+		std::optional<CubeUVMode> uvMode;
+	};
+
+public:
+	CubeInputs(const Args& args) noexcept;
 
 	void InitData() noexcept override;
+
+private:
+	void SetSingleColourUV() noexcept;
+	void SetIndependentFaceTexUV() noexcept;
+
+private:
+	CubeUVMode m_uvMode;
 };
 
 class QuadInputs final : public ModelInputs {

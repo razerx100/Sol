@@ -32,7 +32,59 @@ void TriangleInputs::InitData() noexcept {
 }
 
 // Cube
-CubeInputs::CubeInputs() noexcept : ModelInputs{ "Cube" } {}
+CubeInputs::CubeInputs(const Args& args) noexcept : m_uvMode{ args.uvMode.value() } {
+	std::string name = "Cube";
+	switch (args.uvMode.value()) {
+	case CubeUVMode::SingleColour: {
+		name.append("-SingleColour");
+		break;
+	}
+	case CubeUVMode::IndependentFaceTexture: {
+		name.append("-IndependentFaceTexture");
+		break;
+	}
+	}
+
+	SetInputName(name);
+}
+
+void CubeInputs::SetSingleColourUV() noexcept {
+	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
+	std::vector<DirectX::XMFLOAT2> uvs{ 24u, singleColourUV };
+
+	SetUVToVertices(m_vertices, uvs);
+}
+
+void CubeInputs::SetIndependentFaceTexUV() noexcept {
+	std::vector<DirectX::XMFLOAT2> uvs{};
+
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 1.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
+	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
+
+	SetUVToVertices(m_vertices, uvs);
+}
 
 void CubeInputs::InitData() noexcept {
 	constexpr float side = 1.0f / 2.0f;
@@ -63,10 +115,16 @@ void CubeInputs::InitData() noexcept {
 	m_vertices[22].position = { -side,side,side };// 22
 	m_vertices[23].position = { side,side,side };// 23
 
-	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
-	std::vector<DirectX::XMFLOAT2> uvs { 24u, singleColourUV };
-
-	SetUVToVertices(m_vertices, uvs);
+	switch (m_uvMode) {
+	case CubeUVMode::SingleColour: {
+		SetSingleColourUV();
+		break;
+	}
+	case CubeUVMode::IndependentFaceTexture: {
+		SetIndependentFaceTexUV();
+		break;
+	}
+	}
 
 	m_indices = {
 			0u, 2u, 1u,			2u, 3u, 1u,

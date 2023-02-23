@@ -49,9 +49,9 @@ void ScalableModel::SetResources() {
 	if (!m_subTextureName.empty()) {
 		UVInfo uvInfo = Sol::textureAtlas->GetUVInfo(m_subTextureName);
 
-		SetUVInfo(uvInfo);
+		SetDiffuseTexUVInfo(uvInfo);
 
-		SetTextureIndex(Sol::textureAtlas->GetTextureIndex());
+		SetDiffuseTexIndex(Sol::textureAtlas->GetTextureIndex());
 	}
 }
 

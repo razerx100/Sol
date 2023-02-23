@@ -24,6 +24,10 @@ void ModelInputs::CalculateNormalsIndependentFaces() noexcept {
 	}
 }
 
+void ModelInputs::SetInputName(const std::string& name) noexcept {
+	m_name = name;
+}
+
 DirectX::XMFLOAT3 ModelInputs::GetFaceNormal(
 	const DirectX::XMFLOAT3& position1, const DirectX::XMFLOAT3& position2,
 	const DirectX::XMFLOAT3& position3
@@ -68,30 +72,50 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 
 // Model
 Model::Model() noexcept
-	: m_textureIndex{ 0u }, m_uvInfo{ 0.f, 0.f, 1.f, 1.f }, m_indexCount{ 0u },
-	m_indexOffset{ 0u }, m_material{
+	: m_diffuseTexIndex{ 0u }, m_specularTexIndex{ 0u },
+	m_diffuseTexUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularTexUVInfo{ 0.f, 0.f, 1.f, 1.f },
+	m_indexCount{ 0u }, m_indexOffset{ 0u }, m_material{
 		.ambient = { 1.f, 1.f, 1.f, 1.f },
 		.diffuse = { 1.f, 1.f, 1.f, 1.f },
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	}, m_lightSource{ false } {}
 
-void Model::SetTextureIndex(size_t index) noexcept {
-	m_textureIndex = static_cast<std::uint32_t>(index);
+void Model::SetDiffuseTexIndex(size_t index) noexcept {
+	m_diffuseTexIndex = static_cast<std::uint32_t>(index);
+}
+
+void Model::SetSpecularTexIndex(size_t index) noexcept {
+	m_specularTexIndex = static_cast<std::uint32_t>(index);
 }
 
 void Model::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
 	m_boundingBox = boundingBox;
 }
 
-void Model::SetUVInfo(float uOffset, float vOffset, float uRatio, float vRatio) noexcept {
-	m_uvInfo.uOffset = uOffset;
-	m_uvInfo.vOffset = vOffset;
-	m_uvInfo.uRatio = uRatio;
-	m_uvInfo.vRatio = vRatio;
+void Model::SetDiffuseTexUVInfo(
+	float uOffset, float vOffset, float uRatio, float vRatio
+) noexcept {
+	m_diffuseTexUVInfo.uOffset = uOffset;
+	m_diffuseTexUVInfo.vOffset = vOffset;
+	m_diffuseTexUVInfo.uRatio = uRatio;
+	m_diffuseTexUVInfo.vRatio = vRatio;
 }
 
-void Model::SetUVInfo(const UVInfo& uvInfo) noexcept {
-	m_uvInfo = uvInfo;
+void Model::SetDiffuseTexUVInfo(const UVInfo& uvInfo) noexcept {
+	m_diffuseTexUVInfo = uvInfo;
+}
+
+void Model::SetSpecularTexUVInfo(
+	float uOffset, float vOffset, float uRatio, float vRatio
+) noexcept {
+	m_specularTexUVInfo.uOffset = uOffset;
+	m_specularTexUVInfo.vOffset = vOffset;
+	m_specularTexUVInfo.uRatio = uRatio;
+	m_specularTexUVInfo.vRatio = vRatio;
+}
+
+void Model::SetSpecularTexUVInfo(const UVInfo& uvInfo) noexcept {
+	m_specularTexUVInfo = uvInfo;
 }
 
 void Model::SetIndexOffset(std::uint32_t indexOffset) noexcept {
@@ -122,12 +146,20 @@ DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
 	return m_transform.GetModelMatrix();
 }
 
-UVInfo Model::GetUVInfo() const noexcept {
-	return m_uvInfo;
+UVInfo Model::GetDiffuseTexUVInfo() const noexcept {
+	return m_diffuseTexUVInfo;
 }
 
-std::uint32_t Model::GetTextureIndex() const noexcept {
-	return m_textureIndex;
+std::uint32_t Model::GetDiffuseTexIndex() const noexcept {
+	return m_diffuseTexIndex;
+}
+
+UVInfo Model::GetSpecularTexUVInfo() const noexcept {
+	return m_specularTexUVInfo;
+}
+
+std::uint32_t Model::GetSpecularTexIndex() const noexcept {
+	return m_specularTexIndex;
 }
 
 std::uint32_t Model::GetIndexOffset() const noexcept {

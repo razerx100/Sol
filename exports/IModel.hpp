@@ -38,9 +38,13 @@ public:
 	[[nodiscard]]
 	virtual std::uint32_t GetIndexOffset() const noexcept = 0;
 	[[nodiscard]]
-	virtual std::uint32_t GetTextureIndex() const noexcept = 0;
+	virtual std::uint32_t GetDiffuseTexIndex() const noexcept = 0;
 	[[nodiscard]]
-	virtual UVInfo GetUVInfo() const noexcept = 0;
+	virtual UVInfo GetDiffuseTexUVInfo() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::uint32_t GetSpecularTexIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual UVInfo GetSpecularTexUVInfo() const noexcept = 0;
 	[[nodiscard]]
 	virtual DirectX::XMMATRIX GetModelMatrix() const noexcept = 0;
 	[[nodiscard]]
