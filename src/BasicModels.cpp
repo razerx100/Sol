@@ -41,17 +41,31 @@ ScalableModel::ScalableModel(float scale) noexcept {
 	GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(scale, scale, scale));
 }
 
-void ScalableModel::SetTextureFromAtlas(const std::string& texName) noexcept {
-	m_subTextureName = texName;
+void ScalableModel::SetTextureFromAtlas(
+	const std::string& texName, TextureType type
+) noexcept {
+	m_textureInfo.emplace_back(texName, type);
 }
 
 void ScalableModel::SetResources() {
-	if (!m_subTextureName.empty()) {
-		UVInfo uvInfo = Sol::textureAtlas->GetUVInfo(m_subTextureName);
+	for(const auto& texInfo : m_textureInfo) {
+		UVInfo uvInfo = Sol::textureAtlas->GetUVInfo(texInfo.name);
+		size_t texIndex = Sol::textureAtlas->GetTextureIndex();
 
-		SetDiffuseTexUVInfo(uvInfo);
+		switch (texInfo.type) {
+		case TextureType::diffuse: {
+			SetDiffuseTexUVInfo(uvInfo);
+			SetDiffuseTexIndex(texIndex);
 
-		SetDiffuseTexIndex(Sol::textureAtlas->GetTextureIndex());
+			break;
+		}
+		case TextureType::specular: {
+			SetSpecularTexUVInfo(uvInfo);
+			SetSpecularTexIndex(texIndex);
+
+			break;
+		}
+		}
 	}
 }
 

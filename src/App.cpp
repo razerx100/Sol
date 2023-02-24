@@ -62,12 +62,12 @@ App::App() {
 	sphere4->GetTransform().MoveTowardsX(3.5f).MoveTowardsY(-5.5f);
 	sphere4->MeasureRadius();
 
-	// Gold Cube
+	TextureTool::AddTextureToAtlas("resources/textures/container2.png", "Box");
+	cube0->SetTextureFromAtlas("Box", TextureType::diffuse);
+	TextureTool::AddTextureToAtlas("resources/textures/container2_specular.png", "BoxSpec");
+	cube1->SetTextureFromAtlas("BoxSpec", TextureType::specular);
 
 	auto boxTex = TextureTool::LoadTextureFromFile("resources/textures/container2.png");
-	TextureTool::AddTextureToAtlas("resources/textures/container2.png", "Box");
-	cube0->SetTextureFromAtlas("Box");
-
 	auto boxSpecTex = TextureTool::LoadTextureFromFile(
 		"resources/textures/container2_specular.png"
 	);
@@ -86,7 +86,6 @@ App::App() {
 		);
 
 		cube0->SetSpecularTexIndex(texIndex);
-		cube1->SetSpecularTexIndex(texIndex);
 	}
 
 	// Lights

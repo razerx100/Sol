@@ -21,16 +21,27 @@ protected:
 	float m_modelAcceleration;
 };
 
+enum class TextureType {
+	diffuse,
+	specular
+};
+
 class ScalableModel : public Model {
 public:
 	ScalableModel(float scale) noexcept;
 
 	virtual void SetResources() override;
 
-	void SetTextureFromAtlas(const std::string& texName) noexcept;
+	void SetTextureFromAtlas(const std::string& texName, TextureType type) noexcept;
 
 private:
-	std::string m_subTextureName;
+	struct TexInfo {
+		std::string name;
+		TextureType type;
+	};
+
+private:
+	std::vector<TexInfo> m_textureInfo;
 };
 
 // Revolving around 0, 0, 0
