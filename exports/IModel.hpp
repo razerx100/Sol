@@ -1,6 +1,8 @@
 #ifndef I_MODEL_HPP_
 #define I_MODEL_HPP_
 #include <cstdint>
+#include <memory>
+#include <vector>
 
 #include <DirectXMath.h>
 
@@ -55,5 +57,33 @@ public:
 	virtual Material GetMaterial() const noexcept = 0;
 	[[nodiscard]]
 	virtual bool IsLightSource() const noexcept = 0;
+};
+
+struct Meshlet {
+	std::uint32_t vertexCount;
+	std::uint32_t vertexOffset;
+	std::uint32_t primitiveCount;
+	std::uint32_t primitiveOffset;
+};
+
+struct MeshletModel {
+	MeshletModel() = default;
+	MeshletModel(const MeshletModel&) = delete;
+
+	inline MeshletModel(std::shared_ptr<IModel> model, std::vector<Meshlet> meshlets) noexcept
+		: model{ std::move(model) }, meshlets{ std::move(meshlets) } {}
+	inline MeshletModel(MeshletModel&& other) noexcept
+		: model(std::move(other.model)), meshlets(std::move(other.meshlets)) {}
+
+	MeshletModel& operator=(const MeshletModel&) = delete;
+	inline MeshletModel& operator=(MeshletModel&& other) noexcept {
+		model = std::move(other.model);
+		meshlets = std::move(other.meshlets);
+
+		return *this;
+	}
+
+	std::shared_ptr<IModel> model;
+	std::vector<Meshlet> meshlets;
 };
 #endif

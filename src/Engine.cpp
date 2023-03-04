@@ -58,7 +58,7 @@ Engine::Engine() : m_appName("Sol") {
 
 	Sol::textureAtlas->CreateAtlas();
 
-	Sol::modelProcessor->Process();
+	Sol::modelProcessor->MoveData();
 
 	if (Sol::textureAtlas->DoesTextureExist()) {
 		const size_t atlasIndex = Sol::renderer->AddTexture(

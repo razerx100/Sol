@@ -68,13 +68,13 @@ void ModelProcessor::AddModelInput(
 void ModelProcessor::_addModelModelData(
 	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
+	if (auto modelSet = m_modelSets.find(pixelShader); modelSet == std::end(m_modelSets))
+		m_modelSets.emplace(pixelShader, std::vector<std::shared_ptr<IModel>>{});
+
 	const IndexData& modelData = m_modelData[inputName];
 	model->SetIndexOffset(modelData.indexOffset);
 	model->SetIndexCount(modelData.indexCount);
 	model->SetBoundingBox(modelData.boundingBox);
-
-	if (auto modelSet = m_modelSets.find(pixelShader); modelSet == std::end(m_modelSets))
-		m_modelSets.emplace(pixelShader, std::vector<std::shared_ptr<IModel>>{});
 
 	m_modelSets[pixelShader].emplace_back(std::move(model));
 }
@@ -82,7 +82,15 @@ void ModelProcessor::_addModelModelData(
 void ModelProcessor::_addModelMeshlets(
 	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
+	if (auto modelSet = m_meshletModelSets.find(pixelShader);
+		modelSet == std::end(m_meshletModelSets))
+		m_meshletModelSets.emplace(pixelShader, std::vector<MeshletModel>{});
 
+	const std::vector<Meshlet>& meshlets = m_modelDataMeshlets[inputName];
+
+	MeshletModel meshModel{ std::move(model), meshlets };
+
+	m_meshletModelSets[pixelShader].emplace_back(std::move(meshModel));
 }
 
 void ModelProcessor::_addModel(
@@ -94,21 +102,25 @@ void ModelProcessor::_addModel(
 		_addModelModelData(std::move(model), inputName, pixelShader);
 }
 
-void ModelProcessor::Process() noexcept {
-	const size_t vertexBufferSize = sizeof(Vertex) * std::size(m_gVertices);
-	const size_t indexBufferSize = sizeof(std::uint32_t) * std::size(m_gIndices);
-
-	auto vertexBufferData = std::unique_ptr<std::uint8_t>(new std::uint8_t[vertexBufferSize]);
-	auto indexBufferData = std::unique_ptr<std::uint8_t>(new std::uint8_t[indexBufferSize]);
-
-	memcpy(indexBufferData.get(), std::data(m_gIndices), indexBufferSize);
-	memcpy(vertexBufferData.get(), std::data(m_gVertices), vertexBufferSize);
-
-	Sol::renderer->AddModelInputs(
-		std::move(vertexBufferData), vertexBufferSize,
-		std::move(indexBufferData), indexBufferSize
-	);
+void ModelProcessor::_moveDataModels() noexcept {
+	Sol::renderer->AddModelInputs(std::move(m_gVertices), std::move(m_gIndices));
 
 	for (auto& modelSet : m_modelSets)
 		Sol::renderer->AddModelSet(std::move(modelSet.second), modelSet.first);
+}
+
+void ModelProcessor::_moveDataMeshletModels() noexcept {
+	Sol::renderer->AddModelInputs(
+		std::move(m_gVertices), std::move(m_gVerticesIndices), std::move(m_gIndices)
+	);
+
+	for (auto& modelSet : m_meshletModelSets)
+		Sol::renderer->AddMeshletModelSet(std::move(modelSet.second), modelSet.first);
+}
+
+void ModelProcessor::MoveData() noexcept {
+	if (m_processingModeMeshlet)
+		_moveDataMeshletModels();
+	else
+		_moveDataModels();
 }

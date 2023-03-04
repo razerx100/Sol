@@ -16,11 +16,13 @@ class ModelProcessor {
 		ModelBoundingBox boundingBox;
 	};
 
-	struct Meshlet {
-		std::uint32_t vertexCount;
-		std::uint32_t vertexOffset;
-		std::uint32_t primitiveCount;
-		std::uint32_t primitiveOffset;
+	union PrimitiveIndices {
+		struct {
+			std::uint32_t firstIndex : 10u;
+			std::uint32_t secondIndex : 10u;
+			std::uint32_t thirdIndex : 10u;
+		}unpacked;
+		std::uint32_t packed;
 	};
 
 public:
@@ -56,7 +58,7 @@ public:
 		_addModel(std::move(model), inputName, pixelShader);
 	}
 
-	void Process() noexcept;
+	void MoveData() noexcept;
 
 private:
 	[[nodiscard]]
@@ -84,8 +86,12 @@ private:
 		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
 	) noexcept;
 
+	void _moveDataModels() noexcept;
+	void _moveDataMeshletModels() noexcept;
+
 private:
 	std::unordered_map<std::wstring, std::vector<std::shared_ptr<IModel>>> m_modelSets;
+	std::unordered_map<std::wstring, std::vector<MeshletModel>> m_meshletModelSets;
 	std::vector<Vertex> m_gVertices;
 	std::vector<std::uint32_t> m_gVerticesIndices;
 	std::vector<std::uint32_t> m_gIndices;
