@@ -48,7 +48,7 @@ Engine::Engine() : m_appName("Sol") {
 
 	AMods::InitAppModules(m_objectManager);
 
-	m_objectManager.CreateObject(Sol::modelProcessor, 0u);
+	m_objectManager.CreateObject(Sol::modelProcessor, { false }, 0u);
 	m_objectManager.CreateObject(Sol::modelContainer, 0u);
 	m_objectManager.CreateObject(Sol::textureAtlas, 0u);
 

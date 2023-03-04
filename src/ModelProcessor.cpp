@@ -1,15 +1,57 @@
 #include <ModelProcessor.hpp>
+#include <ranges>
+#include <algorithm>
+
 #include <Sol.hpp>
 
 // Model Processor
-ModelProcessor::ModelProcessor() noexcept : m_indexOffset{ 0u } {}
+ModelProcessor::ModelProcessor(const Args& arguments) noexcept
+	: m_processingModeMeshlet{ arguments.processingModeMeshlet.value() } {}
 
 bool ModelProcessor::FindModelInput(const std::string& inputName) const noexcept {
-	if (auto inputType = m_modelInputTypes.find(inputName);
-		inputType == std::end(m_modelInputTypes))
-		return false;
+	bool result = true;
 
-	return true;
+	if (m_processingModeMeshlet) {
+		if (auto inputType = m_modelDataMeshlets.find(inputName);
+			inputType == std::end(m_modelDataMeshlets))
+			result = false;
+	}
+	else
+		if (auto inputType = m_modelData.find(inputName); inputType == std::end(m_modelData))
+			result = false;
+
+	return result;
+}
+
+void ModelProcessor::AddToGVertices(const std::vector<Vertex>& vertices) noexcept {
+	std::ranges::copy(vertices, std::back_inserter(m_gVertices));
+}
+
+void ModelProcessor::AddModelData(
+	std::unique_ptr<ModelInputs> modelInputs, const std::string& inputName
+) noexcept {
+	ModelBoundingBox genericBoundingBox{};
+	genericBoundingBox.Calculate(modelInputs->GetVertexData());
+
+	IndexData modelData{
+		.indexCount = modelInputs->GetIndexCount(),
+		.indexOffset = static_cast<std::uint32_t>(std::size(m_gIndices)),
+		.boundingBox = genericBoundingBox
+	};
+
+	const std::uint32_t indexOffset = static_cast<std::uint32_t>(std::size(m_gVertices));
+	for (auto index : modelInputs->GetIndexData())
+		m_gIndices.emplace_back(indexOffset + index);
+
+	AddToGVertices(modelInputs->GetVertexData());
+
+	m_modelData.emplace(inputName, modelData);
+}
+
+void ModelProcessor::AddModelDataMeshlet(
+	std::unique_ptr<ModelInputs> modelInputs, const std::string& inputName
+) noexcept {
+
 }
 
 void ModelProcessor::AddModelInput(
@@ -17,27 +59,19 @@ void ModelProcessor::AddModelInput(
 ) noexcept {
 	modelInputs->InitData();
 
-	ModelBoundingBox genericBoundingBox{};
-	genericBoundingBox.Calculate(modelInputs->GetVertexData());
-
-	InputData inputData{
-		.indexCount = modelInputs->GetIndexCount(),
-		.indexOffset = m_indexOffset,
-		.boundingBox = genericBoundingBox
-	};
-
-	m_indexOffset += static_cast<std::uint32_t>(std::size(modelInputs->GetIndexData()));
-	m_modelInputs.emplace_back(std::move(modelInputs));
-	m_modelInputTypes.emplace(inputName, inputData);
+	if (m_processingModeMeshlet)
+		AddModelDataMeshlet(std::move(modelInputs), inputName);
+	else
+		AddModelData(std::move(modelInputs), inputName);
 }
 
-void ModelProcessor::_addModel(
+void ModelProcessor::_addModelModelData(
 	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
-	const InputData& inputData = m_modelInputTypes[inputName];
-	model->SetIndexOffset(inputData.indexOffset);
-	model->SetIndexCount(inputData.indexCount);
-	model->SetBoundingBox(inputData.boundingBox);
+	const IndexData& modelData = m_modelData[inputName];
+	model->SetIndexOffset(modelData.indexOffset);
+	model->SetIndexCount(modelData.indexCount);
+	model->SetBoundingBox(modelData.boundingBox);
 
 	if (auto modelSet = m_modelSets.find(pixelShader); modelSet == std::end(m_modelSets))
 		m_modelSets.emplace(pixelShader, std::vector<std::shared_ptr<IModel>>{});
@@ -45,35 +79,30 @@ void ModelProcessor::_addModel(
 	m_modelSets[pixelShader].emplace_back(std::move(model));
 }
 
+void ModelProcessor::_addModelMeshlets(
+	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+) noexcept {
+
+}
+
+void ModelProcessor::_addModel(
+	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+) noexcept {
+	if (m_processingModeMeshlet)
+		_addModelMeshlets(std::move(model), inputName, pixelShader);
+	else
+		_addModelModelData(std::move(model), inputName, pixelShader);
+}
+
 void ModelProcessor::Process() noexcept {
-	std::uint32_t vertexOffset = 0u;
-	size_t vertexBufferSize = 0u;
-	size_t indexBufferSize = 0u;
-	std::vector<std::uint32_t> gIndexBuffer;
-
-	for (auto& modelInput : m_modelInputs) {
-		for (std::uint32_t modelIndex : modelInput->GetIndexData())
-			gIndexBuffer.emplace_back(vertexOffset + modelIndex);
-
-		vertexOffset += static_cast<std::uint32_t>(std::size(modelInput->GetVertexData()));
-		vertexBufferSize += modelInput->GetVertexBufferSize();
-		indexBufferSize += modelInput->GetIndexBufferSize();
-	}
+	const size_t vertexBufferSize = sizeof(Vertex) * std::size(m_gVertices);
+	const size_t indexBufferSize = sizeof(std::uint32_t) * std::size(m_gIndices);
 
 	auto vertexBufferData = std::unique_ptr<std::uint8_t>(new std::uint8_t[vertexBufferSize]);
 	auto indexBufferData = std::unique_ptr<std::uint8_t>(new std::uint8_t[indexBufferSize]);
 
-	memcpy(indexBufferData.get(), std::data(gIndexBuffer), indexBufferSize);
-
-	size_t vertexBufferOffset = 0u;
-	for (auto& modelInput : m_modelInputs) {
-		memcpy(
-			vertexBufferData.get() + vertexBufferOffset, std::data(modelInput->GetVertexData()),
-			modelInput->GetVertexBufferSize()
-		);
-
-		vertexBufferOffset += modelInput->GetVertexBufferSize();
-	}
+	memcpy(indexBufferData.get(), std::data(m_gIndices), indexBufferSize);
+	memcpy(vertexBufferData.get(), std::data(m_gVertices), vertexBufferSize);
 
 	Sol::renderer->AddModelInputs(
 		std::move(vertexBufferData), vertexBufferSize,

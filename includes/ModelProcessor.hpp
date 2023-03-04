@@ -5,18 +5,31 @@
 #include <string>
 #include <unordered_map>
 #include <SolConcepts.hpp>
+#include <optional>
 
 #include <Model.hpp>
 
 class ModelProcessor {
-	struct InputData {
+	struct IndexData {
 		std::uint32_t indexCount;
 		std::uint32_t indexOffset;
 		ModelBoundingBox boundingBox;
 	};
 
+	struct Meshlet {
+		std::uint32_t vertexCount;
+		std::uint32_t vertexOffset;
+		std::uint32_t primitiveCount;
+		std::uint32_t primitiveOffset;
+	};
+
 public:
-	ModelProcessor() noexcept;
+	struct Args {
+		std::optional<bool> processingModeMeshlet;
+	};
+
+public:
+	ModelProcessor(const Args& arguments) noexcept;
 
 	template<DerivedWithoutArgs<ModelInputs> T>
 	void AddModel(
@@ -52,14 +65,32 @@ private:
 	void AddModelInput(
 		std::unique_ptr<ModelInputs> modelInputs, const std::string& inputName
 	) noexcept;
+	void AddModelData(
+		std::unique_ptr<ModelInputs> modelInputs, const std::string& inputName
+	) noexcept;
+	void AddModelDataMeshlet(
+		std::unique_ptr<ModelInputs> modelInputs, const std::string& inputName
+	) noexcept;
+
+	void AddToGVertices(const std::vector<Vertex>& vertices) noexcept;
+
 	void _addModel(
+		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+	) noexcept;
+	void _addModelModelData(
+		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+	) noexcept;
+	void _addModelMeshlets(
 		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
 	) noexcept;
 
 private:
-	std::vector<std::unique_ptr<ModelInputs>> m_modelInputs;
-	std::unordered_map<std::string, InputData> m_modelInputTypes;
 	std::unordered_map<std::wstring, std::vector<std::shared_ptr<IModel>>> m_modelSets;
-	std::uint32_t m_indexOffset;
+	std::vector<Vertex> m_gVertices;
+	std::vector<std::uint32_t> m_gVerticesIndices;
+	std::vector<std::uint32_t> m_gIndices;
+	std::unordered_map<std::string, IndexData> m_modelData;
+	std::unordered_map<std::string, std::vector<Meshlet>> m_modelDataMeshlets;
+	bool m_processingModeMeshlet;
 };
 #endif
