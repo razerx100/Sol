@@ -8,6 +8,8 @@ RenderEngineType GetRenderEngineTypeFromConfig() noexcept {
 		renderEngineType = RenderEngineType::IndirectDraw;
 	else if (renderEngine == "IndividualDraw")
 		renderEngineType = RenderEngineType::IndividualDraw;
+	else if (renderEngine == "MeshDraw")
+		renderEngineType = RenderEngineType::MeshDraw;
 
 	return renderEngineType;
 }

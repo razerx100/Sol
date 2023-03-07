@@ -12,7 +12,7 @@
 enum class RenderEngineType {
 	IndirectDraw,
 	IndividualDraw,
-	MeshShader
+	MeshDraw
 };
 
 class Renderer {

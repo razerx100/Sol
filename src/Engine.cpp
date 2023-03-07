@@ -30,13 +30,15 @@ Engine::Engine() : m_appName("Sol") {
 		m_appName + " Renderer : " + Sol::configManager->GetRendererName()
 	);
 
+	const RenderEngineType engineType = GetRenderEngineTypeFromConfig();
+
 	Sol::InitRenderer(
 		m_objectManager,
 		m_appName.c_str(),
 		Sol::window->GetWindowHandle(),
 		Sol::window->GetModuleInstance(),
 		1920u, 1080u,
-		GetRenderEngineTypeFromConfig(),
+		engineType,
 		Sol::configManager->GetRendererName()
 	);
 	Sol::renderer->SetShaderPath(L"resources/shaders/");
@@ -48,7 +50,8 @@ Engine::Engine() : m_appName("Sol") {
 
 	AMods::InitAppModules(m_objectManager);
 
-	m_objectManager.CreateObject(Sol::modelProcessor, { false }, 0u);
+	bool processMeshlets = engineType == RenderEngineType::MeshDraw;
+	m_objectManager.CreateObject(Sol::modelProcessor, { processMeshlets }, 0u);
 	m_objectManager.CreateObject(Sol::modelContainer, 0u);
 	m_objectManager.CreateObject(Sol::textureAtlas, 0u);
 

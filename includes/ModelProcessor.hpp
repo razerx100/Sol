@@ -10,21 +10,6 @@
 #include <Model.hpp>
 
 class ModelProcessor {
-	struct IndexData {
-		std::uint32_t indexCount;
-		std::uint32_t indexOffset;
-		ModelBoundingBox boundingBox;
-	};
-
-	union PrimitiveIndices {
-		struct {
-			std::uint32_t firstIndex : 10u;
-			std::uint32_t secondIndex : 10u;
-			std::uint32_t thirdIndex : 10u;
-		}unpacked;
-		std::uint32_t packed;
-	};
-
 public:
 	struct Args {
 		std::optional<bool> processingModeMeshlet;
@@ -58,11 +43,34 @@ public:
 		_addModel(std::move(model), inputName, pixelShader);
 	}
 
+	void SetMeshletVertexAndPrimitiveLimits(
+		std::uint32_t vertexLimit, std::uint32_t primitiveLimit
+	) noexcept;
 	void MoveData() noexcept;
 
 private:
 	[[nodiscard]]
 	bool FindModelInput(const std::string& name) const noexcept;
+	[[nodiscard]]
+	Meshlet MakeMeshlet(
+		const std::vector<std::uint32_t>& indices, size_t& startingIndex, size_t indexCount,
+		std::uint32_t vertexOffset
+	) noexcept;
+	[[nodiscard]]
+	std::uint32_t GetPrimIndex(
+		std::uint32_t vIndex, std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesM,
+		std::vector<std::uint32_t>& vertexIndices
+	) const noexcept;
+	[[nodiscard]]
+	std::uint32_t GetExtraVertexCount(
+		const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesM,
+		std::uint32_t primIndex1, std::uint32_t primIndex2, std::uint32_t primIndex3
+	) const noexcept;
+	[[nodiscard]]
+	bool IsInMap(
+		const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesM,
+		std::uint32_t vIndex
+	) const noexcept;
 
 	void AddModelInput(
 		std::unique_ptr<ModelInputs> modelInputs, const std::string& inputName
@@ -90,6 +98,22 @@ private:
 	void _moveDataMeshletModels() noexcept;
 
 private:
+	struct IndexData {
+		std::uint32_t indexCount;
+		std::uint32_t indexOffset;
+		ModelBoundingBox boundingBox;
+	};
+
+	union PrimitiveIndices {
+		struct {
+			std::uint32_t firstIndex : 10u;
+			std::uint32_t secondIndex : 10u;
+			std::uint32_t thirdIndex : 10u;
+		}unpacked;
+		std::uint32_t packed;
+	};
+
+private:
 	std::unordered_map<std::wstring, std::vector<std::shared_ptr<IModel>>> m_modelSets;
 	std::unordered_map<std::wstring, std::vector<MeshletModel>> m_meshletModelSets;
 	std::vector<Vertex> m_gVertices;
@@ -98,5 +122,7 @@ private:
 	std::unordered_map<std::string, IndexData> m_modelData;
 	std::unordered_map<std::string, std::vector<Meshlet>> m_modelDataMeshlets;
 	bool m_processingModeMeshlet;
+	std::uint32_t m_meshletVertexLimit;
+	std::uint32_t m_meshletPrimitiveLimit;
 };
 #endif
