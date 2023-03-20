@@ -75,7 +75,10 @@ namespace TextureTool {
 
 		std::memcpy(defaultTex.get(), &defaultColour, texSize);
 
-		// Should always be zero
-		size_t defaultIndex = Sol::renderer->AddTexture(std::move(defaultTex), 1u, 1u);
+		[[maybe_unused]] size_t defaultIndex = Sol::renderer->AddTexture(
+			std::move(defaultTex), 1u, 1u
+		);
+
+		assert(defaultIndex == 0u && "Default texture index isn't zero.");
 	}
 };
