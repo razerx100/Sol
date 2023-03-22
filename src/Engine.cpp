@@ -14,9 +14,7 @@ Engine::Engine() : m_appName("Sol") {
 	Sol::InitSharedData(m_objectManager);
 
 	Sol::InitIoMan(m_objectManager, Sol::configManager->GeIOName());
-	Sol::ioMan->AddDeviceSupport(DeviceType::Keyboard);
-	Sol::ioMan->AddDeviceSupport(DeviceType::Mouse);
-	Sol::ioMan->AddDeviceSupport(DeviceType::Gamepad);
+	Sol::ioMan->AddGamepadSupport(1u);
 
 	Sol::InitWindow(
 		m_objectManager,

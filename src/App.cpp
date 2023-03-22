@@ -175,47 +175,47 @@ void App::PerFrameUpdate() {}
 void App::PhysicsUpdate() {
 	constexpr float cameraMoveSpeed = 0.001f;
 
-	IKeyboard* pKeyboardRef = Sol::ioMan->GetKeyboard();
+	IKeyboard& keyboard = Sol::ioMan->GetKeyboard();
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::W)) {
+	if (keyboard.IsKeyPressed(SKeyCodes::W)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
 		camera->MoveForward(cameraMoveSpeed).MoveCamera();
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::S)) {
+	if (keyboard.IsKeyPressed(SKeyCodes::S)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
 		camera->MoveBackward(cameraMoveSpeed).MoveCamera();
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::A)) {
+	if (keyboard.IsKeyPressed(SKeyCodes::A)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
 		camera->MoveLeft(cameraMoveSpeed).MoveCamera();
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::D)) {
+	if (keyboard.IsKeyPressed(SKeyCodes::D)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
 		camera->MoveRight(cameraMoveSpeed).MoveCamera();
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::T)) {
+	if (keyboard.IsKeyPressed(SKeyCodes::T)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
 		camera->MoveUp(cameraMoveSpeed).MoveCamera();
 	}
 
-	if (pKeyboardRef->IsKeyPressed(SKeyCodes::G)) {
+	if (keyboard.IsKeyPressed(SKeyCodes::G)) {
 		auto camera = AMods::cameraManager->GetFirstEulerCamera();
 
 		camera->MoveDown(cameraMoveSpeed).MoveCamera();
 	}
 
-	IGamepad* pGamepadRef = Sol::ioMan->GetGamepad();
+	IGamepad& gamepad = Sol::ioMan->GetGamepad();
 
-	if (auto thumbStickData = pGamepadRef->ReadRightThumbStickData(); thumbStickData) {
+	if (auto thumbStickData = gamepad.ReadRightThumbStickData(); thumbStickData) {
 		auto camera = AMods::cameraManager->GetEulerCamera(0u);
 
 		auto& [magnitude, offsetX, offsetY] = *thumbStickData;
