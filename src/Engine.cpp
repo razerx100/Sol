@@ -36,12 +36,11 @@ Engine::Engine() : m_appName("Sol") {
 		Sol::window->GetWindowHandle(),
 		Sol::window->GetModuleInstance(),
 		1920u, 1080u,
+		*Sol::threadPool, *Sol::sharedData,
 		engineType,
 		Sol::configManager->GetRendererName()
 	);
 	Sol::renderer->SetShaderPath(L"resources/shaders/");
-	Sol::renderer->SetThreadPool(Sol::threadPool);
-	Sol::renderer->SetSharedDataContainer(Sol::sharedData);
 	Sol::renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
 	TextureTool::AddDefaultTexture();
