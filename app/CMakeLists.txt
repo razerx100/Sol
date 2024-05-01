@@ -174,4 +174,8 @@ if (MSVC)
     )
 
     add_dependencies(SolApp Icon)
+
+    if(NOT ADD_TEST_SOL)
+        set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT SolApp)
+    endif()
 endif()
