@@ -21,6 +21,8 @@ set(SOL_PRIVATE_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/includes/ ${CMAKE_CURRENT_S
 
 set(SOL_PRIVATE_INCLUDES ${SOL_PRIVATE_INCLUDES} PARENT_SCOPE)
 
+target_include_directories(SolApp PRIVATE ${SOL_PRIVATE_INCLUDES})
+
 if(MSVC)
     target_compile_options(SolApp PRIVATE /fp:fast /MP /Ot /W4 /Gy)
 
