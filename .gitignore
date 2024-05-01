@@ -5,3 +5,4 @@ Solution
 *.exp
 out
 /CMakeSettings.json
+/CMakePresets.json

@@ -8,7 +8,7 @@ else()
     if(MSVC)
         add_executable(SolApp WIN32
             ${SRC}
-            icon/win32ExecutableIcon.rc
+            # icon/win32ExecutableIcon.rc
         )
     else()
         add_executable(SolApp
