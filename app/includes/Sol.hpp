@@ -4,7 +4,7 @@
 #include <App.hpp>
 #include <InputManager.hpp>
 #include <Window.hpp>
-#include <IThreadPool.hpp>
+#include <ThreadPool.hpp>
 #include <ConfigManager.hpp>
 #include <TimeManager.hpp>
 #include <ObjectManager.hpp>
@@ -32,7 +32,7 @@ namespace Sol {
 	extern std::unique_ptr<ModelProcessor> modelProcessor;
 	extern std::unique_ptr<ModelContainer> modelContainer;
 	extern std::unique_ptr<TextureAtlas> textureAtlas;
-	extern std::shared_ptr<IThreadPool> threadPool;
+	extern std::shared_ptr<ThreadPool> threadPool;
 	extern std::unique_ptr<ConfigManager> configManager;
 	extern std::shared_ptr<ISharedDataContainer> sharedData;
 
@@ -48,7 +48,7 @@ namespace Sol {
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
-		IThreadPool& threadPool, ISharedDataContainer& sharedContainer,
+		ThreadPool& threadPool, ISharedDataContainer& sharedContainer,
 		RenderEngineType engineType,
 		std::string moduleName = "Gaia",
 		std::uint8_t bufferCount = 2u

@@ -4,7 +4,6 @@
 #include <LunaInstance.hpp>
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
-#include <VenusInstance.hpp>
 
 
 Sol::Sol(const Args& arguments)
@@ -18,7 +17,9 @@ Sol::Sol(const Args& arguments)
 	m_objManager.CreateObject(m_configManager, { L"config.ini" }, 0u);
 	Config().ReadConfigFile();
 
-	m_objManager.CreateObject(m_threadPool, CreateVenusInstance(arguments.threadCount.value()), 3u);
+	/*m_objManager.CreateObject(
+		m_threadPool, std::make_unique<ThreadPool>(arguments.threadCount.value()), 3u
+	);*/
 	m_objManager.CreateObject<SharedDataContainer>(m_sharedData, 3u);
 
 	InitIO(Config().GeIOName());

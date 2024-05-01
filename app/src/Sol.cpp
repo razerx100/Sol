@@ -2,7 +2,6 @@
 #include <LunaInstance.hpp>
 #include <GaiaInstance.hpp>
 #include <TerraInstance.hpp>
-#include <VenusInstance.hpp>
 #include <vector>
 
 #include <Sol.hpp>
@@ -26,7 +25,7 @@ namespace Sol {
 	std::unique_ptr<ModelProcessor> modelProcessor;
 	std::unique_ptr<ModelContainer> modelContainer;
 	std::unique_ptr<TextureAtlas> textureAtlas;
-	std::shared_ptr<IThreadPool> threadPool;
+	std::shared_ptr<ThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;
 	std::shared_ptr<ISharedDataContainer> sharedData;
 
@@ -50,7 +49,7 @@ namespace Sol {
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
-		IThreadPool& threadPooll, ISharedDataContainer& sharedContainer,
+		ThreadPool& threadPooll, ISharedDataContainer& sharedContainer,
 		RenderEngineType engineType,
 		std::string moduleName,
 		std::uint8_t bufferCount
@@ -80,7 +79,7 @@ namespace Sol {
 	}
 
 	void InitThreadPool(ObjectManager& om, size_t threadCount) {
-		om.CreateObject(threadPool, CreateVenusInstance(threadCount), 3u);
+		om.CreateObject(threadPool, std::make_shared<ThreadPool>(threadCount), 3u);
 	}
 
 	void InitSharedData(ObjectManager& om) {
