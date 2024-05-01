@@ -1,5 +1,5 @@
 # Sol
-Manager module/executable which dynamically links to different modules to form a game engine. Modules must have required interfaces implemented.
+Manager module/executable which dynamically links to different modules to form a game engine. Modules must have the required interfaces implemented.
 
 # Dependencies
 1. [Pluto](https://github.com/razerx100/Pluto).
@@ -14,7 +14,7 @@ Manager module/executable which dynamically links to different modules to form a
 2. [stb](https://github.com/nothings/stb).
 
 ## Instructions
-Run the appropriate Setup script to either pull from master or dev branch. The setup scripts use the ***Visual Studio 17 2022*** generator for project generation.
+Use the ADD_TEST_SOL cmake flag to add unit testing.
 
 Use the ***config.ini*** file from the executable directory to change the modules at the start of the app. The file will be automatically generated, if it doesn't exist upon starting the app.
 
