@@ -72,50 +72,11 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 
 // ModelBase
 ModelBase::ModelBase() noexcept
-	: m_diffuseTexIndex{ 0u }, m_specularTexIndex{ 0u },
-	m_diffuseTexUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularTexUVInfo{ 0.f, 0.f, 1.f, 1.f },
-	m_indexCount{ 0u }, m_indexOffset{ 0u }, m_material{
-		.ambient = { 1.f, 1.f, 1.f, 1.f },
-		.diffuse = { 1.f, 1.f, 1.f, 1.f },
-		.specular = { 1.f, 1.f, 1.f, 1.f }
-	}, m_lightSource{ false } {}
-
-void ModelBase::SetDiffuseTexIndex(size_t index) noexcept {
-	m_diffuseTexIndex = static_cast<std::uint32_t>(index);
-}
-
-void ModelBase::SetSpecularTexIndex(size_t index) noexcept {
-	m_specularTexIndex = static_cast<std::uint32_t>(index);
-}
+	: m_indexCount{ 0u }, m_indexOffset{ 0u }, m_lightSource{ false }
+{}
 
 void ModelBase::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
 	m_boundingBox = boundingBox;
-}
-
-void ModelBase::SetDiffuseTexUVInfo(
-	float uOffset, float vOffset, float uRatio, float vRatio
-) noexcept {
-	m_diffuseTexUVInfo.uOffset = uOffset;
-	m_diffuseTexUVInfo.vOffset = vOffset;
-	m_diffuseTexUVInfo.uRatio = uRatio;
-	m_diffuseTexUVInfo.vRatio = vRatio;
-}
-
-void ModelBase::SetDiffuseTexUVInfo(const UVInfo& uvInfo) noexcept {
-	m_diffuseTexUVInfo = uvInfo;
-}
-
-void ModelBase::SetSpecularTexUVInfo(
-	float uOffset, float vOffset, float uRatio, float vRatio
-) noexcept {
-	m_specularTexUVInfo.uOffset = uOffset;
-	m_specularTexUVInfo.vOffset = vOffset;
-	m_specularTexUVInfo.uRatio = uRatio;
-	m_specularTexUVInfo.vRatio = vRatio;
-}
-
-void ModelBase::SetSpecularTexUVInfo(const UVInfo& uvInfo) noexcept {
-	m_specularTexUVInfo = uvInfo;
 }
 
 void ModelBase::SetIndexOffset(std::uint32_t indexOffset) noexcept {
@@ -130,10 +91,6 @@ void ModelBase::SetAsLightSource() noexcept {
 	m_lightSource = true;
 }
 
-void ModelBase::SetMaterial(const Material& material) noexcept {
-	m_material = material;
-}
-
 void ModelBase::SetResources() {}
 
 void ModelBase::PhysicsUpdate() noexcept {}
@@ -144,22 +101,6 @@ std::uint32_t ModelBase::GetIndexCount() const noexcept {
 
 DirectX::XMMATRIX ModelBase::GetModelMatrix() const noexcept {
 	return m_transform.GetModelMatrix();
-}
-
-UVInfo ModelBase::GetDiffuseTexUVInfo() const noexcept {
-	return m_diffuseTexUVInfo;
-}
-
-std::uint32_t ModelBase::GetDiffuseTexIndex() const noexcept {
-	return m_diffuseTexIndex;
-}
-
-UVInfo ModelBase::GetSpecularTexUVInfo() const noexcept {
-	return m_specularTexUVInfo;
-}
-
-std::uint32_t ModelBase::GetSpecularTexIndex() const noexcept {
-	return m_specularTexIndex;
 }
 
 std::uint32_t ModelBase::GetIndexOffset() const noexcept {
@@ -180,10 +121,6 @@ ModelTransform& ModelBase::GetTransform() noexcept {
 
 ModelBoundingBox& ModelBase::GetBoundingBox() noexcept {
 	return m_boundingBox;
-}
-
-Material ModelBase::GetMaterial() const noexcept {
-	return m_material;
 }
 
 bool ModelBase::IsLightSource() const noexcept {

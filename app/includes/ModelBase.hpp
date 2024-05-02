@@ -1,5 +1,5 @@
-#ifndef MODEL_HPP_
-#define MODEL_HPP_
+#ifndef MODEL_BASE_HPP_
+#define MODEL_BASE_HPP_
 #include <vector>
 #include <string>
 #include <array>
@@ -113,22 +113,10 @@ public:
 	ModelBase() noexcept;
 	virtual ~ModelBase() = default;
 
-	void SetDiffuseTexIndex(size_t index) noexcept;
-	void SetSpecularTexIndex(size_t index) noexcept;
-	void SetDiffuseTexUVInfo(
-		float uOffset, float vOffset, float uRatio, float vRatio
-	) noexcept;
-	void SetDiffuseTexUVInfo(const UVInfo& uvInfo) noexcept;
-	void SetSpecularTexUVInfo(
-		float uOffset, float vOffset, float uRatio, float vRatio
-	) noexcept;
-	void SetSpecularTexUVInfo(const UVInfo& uvInfo) noexcept;
-
 	void SetIndexOffset(std::uint32_t indexOffset) noexcept;
 	void SetIndexCount(std::uint32_t indexCount) noexcept;
 	void SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept;
 	void SetAsLightSource() noexcept;
-	void SetMaterial(const Material& material) noexcept;
 
 	virtual void PhysicsUpdate() noexcept;
 	virtual void SetResources();
@@ -138,21 +126,11 @@ public:
 	[[nodiscard]]
 	std::uint32_t GetIndexOffset() const noexcept final;
 	[[nodiscard]]
-	std::uint32_t GetDiffuseTexIndex() const noexcept final;
-	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
-	[[nodiscard]]
-	UVInfo GetDiffuseTexUVInfo() const noexcept final;
-	[[nodiscard]]
-	std::uint32_t GetSpecularTexIndex() const noexcept final;
-	[[nodiscard]]
-	UVInfo GetSpecularTexUVInfo() const noexcept final;
 	[[nodiscard]]
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept final;
 	[[nodiscard]]
 	ModelBounds GetBoundingBox() const noexcept final;
-	[[nodiscard]]
-	Material GetMaterial() const noexcept final;
 	[[nodiscard]]
 	bool IsLightSource() const noexcept final;
 
@@ -162,18 +140,11 @@ public:
 	ModelBoundingBox& GetBoundingBox() noexcept;
 
 private:
-	std::uint32_t m_diffuseTexIndex;
-	std::uint32_t m_specularTexIndex;
-
-	UVInfo m_diffuseTexUVInfo;
-	UVInfo m_specularTexUVInfo;
-
 	std::uint32_t m_indexCount;
 	std::uint32_t m_indexOffset;
 	ModelTransform m_transform;
 	ModelBoundingBox m_boundingBox;
 
-	Material m_material;
 	bool m_lightSource;
 };
 #endif

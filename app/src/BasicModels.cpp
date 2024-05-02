@@ -52,7 +52,7 @@ void ScalableModel::SetResources() {
 		UVInfo uvInfo = Sol::textureAtlas->GetUVInfo(texInfo.name);
 		size_t texIndex = Sol::textureAtlas->GetTextureIndex();
 
-		switch (texInfo.type) {
+		/*switch (texInfo.type) {
 		case TextureType::diffuse: {
 			SetDiffuseTexUVInfo(uvInfo);
 			SetDiffuseTexIndex(texIndex);
@@ -65,7 +65,7 @@ void ScalableModel::SetResources() {
 
 			break;
 		}
-		}
+		}*/
 	}
 }
 

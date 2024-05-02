@@ -2,6 +2,7 @@
 
 #include <App.hpp>
 #include <Sol.hpp>
+#include <MaterialBase.hpp>
 #include <BasicModels.hpp>
 #include <BasicModelInputs.hpp>
 #include <DirectXColors.h>
@@ -77,7 +78,7 @@ App::App() {
 			std::move(box.data), box.width, box.height
 		);
 
-		cube1->SetDiffuseTexIndex(texIndex);
+		//cube1->SetDiffuseTexIndex(texIndex);
 	}
 	if (boxSpecTex) {
 		STexture& boxSpec = boxSpecTex.value();
@@ -85,50 +86,50 @@ App::App() {
 			std::move(boxSpec.data), boxSpec.width, boxSpec.height
 		);
 
-		cube0->SetSpecularTexIndex(texIndex);
+		//cube0->SetSpecularTexIndex(texIndex);
 	}
 
 	// Lights
 	DirectX::XMFLOAT4 colourBuffer{};
 	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Green);
-	const Material green{
-		.ambient = colourBuffer,
-		.diffuse = colourBuffer,
+	const MaterialData green{
+		.ambient  = colourBuffer,
+		.diffuse  = colourBuffer,
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	};
-	sphere0->SetMaterial(green);
+	//sphere0->SetMaterial(green);
 
-	const Material white{
-		.ambient = { 0.2f, 0.2f, 0.2f, 1.f },
-		.diffuse = { 0.5f, 0.5f, 0.5f, 1.f },
+	const MaterialData white{
+		.ambient  = { 0.2f, 0.2f, 0.2f, 1.f },
+		.diffuse  = { 0.5f, 0.5f, 0.5f, 1.f },
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	};
-	sphere1->SetMaterial(white);
+	//sphere1->SetMaterial(white);
 	sphere1->SetAsLightSource();
 
 	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Red);
-	const Material red{
-		.ambient = colourBuffer,
-		.diffuse = colourBuffer,
+	const MaterialData red{
+		.ambient  = colourBuffer,
+		.diffuse  = colourBuffer,
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	};
-	sphere2->SetMaterial(red);
+	//sphere2->SetMaterial(red);
 
 	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Yellow);
-	const Material yellow{
-		.ambient = colourBuffer,
-		.diffuse = colourBuffer,
+	const MaterialData yellow{
+		.ambient  = colourBuffer,
+		.diffuse  = colourBuffer,
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	};
-	sphere3->SetMaterial(yellow);
+	//sphere3->SetMaterial(yellow);
 
 	DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Orange);
-	const Material orange{
-		.ambient = colourBuffer,
-		.diffuse = colourBuffer,
+	const MaterialData orange{
+		.ambient  = colourBuffer,
+		.diffuse  = colourBuffer,
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	};
-	sphere4->SetMaterial(orange);
+	//sphere4->SetMaterial(orange);
 
 	std::wstring lightShader = L"LightShader";
 	std::wstring withoutLightShader = L"WithoutLightShader";
@@ -162,7 +163,7 @@ App::App() {
 			std::move(dogeBig.data), dogeBig.width, dogeBig.height
 		);
 
-		quad0->SetDiffuseTexIndex(texIndex);
+		//quad0->SetDiffuseTexIndex(texIndex);
 	}
 
 	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), withoutLightShader);
