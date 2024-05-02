@@ -2,7 +2,7 @@
 #define BASIC_MODEL_INPUTS_HPP_
 #include <optional>
 
-#include <Model.hpp>
+#include <ModelBase.hpp>
 
 class TriangleInputs final : public ModelInputs {
 public:

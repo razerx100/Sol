@@ -5,9 +5,10 @@
 #include <array>
 #include <SolConcepts.hpp>
 
-#include <IModel.hpp>
+#include <Model.hpp>
 
-class ModelInputs {
+class ModelInputs
+{
 public:
 	ModelInputs() = default;
 	ModelInputs(const std::string& name) noexcept;
@@ -106,10 +107,11 @@ private:
 	ModelBounds m_boundingCube;
 };
 
-class Model : public IModel {
+class ModelBase : public Model
+{
 public:
-	Model() noexcept;
-	virtual ~Model() = default;
+	ModelBase() noexcept;
+	virtual ~ModelBase() = default;
 
 	void SetDiffuseTexIndex(size_t index) noexcept;
 	void SetSpecularTexIndex(size_t index) noexcept;

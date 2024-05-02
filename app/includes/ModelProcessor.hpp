@@ -7,7 +7,7 @@
 #include <SolConcepts.hpp>
 #include <optional>
 
-#include <Model.hpp>
+#include <ModelBase.hpp>
 
 class ModelProcessor {
 public:
@@ -20,7 +20,7 @@ public:
 
 	template<DerivedWithoutArgs<ModelInputs> T>
 	void AddModel(
-		std::shared_ptr<Model> model, std::wstring pixelShader
+		std::shared_ptr<ModelBase> model, std::wstring pixelShader
 	) noexcept {
 		std::string inputName = ModelInputs::GetName<T>();
 
@@ -32,7 +32,7 @@ public:
 
 	template<DerivedWithArgs<ModelInputs> T>
 	void AddModel(
-		std::shared_ptr<Model> model, const typename T::Args& arguments,
+		std::shared_ptr<ModelBase> model, const typename T::Args& arguments,
 		std::wstring pixelShader
 	) noexcept {
 		std::string inputName = ModelInputs::GetName<T>(arguments);
@@ -85,13 +85,13 @@ private:
 	void AddToGVertices(const std::vector<Vertex>& vertices) noexcept;
 
 	void _addModel(
-		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+		std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 	) noexcept;
 	void _addModelModelData(
-		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+		std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 	) noexcept;
 	void _addModelMeshlets(
-		std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+		std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 	) noexcept;
 
 	void _moveDataModels() noexcept;
@@ -114,7 +114,7 @@ private:
 	};
 
 private:
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<IModel>>> m_modelSets;
+	std::unordered_map<std::wstring, std::vector<std::shared_ptr<Model>>> m_modelSets;
 	std::unordered_map<std::wstring, std::vector<MeshletModel>> m_meshletModelSets;
 	std::vector<Vertex> m_gVertices;
 	std::vector<std::uint32_t> m_gVerticesIndices;

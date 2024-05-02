@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include <Model.hpp>
+#include <ModelBase.hpp>
 
 ModelInputs::ModelInputs(const std::string& name) noexcept : m_name{ name } {}
 
@@ -70,8 +70,8 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 	return static_cast<std::uint32_t>(std::size(m_indices));
 }
 
-// Model
-Model::Model() noexcept
+// ModelBase
+ModelBase::ModelBase() noexcept
 	: m_diffuseTexIndex{ 0u }, m_specularTexIndex{ 0u },
 	m_diffuseTexUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularTexUVInfo{ 0.f, 0.f, 1.f, 1.f },
 	m_indexCount{ 0u }, m_indexOffset{ 0u }, m_material{
@@ -80,19 +80,19 @@ Model::Model() noexcept
 		.specular = { 1.f, 1.f, 1.f, 1.f }
 	}, m_lightSource{ false } {}
 
-void Model::SetDiffuseTexIndex(size_t index) noexcept {
+void ModelBase::SetDiffuseTexIndex(size_t index) noexcept {
 	m_diffuseTexIndex = static_cast<std::uint32_t>(index);
 }
 
-void Model::SetSpecularTexIndex(size_t index) noexcept {
+void ModelBase::SetSpecularTexIndex(size_t index) noexcept {
 	m_specularTexIndex = static_cast<std::uint32_t>(index);
 }
 
-void Model::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
+void ModelBase::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
 	m_boundingBox = boundingBox;
 }
 
-void Model::SetDiffuseTexUVInfo(
+void ModelBase::SetDiffuseTexUVInfo(
 	float uOffset, float vOffset, float uRatio, float vRatio
 ) noexcept {
 	m_diffuseTexUVInfo.uOffset = uOffset;
@@ -101,11 +101,11 @@ void Model::SetDiffuseTexUVInfo(
 	m_diffuseTexUVInfo.vRatio = vRatio;
 }
 
-void Model::SetDiffuseTexUVInfo(const UVInfo& uvInfo) noexcept {
+void ModelBase::SetDiffuseTexUVInfo(const UVInfo& uvInfo) noexcept {
 	m_diffuseTexUVInfo = uvInfo;
 }
 
-void Model::SetSpecularTexUVInfo(
+void ModelBase::SetSpecularTexUVInfo(
 	float uOffset, float vOffset, float uRatio, float vRatio
 ) noexcept {
 	m_specularTexUVInfo.uOffset = uOffset;
@@ -114,79 +114,79 @@ void Model::SetSpecularTexUVInfo(
 	m_specularTexUVInfo.vRatio = vRatio;
 }
 
-void Model::SetSpecularTexUVInfo(const UVInfo& uvInfo) noexcept {
+void ModelBase::SetSpecularTexUVInfo(const UVInfo& uvInfo) noexcept {
 	m_specularTexUVInfo = uvInfo;
 }
 
-void Model::SetIndexOffset(std::uint32_t indexOffset) noexcept {
+void ModelBase::SetIndexOffset(std::uint32_t indexOffset) noexcept {
 	m_indexOffset = indexOffset;
 }
 
-void Model::SetIndexCount(std::uint32_t indexCount) noexcept {
+void ModelBase::SetIndexCount(std::uint32_t indexCount) noexcept {
 	m_indexCount = indexCount;
 }
 
-void Model::SetAsLightSource() noexcept {
+void ModelBase::SetAsLightSource() noexcept {
 	m_lightSource = true;
 }
 
-void Model::SetMaterial(const Material& material) noexcept {
+void ModelBase::SetMaterial(const Material& material) noexcept {
 	m_material = material;
 }
 
-void Model::SetResources() {}
+void ModelBase::SetResources() {}
 
-void Model::PhysicsUpdate() noexcept {}
+void ModelBase::PhysicsUpdate() noexcept {}
 
-std::uint32_t Model::GetIndexCount() const noexcept {
+std::uint32_t ModelBase::GetIndexCount() const noexcept {
 	return m_indexCount;
 }
 
-DirectX::XMMATRIX Model::GetModelMatrix() const noexcept {
+DirectX::XMMATRIX ModelBase::GetModelMatrix() const noexcept {
 	return m_transform.GetModelMatrix();
 }
 
-UVInfo Model::GetDiffuseTexUVInfo() const noexcept {
+UVInfo ModelBase::GetDiffuseTexUVInfo() const noexcept {
 	return m_diffuseTexUVInfo;
 }
 
-std::uint32_t Model::GetDiffuseTexIndex() const noexcept {
+std::uint32_t ModelBase::GetDiffuseTexIndex() const noexcept {
 	return m_diffuseTexIndex;
 }
 
-UVInfo Model::GetSpecularTexUVInfo() const noexcept {
+UVInfo ModelBase::GetSpecularTexUVInfo() const noexcept {
 	return m_specularTexUVInfo;
 }
 
-std::uint32_t Model::GetSpecularTexIndex() const noexcept {
+std::uint32_t ModelBase::GetSpecularTexIndex() const noexcept {
 	return m_specularTexIndex;
 }
 
-std::uint32_t Model::GetIndexOffset() const noexcept {
+std::uint32_t ModelBase::GetIndexOffset() const noexcept {
 	return m_indexOffset;
 }
 
-ModelBounds Model::GetBoundingBox() const noexcept {
+ModelBounds ModelBase::GetBoundingBox() const noexcept {
 	return m_boundingBox.GetBoundingCube();
 }
 
-DirectX::XMFLOAT3 Model::GetModelOffset() const noexcept {
+DirectX::XMFLOAT3 ModelBase::GetModelOffset() const noexcept {
 	return m_transform.GetModelOffset();
 }
 
-ModelTransform& Model::GetTransform() noexcept {
+ModelTransform& ModelBase::GetTransform() noexcept {
 	return m_transform;
 }
 
-ModelBoundingBox& Model::GetBoundingBox() noexcept {
+ModelBoundingBox& ModelBase::GetBoundingBox() noexcept {
 	return m_boundingBox;
 }
 
-Material Model::GetMaterial() const noexcept {
+Material ModelBase::GetMaterial() const noexcept {
 	return m_material;
 }
 
-bool Model::IsLightSource() const noexcept {
+bool ModelBase::IsLightSource() const noexcept {
 	return m_lightSource;
 }
 

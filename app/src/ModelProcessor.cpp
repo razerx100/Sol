@@ -78,10 +78,10 @@ void ModelProcessor::AddModelInput(
 }
 
 void ModelProcessor::_addModelModelData(
-	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+	std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
 	if (auto modelSet = m_modelSets.find(pixelShader); modelSet == std::end(m_modelSets))
-		m_modelSets.emplace(pixelShader, std::vector<std::shared_ptr<IModel>>{});
+		m_modelSets.emplace(pixelShader, std::vector<std::shared_ptr<Model>>{});
 
 	const IndexData& modelData = m_modelData[inputName];
 	model->SetIndexOffset(modelData.indexOffset);
@@ -92,7 +92,7 @@ void ModelProcessor::_addModelModelData(
 }
 
 void ModelProcessor::_addModelMeshlets(
-	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+	std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
 	if (auto modelSet = m_meshletModelSets.find(pixelShader);
 		modelSet == std::end(m_meshletModelSets))
@@ -106,7 +106,7 @@ void ModelProcessor::_addModelMeshlets(
 }
 
 void ModelProcessor::_addModel(
-	std::shared_ptr<Model> model, const std::string& inputName, std::wstring pixelShader
+	std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
 	if (m_processingModeMeshlet)
 		_addModelMeshlets(std::move(model), inputName, pixelShader);

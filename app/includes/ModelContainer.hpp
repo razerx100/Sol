@@ -14,7 +14,7 @@ public:
 
 	template<DerivedWithoutArgs<ModelInputs> T>
 	void AddModel(
-		std::shared_ptr<Model>&& model, const std::wstring& pixelShader
+		std::shared_ptr<ModelBase>&& model, const std::wstring& pixelShader
 	) noexcept {
 		m_models.emplace_back(model);
 
@@ -23,7 +23,7 @@ public:
 
 	template<DerivedWithArgs<ModelInputs> T>
 	void AddModel(
-		std::shared_ptr<Model>&& model, const typename T::Args& arguments,
+		std::shared_ptr<ModelBase>&& model, const typename T::Args& arguments,
 		const std::wstring& pixelShader
 	) noexcept {
 		m_models.emplace_back(model);
@@ -36,6 +36,6 @@ private:
 	ModelProcessor* GetModelProcessor() const noexcept;
 
 private:
-	std::vector<std::shared_ptr<Model>> m_models;
+	std::vector<std::shared_ptr<ModelBase>> m_models;
 };
 #endif

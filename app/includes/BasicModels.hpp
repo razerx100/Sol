@@ -1,8 +1,8 @@
 #ifndef BASIC_MODELS_HPP_
 #define BASIC_MODELS_HPP_
-#include <Model.hpp>
+#include <ModelBase.hpp>
 
-class ModelWithVelocity : public Model {
+class ModelWithVelocity : public ModelBase {
 public:
 	ModelWithVelocity() noexcept;
 
@@ -26,7 +26,7 @@ enum class TextureType {
 	specular
 };
 
-class ScalableModel : public Model {
+class ScalableModel : public ModelBase {
 public:
 	ScalableModel(float scale) noexcept;
 

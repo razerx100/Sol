@@ -10,7 +10,7 @@
 #include <TextureTools.hpp>
 
 #include <DirectXMath.h>
-#include <IModel.hpp>
+#include <Model.hpp>
 
 struct UVU32 {
 	UVU32() = default;

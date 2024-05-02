@@ -31,9 +31,10 @@ struct Material {
 	float shininess = 1.f;
 };
 
-class IModel {
+class Model
+{
 public:
-	virtual ~IModel() = default;
+	virtual ~Model() = default;
 
 	[[nodiscard]]
 	virtual std::uint32_t GetIndexCount() const noexcept = 0;
@@ -70,7 +71,7 @@ struct MeshletModel {
 	MeshletModel() = default;
 	MeshletModel(const MeshletModel&) = delete;
 
-	inline MeshletModel(std::shared_ptr<IModel> model, std::vector<Meshlet> meshlets) noexcept
+	inline MeshletModel(std::shared_ptr<Model> model, std::vector<Meshlet> meshlets) noexcept
 		: model{ std::move(model) }, meshlets{ std::move(meshlets) } {}
 	inline MeshletModel(MeshletModel&& other) noexcept
 		: model(std::move(other.model)), meshlets(std::move(other.meshlets)) {}
@@ -83,7 +84,7 @@ struct MeshletModel {
 		return *this;
 	}
 
-	std::shared_ptr<IModel> model;
+	std::shared_ptr<Model> model;
 	std::vector<Meshlet> meshlets;
 };
 #endif
