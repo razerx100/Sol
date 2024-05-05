@@ -1,6 +1,7 @@
 #ifndef MESH_BUNDLE_SOL_HPP_
 #define MESH_BUNDLE_SOL_HPP_
 #include <cstdint>
+#include <vector>
 
 #include <DirectXMath.h>
 
@@ -23,7 +24,9 @@ public:
 	virtual ~MeshBundle() = default;
 
 	[[nodiscard]]
-	virtual MeshBounds GetBounds(size_t index = 0u) const noexcept = 0;
+	virtual const std::vector<MeshBounds>& GetBounds() const noexcept = 0;
+	[[nodiscard]]
+	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
 };
 
 class MeshBundleVS : public MeshBundle
@@ -32,17 +35,7 @@ public:
 	virtual ~MeshBundleVS() = default;
 
 	[[nodiscard]]
-	virtual std::uint32_t GetIndexCount() const noexcept = 0;
-	[[nodiscard]]
-	virtual std::uint32_t GetIndexOffset() const noexcept = 0;
-};
-
-struct Meshlet
-{
-	std::uint32_t vertexCount;
-	std::uint32_t vertexOffset;
-	std::uint32_t primitiveCount;
-	std::uint32_t primitiveOffset;
+	virtual const std::vector<std::uint32_t>& GetIndices() const noexcept = 0;
 };
 
 class MeshBundleMS : public MeshBundle
@@ -50,5 +43,9 @@ class MeshBundleMS : public MeshBundle
 public:
 	virtual ~MeshBundleMS() = default;
 
+	[[nodiscard]]
+	virtual const std::vector<std::uint32_t>& GetVertexIndices() const noexcept = 0;
+	[[nodiscard]]
+	virtual const std::vector<std::uint32_t>& GetPrimIndices() const noexcept = 0;
 };
 #endif

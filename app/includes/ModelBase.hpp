@@ -5,6 +5,7 @@
 #include <array>
 #include <SolConcepts.hpp>
 
+#include <MeshBundle.hpp>
 #include <Model.hpp>
 
 class ModelInputs
@@ -93,7 +94,7 @@ private:
 	DirectX::XMFLOAT3 m_modelOffset;
 };
 
-class ModelBoundingBox {
+/*class ModelBoundingBox {
 public:
 	ModelBoundingBox() noexcept;
 
@@ -105,46 +106,84 @@ public:
 
 private:
 	ModelBounds m_boundingCube;
-};
+};*/
 
-class ModelBase : public Model
+class ModelBase : public virtual Model
 {
 public:
 	ModelBase() noexcept;
 	virtual ~ModelBase() = default;
 
-	void SetIndexOffset(std::uint32_t indexOffset) noexcept;
-	void SetIndexCount(std::uint32_t indexCount) noexcept;
-	void SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept;
 	void SetAsLightSource() noexcept;
+	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
 
 	virtual void PhysicsUpdate() noexcept;
 	virtual void SetResources();
 
 	[[nodiscard]]
-	std::uint32_t GetIndexCount() const noexcept final;
-	[[nodiscard]]
-	std::uint32_t GetIndexOffset() const noexcept final;
-	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
 	[[nodiscard]]
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept final;
 	[[nodiscard]]
-	ModelBounds GetBoundingBox() const noexcept final;
-	[[nodiscard]]
 	bool IsLightSource() const noexcept final;
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept final { return m_meshIndex; }
 
 	[[nodiscard]]
 	ModelTransform& GetTransform() noexcept;
-	[[nodiscard]]
-	ModelBoundingBox& GetBoundingBox() noexcept;
 
 private:
-	std::uint32_t m_indexCount;
-	std::uint32_t m_indexOffset;
+	std::uint32_t  m_meshIndex;
 	ModelTransform m_transform;
-	ModelBoundingBox m_boundingBox;
 
 	bool m_lightSource;
 };
+
+class ModelBaseVS : public ModelVS
+{
+public:
+	ModelBaseVS()
+		: ModelVS{}, m_meshDetails{ .indexCount = 0u, .indexOffset = 0u }
+	{}
+
+	void SetIndexOffset(std::uint32_t offset) noexcept { m_meshDetails.indexOffset = offset; }
+	void SetIndexCount(std::uint32_t count) noexcept { m_meshDetails.indexCount = count; }
+	void SetMeshDetailsVS(const MeshDetailsVS& meshDetails) noexcept { m_meshDetails = meshDetails; }
+
+	[[nodiscard]]
+	const MeshDetailsVS& GetMeshDetailsVS() const noexcept override { return m_meshDetails; }
+
+private:
+	MeshDetailsVS m_meshDetails;
+};
+
+class ModelBaseMS : public ModelMS
+{
+public:
+	ModelBaseMS()
+		: ModelMS{}, m_meshDetails{ .meshlets = {} }
+	{}
+
+	void SetMeshlets(std::vector<Meshlet>&& meshlets) noexcept
+	{
+		m_meshDetails.meshlets = std::move(meshlets);
+	}
+	// I should add a function which should take a Mesh and grab its meshlets.
+
+	[[nodiscard]]
+	MeshDetailsMS&& GetMeshDetailsMS() noexcept override
+	{
+		return std::move(m_meshDetails);
+	}
+
+private:
+	MeshDetailsMS m_meshDetails;
+};
+
+// Mostly I should have different child classes of ModelBase with different functionalities.
+// And then in the end before adding them to the renderer, add a wrapper based on the pipeline type.
+template<class Derived>
+class ModelBaseVSWrapper : public Derived, public ModelBaseVS {};
+template<class Derived>
+class ModelBaseMSWrapper : public Derived, public ModelBaseMS {};
 #endif

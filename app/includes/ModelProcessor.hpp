@@ -101,7 +101,7 @@ private:
 	struct IndexData {
 		std::uint32_t indexCount;
 		std::uint32_t indexOffset;
-		ModelBoundingBox boundingBox;
+		//ModelBoundingBox boundingBox;
 	};
 
 	union PrimitiveIndices {
@@ -115,7 +115,7 @@ private:
 
 private:
 	std::unordered_map<std::wstring, std::vector<std::shared_ptr<Model>>> m_modelSets;
-	std::unordered_map<std::wstring, std::vector<MeshletModel>> m_meshletModelSets;
+	//std::unordered_map<std::wstring, std::vector<MeshletModel>> m_meshletModelSets;
 	std::vector<Vertex> m_gVertices;
 	std::vector<std::uint32_t> m_gVerticesIndices;
 	std::vector<std::uint32_t> m_gIndices;

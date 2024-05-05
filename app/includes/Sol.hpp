@@ -48,7 +48,7 @@ namespace Sol {
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
-		ThreadPool& threadPool, ISharedDataContainer& sharedContainer,
+		ThreadPool& threadPool,
 		RenderEngineType engineType,
 		std::string moduleName = "Gaia",
 		std::uint8_t bufferCount = 2u

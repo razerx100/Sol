@@ -49,7 +49,7 @@ namespace Sol {
 		void* windowHandle,
 		void* moduleHandle,
 		std::uint32_t width, std::uint32_t height,
-		ThreadPool& threadPooll, ISharedDataContainer& sharedContainer,
+		ThreadPool& threadPooll,
 		RenderEngineType engineType,
 		std::string moduleName,
 		std::uint8_t bufferCount
@@ -60,7 +60,7 @@ namespace Sol {
 					appName,
 					windowHandle,
 					width, height,
-					threadPooll, sharedContainer,
+					threadPooll,
 					engineType,
 					bufferCount
 				), 2u
@@ -71,7 +71,7 @@ namespace Sol {
 					appName,
 					windowHandle, moduleHandle,
 					width, height,
-					threadPooll, sharedContainer,
+					threadPooll,
 					engineType,
 					bufferCount
 				), 2u

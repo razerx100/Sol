@@ -72,20 +72,8 @@ std::uint32_t ModelInputs::GetIndexCount() const noexcept {
 
 // ModelBase
 ModelBase::ModelBase() noexcept
-	: m_indexCount{ 0u }, m_indexOffset{ 0u }, m_lightSource{ false }
+	: m_lightSource{ false }
 {}
-
-void ModelBase::SetBoundingBox(const ModelBoundingBox& boundingBox) noexcept {
-	m_boundingBox = boundingBox;
-}
-
-void ModelBase::SetIndexOffset(std::uint32_t indexOffset) noexcept {
-	m_indexOffset = indexOffset;
-}
-
-void ModelBase::SetIndexCount(std::uint32_t indexCount) noexcept {
-	m_indexCount = indexCount;
-}
 
 void ModelBase::SetAsLightSource() noexcept {
 	m_lightSource = true;
@@ -95,20 +83,8 @@ void ModelBase::SetResources() {}
 
 void ModelBase::PhysicsUpdate() noexcept {}
 
-std::uint32_t ModelBase::GetIndexCount() const noexcept {
-	return m_indexCount;
-}
-
 DirectX::XMMATRIX ModelBase::GetModelMatrix() const noexcept {
 	return m_transform.GetModelMatrix();
-}
-
-std::uint32_t ModelBase::GetIndexOffset() const noexcept {
-	return m_indexOffset;
-}
-
-ModelBounds ModelBase::GetBoundingBox() const noexcept {
-	return m_boundingBox.GetBoundingCube();
 }
 
 DirectX::XMFLOAT3 ModelBase::GetModelOffset() const noexcept {
@@ -119,16 +95,12 @@ ModelTransform& ModelBase::GetTransform() noexcept {
 	return m_transform;
 }
 
-ModelBoundingBox& ModelBase::GetBoundingBox() noexcept {
-	return m_boundingBox;
-}
-
 bool ModelBase::IsLightSource() const noexcept {
 	return m_lightSource;
 }
 
 // Model Bounding Box
-ModelBoundingBox::ModelBoundingBox() noexcept : m_boundingCube{} {}
+/*ModelBoundingBox::ModelBoundingBox() noexcept : m_boundingCube{} {}
 
 void ModelBoundingBox::Calculate(const std::vector<Vertex>& vertices) noexcept {
 	DirectX::XMFLOAT3& maxPositiveAxes = m_boundingCube.positiveAxes;
@@ -151,7 +123,7 @@ void ModelBoundingBox::SetBoundingCube(const ModelBounds& bounds) noexcept{
 
 ModelBounds ModelBoundingBox::GetBoundingCube() const noexcept {
 	return m_boundingCube;
-}
+}*/
 
 // Model Transform
 ModelTransform::ModelTransform() noexcept
