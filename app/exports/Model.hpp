@@ -38,6 +38,8 @@ public:
 	virtual bool IsLightSource() const noexcept = 0;
 	[[nodiscard]]
 	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::uint32_t GetMaterialIndex() const noexcept = 0;
 };
 
 class ModelVS : public virtual Model
@@ -51,6 +53,8 @@ class ModelMS : public virtual Model
 {
 public:
 	[[nodiscard]]
-	virtual MeshDetailsMS&& GetMeshDetailsMS() noexcept = 0;
+	// I am keeping this as non const, as I can potentially process the meshlets of multiple models
+	// at once. So, I will need to keep them all in a single container, ie move from here.
+	virtual MeshDetailsMS& GetMeshDetailsMS() noexcept = 0;
 };
 #endif

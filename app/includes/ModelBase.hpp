@@ -128,12 +128,15 @@ public:
 	bool IsLightSource() const noexcept final;
 	[[nodiscard]]
 	std::uint32_t GetMeshIndex() const noexcept final { return m_meshIndex; }
+	[[nodiscard]]
+	std::uint32_t GetMaterialIndex() const noexcept final { return m_materialIndex; }
 
 	[[nodiscard]]
 	ModelTransform& GetTransform() noexcept;
 
 private:
 	std::uint32_t  m_meshIndex;
+	std::uint32_t  m_materialIndex;
 	ModelTransform m_transform;
 
 	bool m_lightSource;
@@ -171,9 +174,9 @@ public:
 	// I should add a function which should take a Mesh and grab its meshlets.
 
 	[[nodiscard]]
-	MeshDetailsMS&& GetMeshDetailsMS() noexcept override
+	MeshDetailsMS& GetMeshDetailsMS() noexcept override
 	{
-		return std::move(m_meshDetails);
+		return m_meshDetails;
 	}
 
 private:

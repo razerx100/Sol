@@ -27,6 +27,8 @@ public:
 	virtual const std::vector<MeshBounds>& GetBounds() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
+
+	virtual void CleanUpVertices() noexcept = 0;
 };
 
 class MeshBundleVS : public MeshBundle
