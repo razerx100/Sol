@@ -12,10 +12,9 @@ struct Vertex
 	DirectX::XMFLOAT2 uv;
 };
 
-struct MeshBounds
+struct MeshBound
 {
-	DirectX::XMFLOAT3 positiveAxes;
-	DirectX::XMFLOAT3 negativeAxes;
+	DirectX::XMFLOAT3 position;
 };
 
 class MeshBundle
@@ -24,7 +23,7 @@ public:
 	virtual ~MeshBundle() = default;
 
 	[[nodiscard]]
-	virtual const std::vector<MeshBounds>& GetBounds() const noexcept = 0;
+	virtual const std::vector<MeshBound>& GetBounds() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
 
