@@ -35,7 +35,7 @@ Engine::Engine() : m_appName("Sol") {
 		Sol::window->GetWindowHandle(),
 		Sol::window->GetModuleInstance(),
 		1920u, 1080u,
-		*Sol::threadPool,
+		Sol::threadPool,
 		engineType,
 		Sol::configManager->GetRendererName()
 	);
