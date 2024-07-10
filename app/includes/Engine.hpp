@@ -10,8 +10,6 @@ public:
 	[[nodiscard]]
 	int Run();
 
-	void WaitForAsyncTasks();
-
 private:
 	const std::string m_appName;
 	ObjectManager m_objectManager;

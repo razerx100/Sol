@@ -67,8 +67,6 @@ Engine::Engine() : m_appName("Sol") {
 		Sol::textureAtlas->SetTextureIndex(atlasIndex);
 	}
 
-	Sol::renderer->ProcessData();
-
 	Sol::app->SetResources();
 	Sol::modelContainer->SetResources();
 
@@ -106,7 +104,6 @@ int Engine::Run() {
 
 			Sol::window->UpdateIndependentInputs();
 			Sol::app->PerFrameUpdate();
-			Sol::renderer->Update();
 			Sol::renderer->Render();
 		}
 
@@ -122,11 +119,5 @@ int Engine::Run() {
 		}
 	}
 
-	WaitForAsyncTasks();
-
 	return errorCode;
-}
-
-void Engine::WaitForAsyncTasks() {
-	Sol::renderer->WaitForAsyncTasks();
 }
