@@ -4,7 +4,8 @@
 #include <Sol.hpp>
 #include <DirectXMath.h>
 
-Engine::Engine() : m_appName("Sol") {
+Engine::Engine() : m_appName("Sol")
+{
 
 	m_objectManager.CreateObject(Sol::configManager, { L"config.ini" }, 0u);
 	Sol::configManager->ReadConfigFile();
@@ -42,6 +43,11 @@ Engine::Engine() : m_appName("Sol") {
 	Sol::renderer->SetShaderPath(L"resources/shaders/");
 	Sol::renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
+	Sol::window->SetRenderer(Sol::renderer);
+
+	m_objectManager.CreateObject(Sol::app, 1u);
+
+	/*
 	TextureTool::AddDefaultTexture();
 
 	AMods::InitAppModules(m_objectManager);
@@ -50,10 +56,6 @@ Engine::Engine() : m_appName("Sol") {
 	m_objectManager.CreateObject(Sol::modelProcessor, { processMeshlets }, 0u);
 	m_objectManager.CreateObject(Sol::modelContainer, 0u);
 	m_objectManager.CreateObject(Sol::textureAtlas, 0u);
-
-	Sol::window->SetRenderer(Sol::renderer);
-
-	m_objectManager.CreateObject(Sol::app, 1u);
 
 	Sol::textureAtlas->CreateAtlas();
 
@@ -71,27 +73,34 @@ Engine::Engine() : m_appName("Sol") {
 	Sol::modelContainer->SetResources();
 
 	Sol::modelProcessor.reset();
+	*/
 }
 
-int Engine::Run() {
+int Engine::Run()
+{
 	int errorCode = -1;
 
 	float accumulatedElapsedTime = 0;
 
-	while (true) {
+	while (true)
+	{
 		AMods::frameTime->StartTimer();
 
-		if (auto ecode = Sol::window->Update(); ecode) {
+		if (auto ecode = Sol::window->Update(); ecode)
+		{
 			errorCode = *ecode;
 			break;
 		}
 
-		if(!Sol::window->IsMinimized()) {
+		if(!Sol::window->IsMinimized())
+		{
 			float deltaTime = AMods::frameTime->GetDeltaTime();
 			float updateDelta = AMods::frameTime->GetGraphicsUpdateDelta();
 
-			if (accumulatedElapsedTime >= updateDelta) {
-				while (accumulatedElapsedTime >= updateDelta) {
+			if (accumulatedElapsedTime >= updateDelta)
+			{
+				while (accumulatedElapsedTime >= updateDelta)
+				{
 					Sol::modelContainer->PhysicsUpdate();
 					Sol::app->PhysicsUpdate();
 					accumulatedElapsedTime -= updateDelta;
@@ -109,7 +118,8 @@ int Engine::Run() {
 
 		AMods::frameTime->EndTimer();
 
-		if (AMods::frameTime->HasASecondPassed()) {
+		if (AMods::frameTime->HasASecondPassed())
+		{
 			static std::string rendererName = Sol::configManager->GetRendererName();
 			Sol::window->SetTitle(
 				m_appName + " Renderer : " + rendererName
@@ -118,6 +128,8 @@ int Engine::Run() {
 			AMods::frameTime->ResetFrameCount();
 		}
 	}
+
+	Sol::renderer->WaitForGPUToFinish();
 
 	return errorCode;
 }

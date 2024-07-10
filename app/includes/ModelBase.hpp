@@ -186,7 +186,15 @@ private:
 // Mostly I should have different child classes of ModelBase with different functionalities.
 // And then in the end before adding them to the renderer, add a wrapper based on the pipeline type.
 template<class Derived>
-class ModelBaseVSWrapper : public Derived, public ModelBaseVS {};
+class ModelBaseVSWrapper : public Derived, public ModelBaseVS
+{
+public:
+	using Derived::Derived;
+};
 template<class Derived>
-class ModelBaseMSWrapper : public Derived, public ModelBaseMS {};
+class ModelBaseMSWrapper : public Derived, public ModelBaseMS
+{
+public:
+	using Derived::Derived;
+};
 #endif

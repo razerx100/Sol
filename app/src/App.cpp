@@ -8,7 +8,13 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
-App::App() {
+App::App()
+{
+	auto cube = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.3f);
+
+	const std::uint32_t modelIndex = Sol::renderer->AddModel(std::move(cube), L"TestShader");
+	// Also need to add a camera and Mesh Model at least.
+	/*
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureTool::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
 	TextureTool::AddTextureToAtlas("resources/textures/doge.jpg", "dogeBig");
@@ -167,13 +173,16 @@ App::App() {
 	}
 
 	Sol::modelContainer->AddModel<QuadInputs>(std::move(quad0), withoutLightShader);
+	*/
 }
 
 void App::SetResources() {}
 
 void App::PerFrameUpdate() {}
 
-void App::PhysicsUpdate() {
+void App::PhysicsUpdate()
+{
+	/*
 	constexpr float cameraMoveSpeed = 0.001f;
 
 	IKeyboard& keyboard = Sol::ioMan->GetKeyboard();
@@ -225,4 +234,5 @@ void App::PhysicsUpdate() {
 	}
 
 	AMods::cameraManager->SetCamera();
+	*/
 }
