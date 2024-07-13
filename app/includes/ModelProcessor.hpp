@@ -9,6 +9,7 @@
 
 #include <ModelBase.hpp>
 
+/*
 class ModelProcessor {
 public:
 	struct Args {
@@ -125,4 +126,5 @@ private:
 	std::uint32_t m_meshletVertexLimit;
 	std::uint32_t m_meshletPrimitiveLimit;
 };
+*/
 #endif

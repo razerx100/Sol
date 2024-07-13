@@ -4,6 +4,7 @@
 
 #include <Sol.hpp>
 
+/*
 // Model Processor
 ModelProcessor::ModelProcessor(const Args& arguments) noexcept
 	: m_processingModeMeshlet{ arguments.processingModeMeshlet.value() },
@@ -84,9 +85,9 @@ void ModelProcessor::_addModelModelData(
 		m_modelSets.emplace(pixelShader, std::vector<std::shared_ptr<Model>>{});
 
 	const IndexData& modelData = m_modelData[inputName];
-	/*model->SetIndexOffset(modelData.indexOffset);
+	model->SetIndexOffset(modelData.indexOffset);
 	model->SetIndexCount(modelData.indexCount);
-	model->SetBoundingBox(modelData.boundingBox);*/
+	model->SetBoundingBox(modelData.boundingBox);
 
 	m_modelSets[pixelShader].emplace_back(std::move(model));
 }
@@ -94,7 +95,7 @@ void ModelProcessor::_addModelModelData(
 void ModelProcessor::_addModelMeshlets(
 	std::shared_ptr<ModelBase> model, const std::string& inputName, std::wstring pixelShader
 ) noexcept {
-	/*if (auto modelSet = m_meshletModelSets.find(pixelShader);
+	if (auto modelSet = m_meshletModelSets.find(pixelShader);
 		modelSet == std::end(m_meshletModelSets))
 		m_meshletModelSets.emplace(pixelShader, std::vector<MeshletModel>{});
 
@@ -102,7 +103,7 @@ void ModelProcessor::_addModelMeshlets(
 
 	MeshletModel meshModel{ std::move(model), meshlets };
 
-	m_meshletModelSets[pixelShader].emplace_back(std::move(meshModel));*/
+	m_meshletModelSets[pixelShader].emplace_back(std::move(meshModel));
 }
 
 void ModelProcessor::_addModel(
@@ -115,19 +116,19 @@ void ModelProcessor::_addModel(
 }
 
 void ModelProcessor::_moveDataModels() noexcept {
-	/*Sol::renderer->AddModelInputs(std::move(m_gVertices), std::move(m_gIndices));
+	Sol::renderer->AddModelInputs(std::move(m_gVertices), std::move(m_gIndices));
 
 	for (auto& modelSet : m_modelSets)
-		Sol::renderer->AddModelSet(std::move(modelSet.second), modelSet.first);*/
+		Sol::renderer->AddModelSet(std::move(modelSet.second), modelSet.first);
 }
 
 void ModelProcessor::_moveDataMeshletModels() noexcept {
-	/*Sol::renderer->AddModelInputs(
+	Sol::renderer->AddModelInputs(
 		std::move(m_gVertices), std::move(m_gVerticesIndices), std::move(m_gIndices)
 	);
 
 	for (auto& modelSet : m_meshletModelSets)
-		Sol::renderer->AddMeshletModelSet(std::move(modelSet.second), modelSet.first);*/
+		Sol::renderer->AddMeshletModelSet(std::move(modelSet.second), modelSet.first);
 }
 
 void ModelProcessor::MoveData() noexcept {
@@ -230,3 +231,4 @@ bool ModelProcessor::IsInMap(
 ) const noexcept {
 	return vertexIndicesM.find(vIndex) != std::end(vertexIndicesM);
 }
+*/

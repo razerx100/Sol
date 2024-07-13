@@ -101,7 +101,7 @@ int Engine::Run()
 			{
 				while (accumulatedElapsedTime >= updateDelta)
 				{
-					Sol::modelContainer->PhysicsUpdate();
+					//Sol::modelContainer->PhysicsUpdate();
 					Sol::app->PhysicsUpdate();
 					accumulatedElapsedTime -= updateDelta;
 				}

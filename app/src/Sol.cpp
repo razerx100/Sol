@@ -22,8 +22,8 @@ namespace Sol {
 	std::shared_ptr<InputManager> ioMan;
 	std::unique_ptr<Window> window;
 	std::shared_ptr<Renderer> renderer;
-	std::unique_ptr<ModelProcessor> modelProcessor;
-	std::unique_ptr<ModelContainer> modelContainer;
+	//std::unique_ptr<ModelProcessor> modelProcessor;
+	//std::unique_ptr<ModelContainer> modelContainer;
 	std::unique_ptr<TextureAtlas> textureAtlas;
 	std::shared_ptr<ThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;

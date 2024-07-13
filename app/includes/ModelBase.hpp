@@ -64,7 +64,8 @@ protected:
 	std::vector<std::uint32_t> m_indices;
 };
 
-class ModelTransform {
+class ModelTransform
+{
 public:
 	ModelTransform() noexcept;
 

@@ -7,6 +7,7 @@
 
 #include <ModelProcessor.hpp>
 
+/*
 class ModelContainer {
 public:
 	void SetResources();
@@ -38,4 +39,5 @@ private:
 private:
 	std::vector<std::shared_ptr<ModelBase>> m_models;
 };
+*/
 #endif
