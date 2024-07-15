@@ -28,21 +28,21 @@ public:
 	}
 	ModelTransform& RotatePitchRadian(float angle) noexcept
 	{
-		static const DirectX::XMVECTOR pitchAxis{ 1.f, 0.f, 0.f, 0.f };
+		static const DirectX::XMVECTOR pitchAxis{ DirectX::XMVectorSet(1.f, 0.f, 0.f, 0.f) };
 		Rotate(pitchAxis, angle);
 
 		return *this;
 	}
 	ModelTransform& RotateYawRadian(float angle) noexcept
 	{
-		static const DirectX::XMVECTOR yawAxis{ 0.f, 1.f, 0.f, 0.f };
+		static const DirectX::XMVECTOR yawAxis{ DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f) };
 		Rotate(yawAxis, angle);
 
 		return *this;
 	}
 	ModelTransform& RotateRollRadian(float angle) noexcept
 	{
-		static const DirectX::XMVECTOR rollAxis{ 0.f, 0.f, 1.f, 0.f };
+		static const DirectX::XMVECTOR rollAxis{ DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f) };
 		Rotate(rollAxis, angle);
 
 		return *this;

@@ -7,6 +7,8 @@
 class Camera
 {
 public:
+	virtual ~Camera() = default;
+
 	[[nodiscard]]
 	// The could probably change every frame, so we can just return it. As it is generated
 	// by call to a different function, due to copy elision there won't be unnecessary copies.

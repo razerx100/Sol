@@ -5,6 +5,7 @@
 #include <MaterialBase.hpp>
 #include <BasicModels.hpp>
 #include <BasicMeshBundles.hpp>
+#include <CameraManagerSol.hpp>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
@@ -12,11 +13,16 @@ App::App()
 {
 	auto cube     = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.3f);
 	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::SingleColour);
+	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
-	const std::uint32_t modelIndex = Sol::renderer->AddModel(std::move(cube), L"TestShader");
+	const std::uint32_t modelIndex  = Sol::renderer->AddModel(std::move(cube), L"TestShader");
 
-	const std::uint32_t meshIndex  = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
-	// Also need to add a camera at least.
+	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
+
+	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(std::move(camera));
+
+	Sol::renderer->SetCamera(cameraIndex);
+	// Now to write some test shaders.
 	/*
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureTool::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
