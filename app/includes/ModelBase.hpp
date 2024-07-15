@@ -10,28 +10,80 @@
 class ModelTransform
 {
 public:
-	ModelTransform() noexcept;
+	ModelTransform()
+		: m_modelMatrix{ DirectX::XMMatrixIdentity() }, m_modelOffset{ 0.f, 0.f, 0.f }
+	{}
 
-	ModelTransform& RotatePitchDegree(float angle) noexcept;
-	ModelTransform& RotateYawDegree(float angle) noexcept;
-	ModelTransform& RotateRollDegree(float angle) noexcept;
-	ModelTransform& RotatePitchRadian(float angle) noexcept;
-	ModelTransform& RotateYawRadian(float angle) noexcept;
-	ModelTransform& RotateRollRadian(float angle) noexcept;
+	ModelTransform& RotatePitchDegree(float angle) noexcept
+	{
+		return RotatePitchRadian(DirectX::XMConvertToRadians(angle));
+	}
+	ModelTransform& RotateYawDegree(float angle) noexcept
+	{
+		return RotateYawRadian(DirectX::XMConvertToRadians(angle));
+	}
+	ModelTransform& RotateRollDegree(float angle) noexcept
+	{
+		return RotateRollRadian(DirectX::XMConvertToRadians(angle));
+	}
+	ModelTransform& RotatePitchRadian(float angle) noexcept
+	{
+		static const DirectX::XMVECTOR pitchAxis{ 1.f, 0.f, 0.f, 0.f };
+		Rotate(pitchAxis, angle);
 
-	ModelTransform& MoveTowardsX(float delta) noexcept;
-	ModelTransform& MoveTowardsY(float delta) noexcept;
-	ModelTransform& MoveTowardsZ(float delta) noexcept;
+		return *this;
+	}
+	ModelTransform& RotateYawRadian(float angle) noexcept
+	{
+		static const DirectX::XMVECTOR yawAxis{ 0.f, 1.f, 0.f, 0.f };
+		Rotate(yawAxis, angle);
 
-	void Rotate(const DirectX::XMVECTOR& rotationAxis, float angleRadian) noexcept;
-	void MultiplyModelMatrix(const DirectX::XMMATRIX& matrix) noexcept;
-	void AddToModelOffset(const DirectX::XMFLOAT3& offset) noexcept;
-	void SetModelOffset(const DirectX::XMFLOAT3& offset) noexcept;
+		return *this;
+	}
+	ModelTransform& RotateRollRadian(float angle) noexcept
+	{
+		static const DirectX::XMVECTOR rollAxis{ 0.f, 0.f, 1.f, 0.f };
+		Rotate(rollAxis, angle);
+
+		return *this;
+	}
+
+	ModelTransform& MoveTowardsX(float delta) noexcept
+	{
+		m_modelOffset.x += delta;
+
+		return *this;
+	}
+	ModelTransform& MoveTowardsY(float delta) noexcept
+	{
+		m_modelOffset.y += delta;
+
+		return *this;
+	}
+	ModelTransform& MoveTowardsZ(float delta) noexcept
+	{
+		m_modelOffset.z += delta;
+
+		return *this;
+	}
+
+	void Rotate(const DirectX::XMVECTOR& rotationAxis, float angleRadian) noexcept
+	{
+		m_modelMatrix *= DirectX::XMMatrixRotationAxis(rotationAxis, angleRadian);
+	}
+	void MultiplyModelMatrix(const DirectX::XMMATRIX& matrix) noexcept { m_modelMatrix *= matrix; }
+	void AddToModelOffset(const DirectX::XMFLOAT3& offset) noexcept
+	{
+		m_modelOffset.x += offset.x;
+		m_modelOffset.y += offset.y;
+		m_modelOffset.z += offset.z;
+	}
+	void SetModelOffset(const DirectX::XMFLOAT3& offset) noexcept { m_modelOffset = offset; }
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept;
+	DirectX::XMMATRIX GetModelMatrix() const noexcept { return m_modelMatrix; }
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept;
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept { return m_modelOffset; }
 
 private:
 	DirectX::XMMATRIX m_modelMatrix;
@@ -52,38 +104,41 @@ private:
 	ModelBounds m_boundingCube;
 };*/
 
-class ModelBase : public virtual Model
+class ModelBase
 {
 public:
-	ModelBase() noexcept;
+	ModelBase()
+		: m_lightSource{ false }, m_meshIndex{ 0u }, m_materialIndex{ 0u }, m_transform{}
+	{}
 	virtual ~ModelBase() = default;
 
-	void SetAsLightSource() noexcept;
+	void SetAsLightSource() noexcept { m_lightSource = true; }
 	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
 
-	virtual void PhysicsUpdate() noexcept;
-	virtual void SetResources();
+	virtual void PhysicsUpdate() noexcept {}
+	virtual void SetResources() {}
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept final;
+	DirectX::XMMATRIX GetModelMatrix() const noexcept { return m_transform.GetModelMatrix(); }
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept final;
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept { return m_transform.GetModelOffset(); }
 	[[nodiscard]]
-	bool IsLightSource() const noexcept final;
+	bool IsLightSource() const noexcept { return m_lightSource; }
 	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept final { return m_meshIndex; }
+	std::uint32_t GetMeshIndex() const noexcept { return m_meshIndex; }
 	[[nodiscard]]
-	std::uint32_t GetMaterialIndex() const noexcept final { return m_materialIndex; }
+	std::uint32_t GetMaterialIndex() const noexcept { return m_materialIndex; }
 
 	[[nodiscard]]
-	ModelTransform& GetTransform() noexcept;
+	ModelTransform& GetTransform() noexcept { return m_transform; }
+	[[nodiscard]]
+	const ModelTransform& GetTransform() const noexcept { return m_transform; }
 
 private:
+	bool           m_lightSource;
 	std::uint32_t  m_meshIndex;
 	std::uint32_t  m_materialIndex;
 	ModelTransform m_transform;
-
-	bool m_lightSource;
 };
 
 class ModelBaseVS : public ModelVS
@@ -107,9 +162,7 @@ private:
 class ModelBaseMS : public ModelMS
 {
 public:
-	ModelBaseMS()
-		: ModelMS{}, m_meshDetails{ .meshlets = {} }
-	{}
+	ModelBaseMS() : ModelMS{}, m_meshDetails{} {}
 
 	void SetMeshlets(std::vector<Meshlet>&& meshlets) noexcept
 	{
@@ -125,6 +178,27 @@ public:
 
 private:
 	MeshDetailsMS m_meshDetails;
+
+public:
+	ModelBaseMS(const ModelBaseMS& other) noexcept
+		: m_meshDetails{ other.m_meshDetails }
+	{}
+	ModelBaseMS& operator=(const ModelBaseMS& other) noexcept
+	{
+		m_meshDetails = other.m_meshDetails;
+
+		return *this;
+	}
+
+	ModelBaseMS(ModelBaseMS&& other) noexcept
+		: m_meshDetails{ std::move(other.m_meshDetails) }
+	{}
+	ModelBaseMS& operator=(ModelBaseMS&& other) noexcept
+	{
+		m_meshDetails = std::move(other.m_meshDetails);
+
+		return *this;
+	}
 };
 
 // Mostly I should have different child classes of ModelBase with different functionalities.
@@ -134,11 +208,63 @@ class ModelBaseVSWrapper : public Derived, public ModelBaseVS
 {
 public:
 	using Derived::Derived;
+
+	[[nodiscard]]
+	DirectX::XMMATRIX GetModelMatrix() const noexcept final
+	{
+		return Derived::GetModelMatrix();
+	}
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
+	{
+		return Derived::GetModelOffset();
+	}
+	[[nodiscard]]
+	bool IsLightSource() const noexcept final
+	{
+		return Derived::IsLightSource();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept final
+	{
+		return Derived::GetMeshIndex();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMaterialIndex() const noexcept final
+	{
+		return Derived::GetMaterialIndex();
+	}
 };
 template<class Derived>
 class ModelBaseMSWrapper : public Derived, public ModelBaseMS
 {
 public:
 	using Derived::Derived;
+
+	[[nodiscard]]
+	DirectX::XMMATRIX GetModelMatrix() const noexcept final
+	{
+		return Derived::GetModelMatrix();
+	}
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
+	{
+		return Derived::GetModelOffset();
+	}
+	[[nodiscard]]
+	bool IsLightSource() const noexcept final
+	{
+		return Derived::IsLightSource();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept final
+	{
+		return Derived::GetMeshIndex();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMaterialIndex() const noexcept final
+	{
+		return Derived::GetMaterialIndex();
+	}
 };
 #endif

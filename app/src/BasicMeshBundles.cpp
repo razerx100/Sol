@@ -152,8 +152,7 @@ QuadMesh::QuadMesh() : MeshBundleBase{ "Quad" }
 // Sphere
 SphereMesh::SphereMesh(std::uint32_t latDiv, std::uint32_t longDiv)
 	: MeshBundleBase{ "Sphere" + std::to_string(latDiv) + "x" + std::to_string(longDiv) },
-	m_latitudeDivision{ latDiv },
-	m_longitudeDivision{ longDiv }
+	m_latitudeDivision{ latDiv }, m_longitudeDivision{ longDiv }
 {
 	assert(m_latitudeDivision > 2);
 	assert(m_longitudeDivision > 2);

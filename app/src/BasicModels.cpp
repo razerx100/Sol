@@ -37,36 +37,9 @@ void ModelWithVelocity::PhysicsUpdate() noexcept {
 void ModelWithVelocity::_physicsUpdate() noexcept {}
 
 // Scalable
-ScalableModel::ScalableModel(float scale) noexcept {
+ScalableModel::ScalableModel(float scale) : ModelBase{}
+{
 	GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(scale, scale, scale));
-}
-
-void ScalableModel::SetTextureFromAtlas(
-	const std::string& texName, TextureType type
-) noexcept {
-	m_textureInfo.emplace_back(texName, type);
-}
-
-void ScalableModel::SetResources() {
-	for(const auto& texInfo : m_textureInfo) {
-		UVInfo uvInfo = Sol::textureAtlas->GetUVInfo(texInfo.name);
-		size_t texIndex = Sol::textureAtlas->GetTextureIndex();
-
-		/*switch (texInfo.type) {
-		case TextureType::diffuse: {
-			SetDiffuseTexUVInfo(uvInfo);
-			SetDiffuseTexIndex(texIndex);
-
-			break;
-		}
-		case TextureType::specular: {
-			SetSpecularTexUVInfo(uvInfo);
-			SetSpecularTexIndex(texIndex);
-
-			break;
-		}
-		}*/
-	}
 }
 
 // Orbit

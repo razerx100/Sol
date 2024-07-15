@@ -15,7 +15,7 @@ App::App()
 
 	const std::uint32_t modelIndex = Sol::renderer->AddModel(std::move(cube), L"TestShader");
 
-	const std::uint32_t meshIndex = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
+	const std::uint32_t meshIndex  = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 	// Also need to add a camera at least.
 	/*
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");

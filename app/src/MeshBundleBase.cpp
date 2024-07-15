@@ -1,6 +1,6 @@
 #include <MeshBundleBase.hpp>
 
-MeshBundleBase::MeshBundleBase(const std::string& name) : m_name{ name }, m_vertices{}
+MeshBundleBase::MeshBundleBase(const std::string& name) : m_name{ name }, m_vertices{}, m_indices{}
 {}
 
 void MeshBundleBase::CalculateNormalsIndependentFaces() noexcept

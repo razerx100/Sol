@@ -2,7 +2,8 @@
 #define BASIC_MODELS_HPP_
 #include <ModelBase.hpp>
 
-class ModelWithVelocity : public ModelBase {
+class ModelWithVelocity : public ModelBase
+{
 public:
 	ModelWithVelocity() noexcept;
 
@@ -21,31 +22,21 @@ protected:
 	float m_modelAcceleration;
 };
 
-enum class TextureType {
+enum class TextureType
+{
 	diffuse,
 	specular
 };
 
-class ScalableModel : public ModelBase {
+class ScalableModel : public ModelBase
+{
 public:
-	ScalableModel(float scale) noexcept;
-
-	virtual void SetResources() override;
-
-	void SetTextureFromAtlas(const std::string& texName, TextureType type) noexcept;
-
-private:
-	struct TexInfo {
-		std::string name;
-		TextureType type;
-	};
-
-private:
-	std::vector<TexInfo> m_textureInfo;
+	ScalableModel(float scale);
 };
 
 // Revolving around 0, 0, 0
-class OrbitingModel : public ScalableModel {
+class OrbitingModel : public ScalableModel
+{
 public:
 	OrbitingModel(float scale) noexcept;
 
@@ -64,7 +55,8 @@ protected:
 	float m_modelDirectionY;
 };
 
-class OrbitModelClock : public OrbitingModel {
+class OrbitModelClock : public OrbitingModel
+{
 public:
 	using OrbitingModel::OrbitingModel;
 
@@ -73,7 +65,8 @@ private:
 	DirectX::XMFLOAT3 GetAngularOffset() noexcept final;
 };
 
-class OrbitModelAntiClock : public OrbitingModel {
+class OrbitModelAntiClock : public OrbitingModel
+{
 public:
 	using OrbitingModel::OrbitingModel;
 
