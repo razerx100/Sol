@@ -5,64 +5,7 @@
 #include <array>
 #include <SolConcepts.hpp>
 
-#include <MeshBundle.hpp>
 #include <Model.hpp>
-
-class ModelInputs
-{
-public:
-	ModelInputs() = default;
-	ModelInputs(const std::string& name) noexcept;
-
-	virtual ~ModelInputs() = default;
-	virtual void InitData() noexcept;
-
-	[[nodiscard]]
-	const std::vector<Vertex>& GetVertexData() const noexcept;
-	[[nodiscard]]
-	size_t GetVertexBufferSize() const noexcept;
-	[[nodiscard]]
-	const std::vector<std::uint32_t>& GetIndexData() const noexcept;
-	[[nodiscard]]
-	size_t GetIndexBufferSize() const noexcept;
-
-	[[nodiscard]]
-	std::uint32_t GetIndexCount() const noexcept;
-
-	template<DerivedWithoutArgs<ModelInputs> T>
-	[[nodiscard]]
-	static std::string GetName() noexcept {
-		T modelInput{};
-
-		return modelInput.m_name;
-	}
-
-	template<DerivedWithArgs<ModelInputs> T>
-	[[nodiscard]]
-	static std::string GetName(const typename T::Args& arguments) noexcept {
-		T modelInput{ arguments };
-
-		return modelInput.m_name;
-	}
-
-protected:
-	void CalculateNormalsIndependentFaces() noexcept;
-	void SetInputName(const std::string& name) noexcept;
-
-private:
-	[[nodiscard]]
-	DirectX::XMFLOAT3 GetFaceNormal(
-		const DirectX::XMFLOAT3& position1, const DirectX::XMFLOAT3& position2,
-		const DirectX::XMFLOAT3& position3
-	) const noexcept;
-
-private:
-	std::string m_name;
-
-protected:
-	std::vector<Vertex> m_vertices;
-	std::vector<std::uint32_t> m_indices;
-};
 
 class ModelTransform
 {
