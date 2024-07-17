@@ -6,8 +6,8 @@
 
 class ConfigManager {
 	const std::unordered_map<std::string, std::string> DEFAULTMODULES = {
-		{"Renderer", "Gaia"},
-		{"RenderEngine", "IndirectDraw"},
+		{"Renderer", "Terra"},
+		{"RenderEngine", "IndividualDraw"},
 		{"Window", "Luna"},
 		{"IO", "Pluto"}
 	};
