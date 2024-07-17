@@ -43,6 +43,7 @@ public:
 
 protected:
 	float             m_fovRadian;
+	float             padding;
 	DirectX::XMVECTOR m_cameraPosition;
 	DirectX::XMMATRIX m_projectionMatrix;
 };
