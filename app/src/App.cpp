@@ -15,7 +15,7 @@ App::App()
 	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::SingleColour);
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
-	const std::uint32_t modelIndex  = Sol::renderer->AddModel(std::move(cube), L"TestShader");
+	const std::uint32_t modelIndex  = Sol::renderer->AddModel(std::move(cube), L"TestFragmentShader");
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 
