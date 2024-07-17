@@ -47,10 +47,9 @@ Engine::Engine() : m_appName("Sol")
 
 	m_objectManager.CreateObject(Sol::app, 1u);
 
+	AMods::InitAppModules(m_objectManager);
 	/*
 	TextureTool::AddDefaultTexture();
-
-	AMods::InitAppModules(m_objectManager);
 
 	bool processMeshlets = engineType == RenderEngineType::MeshDraw;
 	m_objectManager.CreateObject(Sol::modelProcessor, { processMeshlets }, 0u);
