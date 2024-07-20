@@ -12,7 +12,7 @@ class _BaseCamera : public Camera
 {
 public:
 	_BaseCamera()
-		: m_fovRadian{ DirectX::XMConvertToRadians(65.f) },
+		: m_fovRadian{ DirectX::XMConvertToRadians(65.f) }, padding{ 0.f },
 		m_cameraPosition{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f) }, m_projectionMatrix{}
 	{}
 
