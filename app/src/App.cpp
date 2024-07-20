@@ -9,18 +9,24 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
+static std::shared_ptr<ModelBase> sCube{};
+static std::uint32_t cubeIndexCount = 0u;
+static bool objectAdded             = false;
+
 App::App()
 {
 	auto cube     = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.3f);
-	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<TriangleMesh>>();
+	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::SingleColour);
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
 	camera->SetProjectionMatrix(1920u, 1080u);
 	camera->SetCameraPosition(DirectX::XMFLOAT3{ 0.f, 0.f, -1.f });
 
+	cubeIndexCount = static_cast<std::uint32_t>(std::size(cubeMesh->GetIndices()));
+
 	cube->SetMeshDetailsVS(
 		MeshDetailsVS{
-			.indexCount  = static_cast<std::uint32_t>(std::size(cubeMesh->GetIndices())),
+			.indexCount  = cubeIndexCount,
 			.indexOffset = 0u
 		}
 	);
@@ -29,11 +35,13 @@ App::App()
 
 	cube->SetMeshIndex(meshIndex);
 
-	const std::uint32_t modelIndex  = Sol::renderer->AddModel(std::move(cube), L"TestFragmentShader");
+	const std::uint32_t modelIndex  = Sol::renderer->AddModel(cube, L"TestFragmentShader");
 
-	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(std::move(camera));
+	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(camera);
 
 	Sol::renderer->SetCamera(cameraIndex);
+
+	sCube = cube;
 	// Now to write some test shaders.
 	/*
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
@@ -203,6 +211,50 @@ void App::PerFrameUpdate() {}
 
 void App::PhysicsUpdate()
 {
+	constexpr float cameraMoveSpeed = 0.5f;
+
+	IKeyboard& keyboard = Sol::ioMan->GetKeyboard();
+
+	if (keyboard.IsKeyPressed(SKeyCodes::D))
+	{
+		sCube->GetTransform().MoveTowardsX(0.01f);
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::A))
+	{
+		sCube->GetTransform().MoveTowardsX(-0.01f);
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::C))
+	{
+		if (!objectAdded)
+		{
+			auto cube = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.4f);
+
+			cube->SetMeshDetailsVS(
+				MeshDetailsVS{
+					.indexCount = cubeIndexCount,
+					.indexOffset = 0u
+				}
+			);
+
+			const std::uint32_t modelIndex = Sol::renderer->AddModel(cube, L"TestFragmentShader");
+
+			objectAdded = true;
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::Z))
+	{
+		if (objectAdded)
+		{
+			const std::uint32_t modelIndex = 1u;
+			Sol::renderer->RemoveModelBundle(modelIndex);
+
+			objectAdded = false;
+		}
+	}
+
 	/*
 	constexpr float cameraMoveSpeed = 0.001f;
 
