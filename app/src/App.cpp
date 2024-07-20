@@ -12,12 +12,24 @@
 App::App()
 {
 	auto cube     = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.3f);
-	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::SingleColour);
+	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<TriangleMesh>>();
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
-	const std::uint32_t modelIndex  = Sol::renderer->AddModel(std::move(cube), L"TestFragmentShader");
+	camera->SetProjectionMatrix(1920u, 1080u);
+	camera->SetCameraPosition(DirectX::XMFLOAT3{ 0.f, 0.f, -1.f });
+
+	cube->SetMeshDetailsVS(
+		MeshDetailsVS{
+			.indexCount  = static_cast<std::uint32_t>(std::size(cubeMesh->GetIndices())),
+			.indexOffset = 0u
+		}
+	);
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
+
+	cube->SetMeshIndex(meshIndex);
+
+	const std::uint32_t modelIndex  = Sol::renderer->AddModel(std::move(cube), L"TestFragmentShader");
 
 	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(std::move(camera));
 

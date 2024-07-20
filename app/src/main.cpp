@@ -2,17 +2,22 @@
 #include <Exception.hpp>
 #include <ExceptionMessageBox.hpp>
 
-int main() {
-	try {
+int main()
+{
+	try
+	{
 		return Engine().Run();
 	}
-	catch (const Exception& e) {
+	catch (const Exception& e)
+	{
 		ExceptionMessageBox(e.what(), e.GetType());
 	}
-	catch (const std::exception& e) {
+	catch (const std::exception& e)
+	{
 		ExceptionMessageBox(e.what(), "Standard Exception");
 	}
-	catch (...) {
+	catch (...)
+	{
 		ExceptionMessageBox("No details available", "Unknown Exception");
 	}
 
