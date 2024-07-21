@@ -20,6 +20,14 @@ struct MeshDetailsVS
 	std::uint32_t indexOffset;
 };
 
+struct UVInfo
+{
+	float uOffset;
+	float vOffset;
+	float uScale;
+	float vScale;
+};
+
 struct MeshDetailsMS
 {
 	std::vector<Meshlet> meshlets;
@@ -61,6 +69,15 @@ public:
 	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
 	[[nodiscard]]
 	virtual std::uint32_t GetMaterialIndex() const noexcept = 0;
+
+	[[nodiscard]]
+	virtual std::uint32_t GetDiffuseIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual UVInfo GetDiffuseUVInfo() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::uint32_t GetSpecularIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual UVInfo GetSpecularUVInfo() const noexcept = 0;
 };
 
 class ModelVS : public Model

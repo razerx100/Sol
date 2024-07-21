@@ -108,7 +108,9 @@ class ModelBase
 {
 public:
 	ModelBase()
-		: m_lightSource{ false }, m_meshIndex{ 0u }, m_materialIndex{ 0u }, m_transform{}
+		: m_meshIndex{ 0u }, m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u },
+		m_lightSource{ false },
+		m_transform{}, m_diffuseUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
 	{}
 	virtual ~ModelBase() = default;
 
@@ -134,11 +136,48 @@ public:
 	[[nodiscard]]
 	const ModelTransform& GetTransform() const noexcept { return m_transform; }
 
+	void SetDiffuseIndex(size_t index) noexcept
+	{
+		m_diffuseIndex = static_cast<std::uint32_t>(index);
+	}
+	void SetSpecularIndex(size_t index) noexcept
+	{
+		m_specularIndex = static_cast<std::uint32_t>(index);
+	}
+
+	void SetDiffuseUVInfo(float uOffset, float vOffset, float uScale, float vScale) noexcept
+	{
+		SetDiffuseUVInfo(
+			UVInfo{ .uOffset = uOffset, .vOffset = vOffset, .uScale = uScale, .vScale = vScale }
+		);
+	}
+	void SetDiffuseUVInfo(const UVInfo& uvInfo) noexcept { m_diffuseUVInfo = uvInfo; }
+	void SetSpecularUVInfo(float uOffset, float vOffset, float uScale, float vScale) noexcept
+	{
+		SetSpecularUVInfo(
+			UVInfo{ .uOffset = uOffset, .vOffset = vOffset, .uScale = uScale, .vScale = vScale }
+		);
+	}
+	void SetSpecularUVInfo(const UVInfo& uvInfo) noexcept { m_specularUVInfo = uvInfo; }
+
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept { return m_diffuseIndex; }
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept { return m_diffuseUVInfo; }
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept { return m_specularIndex; }
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept { return m_specularUVInfo; }
+
 private:
-	bool           m_lightSource;
 	std::uint32_t  m_meshIndex;
 	std::uint32_t  m_materialIndex;
+	std::uint32_t  m_diffuseIndex;
+	std::uint32_t  m_specularIndex;
+	bool           m_lightSource;
 	ModelTransform m_transform;
+	UVInfo         m_diffuseUVInfo;
+	UVInfo         m_specularUVInfo;
 };
 
 class ModelBaseVS : public ModelVS
@@ -234,6 +273,26 @@ public:
 	{
 		return Derived::GetMaterialIndex();
 	}
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept override
+	{
+		return Derived::GetDiffuseIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept override
+	{
+		return Derived::GetDiffuseUVInfo();
+	}
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept override
+	{
+		return Derived::GetSpecularIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept override
+	{
+		return Derived::GetSpecularUVInfo();
+	}
 };
 template<class Derived>
 class ModelBaseMSWrapper : public Derived, public ModelBaseMS
@@ -265,6 +324,26 @@ public:
 	std::uint32_t GetMaterialIndex() const noexcept final
 	{
 		return Derived::GetMaterialIndex();
+	}
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept override
+	{
+		return Derived::GetDiffuseIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept override
+	{
+		return Derived::GetDiffuseUVInfo();
+	}
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept override
+	{
+		return Derived::GetSpecularIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept override
+	{
+		return Derived::GetSpecularUVInfo();
 	}
 };
 #endif
