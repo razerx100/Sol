@@ -116,6 +116,7 @@ public:
 
 	void SetAsLightSource() noexcept { m_lightSource = true; }
 	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
+	void SetMaterialIndex(std::uint32_t index) noexcept { m_materialIndex = index; }
 
 	virtual void PhysicsUpdate() noexcept {}
 	virtual void SetResources() {}

@@ -10,8 +10,9 @@
 #include <DirectXMath.h>
 
 static std::shared_ptr<ModelBase> sCube{};
+static std::shared_ptr<ModelBase> sCube2{};
+static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t cubeIndexCount = 0u;
-static bool objectAdded             = false;
 
 App::App()
 {
@@ -40,6 +41,39 @@ App::App()
 	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(camera);
 
 	Sol::renderer->SetCamera(cameraIndex);
+
+	{
+		// Green
+		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
+		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Green);
+		const MaterialData green{
+			.ambient = colourBuffer,
+			.diffuse = colourBuffer,
+			.specular = { 1.f, 1.f, 1.f, 1.f }
+		};
+
+		auto greenMat = std::make_shared<MaterialBase>();
+		greenMat->SetData(green);
+
+		const std::uint32_t materialIndex = Sol::renderer->AddMaterial(std::move(greenMat));
+	}
+
+	{
+		DirectX::XMFLOAT4 colourBuffer{};
+		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Orange);
+		const MaterialData orange{
+			.ambient  = colourBuffer,
+			.diffuse  = colourBuffer,
+			.specular = { 1.f, 1.f, 1.f, 1.f }
+		};
+
+		auto orangeMat = std::make_shared<MaterialBase>();
+		orangeMat->SetData(orange);
+
+		const std::uint32_t materialIndex = Sol::renderer->AddMaterial(std::move(orangeMat));
+
+		cube->SetMaterialIndex(materialIndex);
+	}
 
 	sCube = cube;
 	// Now to write some test shaders.
@@ -227,7 +261,7 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::C))
 	{
-		if (!objectAdded)
+		if (!sCube2)
 		{
 			auto cube = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.4f);
 
@@ -240,19 +274,54 @@ void App::PhysicsUpdate()
 
 			const std::uint32_t modelIndex = Sol::renderer->AddModel(cube, L"TestFragmentShader");
 
-			objectAdded = true;
+			sCube2 = std::move(cube);
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::Z))
 	{
-		if (objectAdded)
+		if (sCube2)
 		{
 			const std::uint32_t modelIndex = 1u;
 			Sol::renderer->RemoveModelBundle(modelIndex);
 
-			objectAdded = false;
+			sCube2.reset();
 		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::F))
+	{
+		DirectX::XMFLOAT4 colourBuffer{};
+		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Teal);
+		const MaterialData teal{
+			.ambient  = colourBuffer,
+			.diffuse  = colourBuffer,
+			.specular = { 1.f, 1.f, 1.f, 1.f }
+		};
+
+		auto tealMat = std::make_shared<MaterialBase>();
+		tealMat->SetData(teal);
+
+		const std::uint32_t materialIndex = Sol::renderer->AddMaterial(tealMat);
+
+		sTeal = std::move(tealMat);
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::Q))
+	{
+		if (sCube2)
+		{
+			std::uint32_t index = 1u;
+			if (sTeal)
+				index = 2u;
+
+			sCube2->SetMaterialIndex(index);
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::R))
+	{
+		sTeal.reset();
 	}
 
 	/*

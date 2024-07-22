@@ -10,7 +10,7 @@ struct MaterialData
 	DirectX::XMFLOAT4 diffuse;
 	DirectX::XMFLOAT4 specular;
 	float             shininess = 1.f;
-	float             padding = 0.f;
+	float             padding[3] = {}; // The struct needs to be 16bytes aligned. Yaaaay....
 };
 
 class Material
