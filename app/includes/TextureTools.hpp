@@ -5,31 +5,37 @@
 #include <string>
 #include <optional>
 
-struct STexture {
-	inline STexture() noexcept : width{ 0u }, height{ 0u } {};
+struct STexture
+{
+	STexture() : data{ nullptr }, width{0u}, height{0u} {};
+
+	std::unique_ptr<std::uint8_t> data;
+	std::uint32_t                 width;
+	std::uint32_t                 height;
 
 	STexture(const STexture&) = delete;
 	STexture& operator=(const STexture&) = delete;
 
-	inline STexture(STexture&& tex) noexcept
-		: data{ std::move(tex.data) }, width{ tex.width }, height{ tex.height } {}
+	STexture(STexture&& tex) noexcept
+		: data{ std::move(tex.data) }, width{ tex.width }, height{ tex.height }
+	{}
 
-	inline STexture& operator=(STexture&& tex) noexcept {
-		data = std::move(tex.data);
-		width = tex.width;
+	STexture& operator=(STexture&& tex) noexcept
+	{
+		data   = std::move(tex.data);
+		width  = tex.width;
 		height = tex.height;
-	}
 
-	std::unique_ptr<std::uint8_t> data;
-	std::uint32_t width;
-	std::uint32_t height;
+		return *this;
+	}
 };
 
-namespace TextureTool {
+namespace TextureTool
+{
 	[[nodiscard]]
 	std::optional<STexture> LoadTextureFromFile(const std::string& fileName) noexcept;
 
-	void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept;
-	void AddDefaultTexture() noexcept;
+	//void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept;
+	//void AddDefaultTexture() noexcept;
 };
 #endif

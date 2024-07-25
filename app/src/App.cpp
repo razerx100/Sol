@@ -55,7 +55,7 @@ App::App()
 		auto greenMat = std::make_shared<MaterialBase>();
 		greenMat->SetData(green);
 
-		const std::uint32_t materialIndex = Sol::renderer->AddMaterial(std::move(greenMat));
+		const size_t materialIndex = Sol::renderer->AddMaterial(std::move(greenMat));
 	}
 
 	{
@@ -70,13 +70,26 @@ App::App()
 		auto orangeMat = std::make_shared<MaterialBase>();
 		orangeMat->SetData(orange);
 
-		const std::uint32_t materialIndex = Sol::renderer->AddMaterial(std::move(orangeMat));
+		const size_t materialIndex = Sol::renderer->AddMaterial(std::move(orangeMat));
 
-		cube->SetMaterialIndex(materialIndex);
+		cube->SetMaterialIndex(static_cast<std::uint32_t>(materialIndex));
 	}
 
 	sCube = cube;
-	// Now to write some test shaders.
+
+	{
+		auto testTexure = TextureTool::LoadTextureFromFile("resources/textures/segs.jpg");
+
+		if (testTexure)
+		{
+			STexture& texture = testTexure.value();
+
+			const size_t textureIndex = Sol::renderer->AddTexture(
+				std::move(texture.data), texture.width, texture.height
+			);
+		}
+	}
+
 	/*
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
 	TextureTool::AddTextureToAtlas("resources/textures/doge1.jpg", "doge");
@@ -302,7 +315,7 @@ void App::PhysicsUpdate()
 		auto tealMat = std::make_shared<MaterialBase>();
 		tealMat->SetData(teal);
 
-		const std::uint32_t materialIndex = Sol::renderer->AddMaterial(tealMat);
+		const size_t materialIndex = Sol::renderer->AddMaterial(tealMat);
 
 		sTeal = std::move(tealMat);
 	}
