@@ -64,10 +64,6 @@ public:
 	[[nodiscard]]
 	virtual DirectX::XMFLOAT3 GetModelOffset() const noexcept = 0;
 	[[nodiscard]]
-	virtual bool IsLightSource() const noexcept = 0;
-	[[nodiscard]]
-	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
-	[[nodiscard]]
 	virtual std::uint32_t GetMaterialIndex() const noexcept = 0;
 
 	[[nodiscard]]

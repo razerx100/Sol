@@ -9,10 +9,11 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
-static std::shared_ptr<ModelBase> sCube{};
-static std::shared_ptr<ModelBase> sCube2{};
+static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube{};
+static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube2{};
 static std::shared_ptr<MaterialBase> sTeal{};
-static std::uint32_t cubeIndexCount = 0u;
+static std::uint32_t cubeIndexCount   = 0u;
+static std::uint32_t sphereIndexCount = 0u;
 
 App::App()
 {
@@ -34,9 +35,9 @@ App::App()
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 
-	cube->SetMeshIndex(meshIndex);
-
 	const std::uint32_t modelIndex  = Sol::renderer->AddModel(cube, L"TestFragmentShader");
+
+	Sol::renderer->SetMeshIndex(modelIndex, meshIndex);
 
 	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(camera);
 
@@ -335,6 +336,31 @@ void App::PhysicsUpdate()
 	if (keyboard.IsKeyPressed(SKeyCodes::R))
 	{
 		sTeal.reset();
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::O))
+	{
+		auto sphereMesh  = std::make_unique<MeshBaseVSWrapper<SphereMesh>>(64u, 64u);
+
+		sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
+
+		const std::uint32_t sphereIndex = Sol::renderer->AddMeshBundle(std::move(sphereMesh));
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::P))
+	{
+		if (sCube)
+		{
+			std::uint32_t index = 1u;
+
+			Sol::renderer->SetMeshIndex(0u, index);
+			sCube->SetMeshDetailsVS(
+				MeshDetailsVS{
+					.indexCount  = sphereIndexCount,
+					.indexOffset = 0u
+				}
+			);
+		}
 	}
 
 	/*

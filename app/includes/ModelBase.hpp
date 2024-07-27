@@ -108,14 +108,11 @@ class ModelBase
 {
 public:
 	ModelBase()
-		: m_meshIndex{ 0u }, m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u },
-		m_lightSource{ false },
+		: m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u },
 		m_transform{}, m_diffuseUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
 	{}
 	virtual ~ModelBase() = default;
 
-	void SetAsLightSource() noexcept { m_lightSource = true; }
-	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
 	void SetMaterialIndex(std::uint32_t index) noexcept { m_materialIndex = index; }
 
 	virtual void PhysicsUpdate() noexcept {}
@@ -125,10 +122,6 @@ public:
 	DirectX::XMMATRIX GetModelMatrix() const noexcept { return m_transform.GetModelMatrix(); }
 	[[nodiscard]]
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept { return m_transform.GetModelOffset(); }
-	[[nodiscard]]
-	bool IsLightSource() const noexcept { return m_lightSource; }
-	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept { return m_meshIndex; }
 	[[nodiscard]]
 	std::uint32_t GetMaterialIndex() const noexcept { return m_materialIndex; }
 
@@ -171,11 +164,9 @@ public:
 	UVInfo GetSpecularUVInfo() const noexcept { return m_specularUVInfo; }
 
 private:
-	std::uint32_t  m_meshIndex;
 	std::uint32_t  m_materialIndex;
 	std::uint32_t  m_diffuseIndex;
 	std::uint32_t  m_specularIndex;
-	bool           m_lightSource;
 	ModelTransform m_transform;
 	UVInfo         m_diffuseUVInfo;
 	UVInfo         m_specularUVInfo;
@@ -258,16 +249,6 @@ public:
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
 	{
 		return Derived::GetModelOffset();
-	}
-	[[nodiscard]]
-	bool IsLightSource() const noexcept final
-	{
-		return Derived::IsLightSource();
-	}
-	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept final
-	{
-		return Derived::GetMeshIndex();
 	}
 	[[nodiscard]]
 	std::uint32_t GetMaterialIndex() const noexcept final
