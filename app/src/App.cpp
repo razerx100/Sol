@@ -14,6 +14,7 @@ static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube2{};
 static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t cubeIndexCount   = 0u;
 static std::uint32_t sphereIndexCount = 0u;
+static bool isSphereAdded             = false;
 
 App::App()
 {
@@ -340,16 +341,21 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::O))
 	{
-		auto sphereMesh  = std::make_unique<MeshBaseVSWrapper<SphereMesh>>(64u, 64u);
+		if (!isSphereAdded)
+		{
+			auto sphereMesh = std::make_unique<MeshBaseVSWrapper<SphereMesh>>(64u, 64u);
 
-		sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
+			sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
 
-		const std::uint32_t sphereIndex = Sol::renderer->AddMeshBundle(std::move(sphereMesh));
+			const std::uint32_t sphereIndex = Sol::renderer->AddMeshBundle(std::move(sphereMesh));
+
+			isSphereAdded = true;
+		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::P))
 	{
-		if (sCube)
+		if (sCube && isSphereAdded)
 		{
 			std::uint32_t index = 1u;
 
