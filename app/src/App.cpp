@@ -15,11 +15,12 @@ static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t cubeIndexCount   = 0u;
 static std::uint32_t sphereIndexCount = 0u;
 static bool isSphereAdded             = false;
+static size_t secondTextureIndex      = std::numeric_limits<size_t>::max();
 
 App::App()
 {
 	auto cube     = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.3f);
-	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::SingleColour);
+	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::IndependentFaceTexture);
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
 	camera->SetProjectionMatrix(1920u, 1080u);
@@ -61,6 +62,25 @@ App::App()
 	}
 
 	{
+		// White
+		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
+		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::White);
+		const MaterialData white{
+			.ambient = colourBuffer,
+			.diffuse = colourBuffer,
+			.specular = { 1.f, 1.f, 1.f, 1.f }
+		};
+
+		auto whiteMat = std::make_shared<MaterialBase>();
+		whiteMat->SetData(white);
+
+		const size_t materialIndex = Sol::renderer->AddMaterial(std::move(whiteMat));
+
+		cube->SetMaterialIndex(static_cast<std::uint32_t>(materialIndex));
+	}
+
+	{
+		// Orange
 		DirectX::XMFLOAT4 colourBuffer{};
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Orange);
 		const MaterialData orange{
@@ -73,8 +93,6 @@ App::App()
 		orangeMat->SetData(orange);
 
 		const size_t materialIndex = Sol::renderer->AddMaterial(std::move(orangeMat));
-
-		cube->SetMaterialIndex(static_cast<std::uint32_t>(materialIndex));
 	}
 
 	sCube = cube;
@@ -89,6 +107,8 @@ App::App()
 			const size_t textureIndex = Sol::renderer->AddTexture(
 				std::move(texture.data), texture.width, texture.height
 			);
+
+			sCube->SetDiffuseIndex(textureIndex);
 		}
 	}
 
@@ -326,9 +346,9 @@ void App::PhysicsUpdate()
 	{
 		if (sCube2)
 		{
-			std::uint32_t index = 1u;
+			std::uint32_t index = 2u;
 			if (sTeal)
-				index = 2u;
+				index = 3u;
 
 			sCube2->SetMaterialIndex(index);
 		}
@@ -366,6 +386,33 @@ void App::PhysicsUpdate()
 					.indexOffset = 0u
 				}
 			);
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::Two))
+	{
+		if (secondTextureIndex == std::numeric_limits<size_t>::max())
+		{
+			auto testTexure = TextureTool::LoadTextureFromFile("resources/textures/anya.jpg");
+
+			if (testTexure)
+			{
+				STexture& texture = testTexure.value();
+
+				const size_t textureIndex = Sol::renderer->AddTexture(
+					std::move(texture.data), texture.width, texture.height
+				);
+
+				secondTextureIndex = textureIndex;
+			}
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::Three))
+	{
+		if (secondTextureIndex != std::numeric_limits<size_t>::max())
+		{
+			sCube->SetDiffuseIndex(secondTextureIndex);
 		}
 	}
 
