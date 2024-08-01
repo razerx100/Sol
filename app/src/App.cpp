@@ -107,8 +107,9 @@ App::App()
 			const size_t textureIndex = Sol::renderer->AddTexture(
 				std::move(texture.data), texture.width, texture.height
 			);
+			const std::uint32_t bindIndex = Sol::renderer->BindTexture(textureIndex);
 
-			sCube->SetDiffuseIndex(textureIndex);
+			sCube->SetDiffuseIndex(bindIndex);
 		}
 	}
 
@@ -403,7 +404,7 @@ void App::PhysicsUpdate()
 					std::move(texture.data), texture.width, texture.height
 				);
 
-				secondTextureIndex = textureIndex;
+				secondTextureIndex = Sol::renderer->BindTexture(textureIndex);
 			}
 		}
 	}
