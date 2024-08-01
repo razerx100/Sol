@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.21)
 
 file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 if(ADD_TEST_SOL)
     add_library(SolApp STATIC ${SRC})
 else()
@@ -136,6 +138,7 @@ target_link_libraries(SolApp PRIVATE
 add_dependencies(SolApp GLSL HLSL)
 
 if (MSVC)
+#[=[
     set(ICON_PATH /resources/icon/Sol.ico)
 
     file(
@@ -175,6 +178,7 @@ if (MSVC)
 
     add_dependencies(SolApp Icon)
 
+]=]#
     if(NOT ADD_TEST_SOL)
         set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT SolApp)
     endif()
