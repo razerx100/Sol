@@ -416,6 +416,11 @@ void App::PhysicsUpdate()
 		}
 	}
 
+	if (keyboard.IsKeyPressed(SKeyCodes::Four))
+	{
+		Sol::renderer->UnbindTexture(0u);
+	}
+
 	/*
 	constexpr float cameraMoveSpeed = 0.001f;
 
