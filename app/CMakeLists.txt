@@ -95,6 +95,7 @@ FetchContent_MakeAvailable(Luna)
 
 message(STATUS "Fetched Luna")
 
+#[[
 message(STATUS "Fetching Europa from the branch ${BRANCH}....")
 
 FetchContent_Declare(
@@ -106,6 +107,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Europa)
 
 message(STATUS "Fetched Europa")
+]]#
 
 message(STATUS "Fetching DirectXMath....")
 
@@ -135,7 +137,7 @@ target_link_libraries(SolApp PRIVATE
     razer::venus Pluto razer::gaiaX razer::terra Luna razer::DxMath razer::stb
 )
 
-add_dependencies(SolApp GLSL HLSL)
+# add_dependencies(SolApp GLSL HLSL)
 
 if (MSVC)
 #[=[
