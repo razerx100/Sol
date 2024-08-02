@@ -83,7 +83,7 @@ int Engine::Run()
 
 	while (true)
 	{
-		AMods::frameTime->StartTimer();
+		AMods::frameTime->GetTimer().SetTimer();
 
 		if (auto ecode = Sol::window->Update(); ecode)
 		{
