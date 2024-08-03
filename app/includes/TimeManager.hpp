@@ -64,7 +64,7 @@ class FrameTime
 {
 public:
 	FrameTime()
-		: m_timer{}, m_deltaTime{ 0.f }, m_oneSecond{ 0.f }, m_graphicsUpdateDelta{ 0.2f },
+		: m_timer{}, m_deltaTime{ 0.f }, m_oneSecond{ 0.f }, m_graphicsUpdateDelta{ 0.02f },
 		m_frameCount{ 0u }
 	{}
 
