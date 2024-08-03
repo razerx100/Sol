@@ -7,7 +7,7 @@
 
 struct STexture
 {
-	STexture() : data{ nullptr }, width{0u}, height{0u} {};
+	STexture() : data{ nullptr }, width{ 0u }, height{ 0u } {}
 
 	std::unique_ptr<std::uint8_t> data;
 	std::uint32_t                 width;

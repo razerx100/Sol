@@ -8,6 +8,7 @@
 #include <CameraManagerSol.hpp>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
+#include <TextureAtlas.hpp>
 
 static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube{};
 static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube2{};
@@ -98,17 +99,31 @@ App::App()
 	sCube = cube;
 
 	{
-		auto testTexure = TextureTool::LoadTextureFromFile("resources/textures/segs.jpg");
+		auto testTexture  = TextureTool::LoadTextureFromFile("resources/textures/NTHead.jpg");
+		auto testTexture2 = TextureTool::LoadTextureFromFile("resources/textures/Panda.png");
+		auto testTexture3 = TextureTool::LoadTextureFromFile("resources/textures/unicorn.jpeg");
 
-		if (testTexure)
+		if (testTexture && testTexture2 && testTexture3)
 		{
-			STexture& texture = testTexure.value();
+			STexture& texture  = testTexture.value();
+			STexture& texture2 = testTexture2.value();
+			STexture& texture3 = testTexture3.value();
+
+			TextureAtlas atlas{};
+			atlas.AddTexture("Narrative", std::move(texture));
+			atlas.AddTexture("Panda", std::move(texture2));
+			atlas.AddTexture("Unicorn", std::move(texture3));
+
+			atlas.CreateAtlas();
+
+			STexture atlastTex = atlas.MoveTexture();
 
 			const size_t textureIndex = Sol::renderer->AddTexture(
-				std::move(texture.data), texture.width, texture.height
+				std::move(atlastTex.data), atlastTex.width, atlastTex.height
 			);
 			const std::uint32_t bindIndex = Sol::renderer->BindTexture(textureIndex);
 
+			sCube->SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
 			sCube->SetDiffuseIndex(bindIndex);
 		}
 	}
@@ -394,7 +409,7 @@ void App::PhysicsUpdate()
 	{
 		if (secondTextureIndex == std::numeric_limits<size_t>::max())
 		{
-			auto testTexure = TextureTool::LoadTextureFromFile("resources/textures/anya.jpg");
+			auto testTexure = TextureTool::LoadTextureFromFile("resources/textures/Panda.png");
 
 			if (testTexure)
 			{
