@@ -1,6 +1,5 @@
 #include <TextureTools.hpp>
 #include <array>
-#include <SolThrowMacros.hpp>
 #include <cassert>
 
 #define STB_IMAGE_IMPLEMENTATION

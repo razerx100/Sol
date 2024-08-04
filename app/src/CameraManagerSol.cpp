@@ -1,6 +1,5 @@
 #include <cmath>
 #include <algorithm>
-#include <SolThrowMacros.hpp>
 
 #include <CameraManagerSol.hpp>
 #include <Sol.hpp>
@@ -85,44 +84,4 @@ void PerspectiveCameraEuler::LookAround(float offsetX, float offsetY) noexcept
 		m_worldForwardDirection,
 		XMMatrixRotationRollPitchYaw(m_pitch, m_yaw, 0.f)
 	);
-}
-
-// Camera Manager
-CameraManagerSol::CameraManagerSol() noexcept
-	: m_currentCameraIndex(0u) {}
-
-size_t CameraManagerSol::AddEulerCameraAndGetIndex(
-	std::unique_ptr<PerspectiveCameraEuler> camera
-) noexcept {
-	m_cameras.emplace_back(std::move(camera));
-
-	return std::size(m_cameras) - 1u;
-}
-
-void CameraManagerSol::SetCurrentCameraIndex(size_t cameraIndex) {
-	assert(std::size(m_cameras) > cameraIndex && "There is no camera at the specified index.");
-
-	m_currentCameraIndex = cameraIndex;
-}
-
-void CameraManagerSol::SetCamera() const noexcept {
-	if (!std::empty(m_cameras))
-		Sol::sharedData->SetViewMatrix(
-			m_cameras.at(m_currentCameraIndex)->GetViewMatrix()
-		);
-}
-
-PerspectiveCameraEuler* CameraManagerSol::GetEulerCamera(size_t cameraIndex) const {
-	assert(std::size(m_cameras) > cameraIndex && "There is no camera at the specified index.");
-
-	PerspectiveCameraEuler* camera =
-		dynamic_cast<PerspectiveCameraEuler*>(m_cameras.at(cameraIndex).get());
-
-	assert(camera && "Camera at the specified index isn't a Euler Camera.");
-
-	return camera;
-}
-
-PerspectiveCameraEuler* CameraManagerSol::GetFirstEulerCamera() const {
-	return GetEulerCamera(0u);
 }

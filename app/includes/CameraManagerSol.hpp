@@ -141,24 +141,4 @@ private:
 	float             m_pitch;
 	float             m_yaw;
 };
-
-class CameraManagerSol {
-public:
-	CameraManagerSol() noexcept;
-
-	[[nodiscard]]
-	size_t AddEulerCameraAndGetIndex(std::unique_ptr<PerspectiveCameraEuler> camera) noexcept;
-
-	void SetCurrentCameraIndex(size_t cameraIndex);
-	void SetCamera() const noexcept;
-
-	[[nodiscard]]
-	PerspectiveCameraEuler* GetEulerCamera(size_t cameraIndex) const;
-	[[nodiscard]]
-	PerspectiveCameraEuler* GetFirstEulerCamera() const;
-
-private:
-	std::vector<std::unique_ptr<_BaseCamera>> m_cameras;
-	size_t m_currentCameraIndex;
-};
 #endif

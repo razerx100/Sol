@@ -1,13 +1,11 @@
 #include <ConfigManager.hpp>
 
 ConfigManager::ConfigManager(Args& arguments)
-	: m_parser{ std::move(arguments.fileName.value()) } {}
+	: m_parser{ std::move(arguments.fileName.value()) }
+{}
 
-ConfigManager::~ConfigManager() noexcept {
-	m_parser.WriteBack();
-}
-
-void ConfigManager::ReadConfigFile() noexcept {
+void ConfigManager::ReadConfigFile() noexcept
+{
 	m_parser.Parse();
 
 	const std::string modules = "Modules";
@@ -41,6 +39,22 @@ void ConfigManager::ReadConfigFile() noexcept {
 		if (valueMap != std::end(DEFAULTMODULES))
 			m_parser.AddOrUpdateValue(systems, valueMap->first, valueMap->second);
 	}
+}
+
+RenderEngineType ConfigManager::GetRenderEngineType() const noexcept
+{
+	RenderEngineType renderEngineType = RenderEngineType::IndividualDraw;
+
+	const std::string engineType = GetRenderEngine();
+
+	if (engineType == "IndirectDraw")
+		renderEngineType = RenderEngineType::IndirectDraw;
+	else if (engineType == "IndividualDraw")
+		renderEngineType = RenderEngineType::IndividualDraw;
+	else if (engineType == "MeshDraw")
+		renderEngineType = RenderEngineType::MeshDraw;
+
+	return renderEngineType;
 }
 
 void ConfigManager::SetRenderer(const std::string& name) noexcept {

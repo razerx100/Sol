@@ -1,6 +1,5 @@
 #include <Engine.hpp>
 
-#include <SolHelperFunctions.hpp>
 #include <Sol.hpp>
 #include <DirectXMath.h>
 
@@ -11,7 +10,6 @@ Engine::Engine() : m_appName("Sol")
 	Sol::configManager->ReadConfigFile();
 
 	Sol::InitThreadPool(m_objectManager, 8u);
-	Sol::InitSharedData(m_objectManager);
 
 	Sol::InitIoMan(m_objectManager, Sol::configManager->GeIOName());
 	Sol::ioMan->AddGamepadSupport(1u);
@@ -28,7 +26,7 @@ Engine::Engine() : m_appName("Sol")
 		m_appName + " Renderer : " + Sol::configManager->GetRendererName()
 	);
 
-	const RenderEngineType engineType = GetRenderEngineTypeFromConfig();
+	const RenderEngineType engineType = Sol::configManager->GetRenderEngineType();
 
 	Sol::InitRenderer(
 		m_objectManager,

@@ -8,11 +8,9 @@
 
 namespace AMods {
 	std::unique_ptr<FrameTime> frameTime;
-	std::unique_ptr<CameraManagerSol> cameraManager;
 
 	void InitAppModules(ObjectManager& om) {
 		om.CreateObject(frameTime, 0u);
-		om.CreateObject(cameraManager, 0u);
 	}
 }
 
@@ -27,7 +25,6 @@ namespace Sol {
 	std::unique_ptr<TextureAtlas> textureAtlas;
 	std::shared_ptr<ThreadPool> threadPool;
 	std::unique_ptr<ConfigManager> configManager;
-	std::shared_ptr<ISharedDataContainer> sharedData;
 
 	// Functions
 	void InitIoMan(ObjectManager& om, std::string moduleName) {
@@ -80,9 +77,5 @@ namespace Sol {
 
 	void InitThreadPool(ObjectManager& om, size_t threadCount) {
 		om.CreateObject(threadPool, std::make_shared<ThreadPool>(threadCount), 3u);
-	}
-
-	void InitSharedData(ObjectManager& om) {
-		om.CreateObject<SharedDataContainer>(sharedData, 3u);
 	}
 }

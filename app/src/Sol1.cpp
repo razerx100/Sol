@@ -9,7 +9,7 @@
 Sol::Sol(const Args& arguments)
 	: m_appName{ arguments.appName.value() }, m_objManager{},
 	m_configManager{ nullptr }, m_threadPool{ nullptr },
-	m_sharedData{ nullptr }, m_app { nullptr }
+	m_app { nullptr }
 {
 	const std::uint32_t width = arguments.width.value();
 	const std::uint32_t height = arguments.height.value();
@@ -20,7 +20,6 @@ Sol::Sol(const Args& arguments)
 	/*m_objManager.CreateObject(
 		m_threadPool, std::make_unique<ThreadPool>(arguments.threadCount.value()), 3u
 	);*/
-	m_objManager.CreateObject<SharedDataContainer>(m_sharedData, 3u);
 
 	InitIO(Config().GeIOName());
 	IO().AddGamepadSupport(arguments.gamepadCount.value());

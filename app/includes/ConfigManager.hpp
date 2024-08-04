@@ -3,23 +3,27 @@
 #include <IniParser.hpp>
 #include <array>
 #include <optional>
+#include <RendererTypes.hpp>
 
-class ConfigManager {
-	const std::unordered_map<std::string, std::string> DEFAULTMODULES = {
-		{"Renderer", "Terra"},
+class ConfigManager
+{
+	const std::unordered_map<std::string, std::string> DEFAULTMODULES =
+	{
+		{"Renderer",     "Terra"},
 		{"RenderEngine", "IndividualDraw"},
-		{"Window", "Luna"},
-		{"IO", "Pluto"}
+		{"Window",       "Luna"},
+		{"IO",           "Pluto"}
 	};
 
 public:
-	struct Args {
+	struct Args
+	{
 		std::optional<std::wstring> fileName;
 	};
 
 public:
 	ConfigManager(Args& arguments);
-	~ConfigManager() noexcept;
+	~ConfigManager() noexcept { m_parser.WriteBack(); }
 
 	void ReadConfigFile() noexcept;
 
@@ -30,6 +34,8 @@ public:
 
 	[[nodiscard]]
 	std::string GetRendererName() const noexcept;
+	[[nodiscard]]
+	RenderEngineType GetRenderEngineType() const noexcept;
 	[[nodiscard]]
 	std::string GeIOName() const noexcept;
 	[[nodiscard]]

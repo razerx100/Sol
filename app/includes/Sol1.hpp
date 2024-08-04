@@ -12,9 +12,7 @@
 
 #include <Renderer.hpp>
 #include <ModelProcessor.hpp>
-#include <ModelContainer.hpp>
 #include <TextureAtlas.hpp>
-#include <SharedDataContainer.hpp>
 #include <CameraManagerSol.hpp>
 
 
@@ -34,7 +32,6 @@ public:
 
 	inline ConfigManager& Config() noexcept { return *m_configManager; }
 	inline ThreadPool& GetThreadPool() noexcept { return *m_threadPool; }
-	inline ISharedDataContainer& SharedData() noexcept { return *m_sharedData; }
 	inline InputManager& IO() noexcept { return *m_io; }
 	inline App& Application() noexcept { return *m_app; }
 
@@ -47,7 +44,6 @@ private:
 
 	std::unique_ptr<ConfigManager> m_configManager;
 	std::unique_ptr<ThreadPool> m_threadPool;
-	std::shared_ptr<ISharedDataContainer> m_sharedData;
 	std::shared_ptr<InputManager> m_io;
 	std::unique_ptr<App> m_app;
 };

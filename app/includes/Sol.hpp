@@ -11,14 +11,11 @@
 
 #include <Renderer.hpp>
 #include <ModelProcessor.hpp>
-#include <ModelContainer.hpp>
 #include <TextureAtlas.hpp>
-#include <SharedDataContainer.hpp>
 #include <CameraManagerSol.hpp>
 
 namespace AMods {
 	extern std::unique_ptr<FrameTime> frameTime;
-	extern std::unique_ptr<CameraManagerSol> cameraManager;
 
 	void InitAppModules(ObjectManager& om);
 }
@@ -34,7 +31,6 @@ namespace Sol {
 	extern std::unique_ptr<TextureAtlas> textureAtlas;
 	extern std::shared_ptr<ThreadPool> threadPool;
 	extern std::unique_ptr<ConfigManager> configManager;
-	extern std::shared_ptr<ISharedDataContainer> sharedData;
 
 	// Initialization functions
 	void InitIoMan(ObjectManager& om, std::string moduleName = "Pluto");
@@ -54,6 +50,5 @@ namespace Sol {
 		std::uint8_t bufferCount = 2u
 	);
 	void InitThreadPool(ObjectManager& om, size_t threadCount);
-	void InitSharedData(ObjectManager& om);
 }
 #endif
