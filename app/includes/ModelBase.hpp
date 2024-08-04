@@ -90,20 +90,6 @@ private:
 	DirectX::XMFLOAT3 m_modelOffset;
 };
 
-/*class ModelBoundingBox {
-public:
-	ModelBoundingBox() noexcept;
-
-	void Calculate(const std::vector<Vertex>& vertices) noexcept;
-	void SetBoundingCube(const ModelBounds& bounds) noexcept;
-
-	[[nodiscard]]
-	ModelBounds GetBoundingCube() const noexcept;
-
-private:
-	ModelBounds m_boundingCube;
-};*/
-
 class ModelBase
 {
 public:

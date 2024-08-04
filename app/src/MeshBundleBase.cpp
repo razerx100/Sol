@@ -1,7 +1,5 @@
 #include <MeshBundleBase.hpp>
-
-MeshBundleBase::MeshBundleBase(const std::string& name) : m_name{ name }, m_vertices{}, m_indices{}
-{}
+#include <MeshBounds.hpp>
 
 void MeshBundleBase::CalculateNormalsIndependentFaces() noexcept
 {
@@ -48,4 +46,10 @@ void MeshBundleBase::SetUVToVertices(
 ) noexcept {
 	for (size_t index = 0u; index < std::size(uvs); ++index)
 		vertices[index].uv = uvs[index];
+}
+
+void MeshBundleBase::SetBounds(BoundType type) noexcept
+{
+	if (type == BoundType::Rectangle)
+		m_bounds = MeshBoundGenerator::GetRectangle(m_vertices);
 }

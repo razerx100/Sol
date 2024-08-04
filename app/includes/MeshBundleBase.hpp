@@ -3,19 +3,23 @@
 #include <string>
 #include <MeshBundle.hpp>
 
+enum class BoundType
+{
+	Rectangle
+};
+
 class MeshBundleBase
 {
 public:
-	MeshBundleBase(const std::string& name);
+	MeshBundleBase(const std::string& name) : m_name{ name }, m_vertices{}, m_indices{}, m_bounds{}
+	{}
 
 	virtual ~MeshBundleBase() = default;
 
+	void SetBounds(BoundType type) noexcept;
+
 	[[nodiscard]]
-	const std::vector<MeshBound>& GetBounds() const noexcept
-	{
-		static std::vector<MeshBound> meshBounds{};
-		return meshBounds;
-	}
+	const std::vector<MeshBound>& GetBounds() const noexcept { return m_bounds; }
 	[[nodiscard]]
 	const std::vector<Vertex>& GetVertices() const noexcept { return m_vertices; }
 	[[nodiscard]]
@@ -43,30 +47,33 @@ protected:
 	std::string                m_name;
 	std::vector<Vertex>        m_vertices;
 	std::vector<std::uint32_t> m_indices;
+	std::vector<MeshBound>     m_bounds;
 
 public:
 	MeshBundleBase(const MeshBundleBase& other) noexcept
 		: m_name{ other.m_name }, m_vertices{ other.m_vertices },
-		m_indices{ other.m_indices }
+		m_indices{ other.m_indices }, m_bounds{ other.m_bounds }
 	{}
 	MeshBundleBase& operator=(const MeshBundleBase& other) noexcept
 	{
 		m_name     = other.m_name;
 		m_vertices = other.m_vertices;
 		m_indices  = other.m_indices;
+		m_bounds   = other.m_bounds;
 
 		return *this;
 	}
 
 	MeshBundleBase(MeshBundleBase&& other) noexcept
 		: m_name{ std::move(other.m_name) }, m_vertices{ std::move(other.m_vertices) },
-		m_indices{ std::move(other.m_indices) }
+		m_indices{ std::move(other.m_indices) }, m_bounds{ std::move(other.m_bounds) }
 	{}
 	MeshBundleBase& operator=(MeshBundleBase&& other) noexcept
 	{
 		m_name     = std::move(other.m_name);
 		m_vertices = std::move(other.m_vertices);
 		m_indices  = std::move(other.m_indices);
+		m_bounds   = std::move(other.m_bounds);
 
 		return *this;
 	}
