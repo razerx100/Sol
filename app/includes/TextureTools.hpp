@@ -34,8 +34,5 @@ namespace TextureTool
 {
 	[[nodiscard]]
 	std::optional<STexture> LoadTextureFromFile(const std::string& fileName) noexcept;
-
-	//void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept;
-	//void AddDefaultTexture() noexcept;
 };
 #endif

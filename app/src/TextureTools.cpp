@@ -57,33 +57,4 @@ namespace TextureTool
 		else
 			return {};
 	}
-
-	/*
-	void AddTextureToAtlas(const std::string& fileName, const std::string& texName) noexcept {
-		auto tex = LoadTextureFromFile(fileName);
-
-		if (tex) {
-			STexture& refTex = tex.value();
-
-			Sol::textureAtlas->AddTexture(
-				texName, std::move(refTex.data), refTex.width, refTex.height
-			);
-		}
-	}
-
-	void AddDefaultTexture() noexcept {
-		std::array<std::uint8_t, 4u> defaultColour{ 255u, 255u, 255u, 255u };
-		const size_t texSize = sizeof(std::uint8_t) * std::size(defaultColour);
-
-		auto defaultTex = std::unique_ptr<std::uint8_t>(new std::uint8_t[texSize]);
-
-		std::memcpy(defaultTex.get(), &defaultColour, texSize);
-
-		[[maybe_unused]] size_t defaultIndex = Sol::renderer->AddTexture(
-			std::move(defaultTex), 1u, 1u
-		);
-
-		assert(defaultIndex == 0u && "Default texture index isn't zero.");
-	}
-	*/
 };
