@@ -2,8 +2,6 @@
 #include <ranges>
 #include <algorithm>
 
-#include <Sol.hpp>
-
 /*
 // Model Processor
 ModelProcessor::ModelProcessor(const Args& arguments) noexcept
@@ -232,3 +230,98 @@ bool ModelProcessor::IsInMap(
 	return vertexIndicesM.find(vIndex) != std::end(vertexIndicesM);
 }
 */
+
+bool IsInMap(
+	const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesM,
+	std::uint32_t vIndex
+) noexcept {
+	return vertexIndicesM.find(vIndex) != std::end(vertexIndicesM);
+}
+
+std::uint32_t GetPrimIndex(
+	std::uint32_t vIndex, std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesM,
+	std::vector<std::uint32_t>& vertexIndices
+) noexcept {
+	if (!IsInMap(vertexIndicesM, vIndex))
+	{
+		vertexIndicesM.emplace(
+			vIndex, static_cast<std::uint32_t>(std::size(vertexIndices))
+		);
+		vertexIndices.emplace_back(vIndex);
+	}
+
+	return vertexIndicesM[vIndex];
+}
+
+std::uint32_t GetExtraVertexCount(
+	const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesM,
+	std::uint32_t primIndex1, std::uint32_t primIndex2, std::uint32_t primIndex3
+) noexcept {
+	std::uint32_t extraVertexCount = 0u;
+
+	if (!IsInMap(vertexIndicesM, primIndex1))
+		++extraVertexCount;
+
+	if (!IsInMap(vertexIndicesM, primIndex2))
+		++extraVertexCount;
+
+	if (!IsInMap(vertexIndicesM, primIndex3))
+		++extraVertexCount;
+
+	return extraVertexCount;
+}
+
+constexpr size_t meshletVertexLimit = 64u;
+
+Meshlet MakeMeshlet(
+	const std::vector<std::uint32_t>& indices, size_t startingIndex, size_t indexCount,
+	std::uint32_t vertexOffset,
+	std::vector<std::uint32_t>& vertexIndices, std::vector<PrimitiveIndices>& primIndices
+) noexcept {
+	const size_t meshletIndexLimit = startingIndex + indexCount;
+
+	std::unordered_map<std::uint32_t, std::uint32_t> vertexIndicesM{};
+
+	size_t indexOffset = startingIndex;
+	constexpr size_t triangleVertexCount = 3u;
+
+	for (; indexOffset < std::size(indices) && indexOffset < meshletIndexLimit;
+		indexOffset += triangleVertexCount)
+	{
+		const std::uint32_t vIndex1 = indices[indexOffset] + vertexOffset;
+		const std::uint32_t vIndex2 = indices[indexOffset + 1u] + vertexOffset;
+		const std::uint32_t vIndex3 = indices[indexOffset + 2u] + vertexOffset;
+
+		const auto vertexCount = static_cast<std::uint32_t>(std::size(vertexIndices));
+
+		const std::uint32_t couldBeVertexCount = vertexCount + GetExtraVertexCount(
+			vertexIndicesM, vIndex1, vIndex2, vIndex3
+		);
+
+		if (couldBeVertexCount > meshletVertexLimit)
+			break;
+
+		// The prim indices are basically the local vertex indices. So, they shouldn't be bigger
+		// than uint10.
+		// And the vertexIndices are basically the unique vertex inidices. With the duplicates
+		// removed. The prim indices index into the vertexIndices and then that index is used to
+		// find the actual vertex.
+		const std::uint32_t primIndexOne   = GetPrimIndex(vIndex1, vertexIndicesM, vertexIndices);
+		const std::uint32_t primIndexTwo   = GetPrimIndex(vIndex2, vertexIndicesM, vertexIndices);
+		const std::uint32_t primIndexThree = GetPrimIndex(vIndex3, vertexIndicesM, vertexIndices);
+
+		primIndices.emplace_back(
+			PrimitiveIndices{ .unpacked = { primIndexOne, primIndexTwo, primIndexThree } }
+		);
+	}
+
+	Meshlet meshlet
+	{
+		.vertexCount     = static_cast<std::uint32_t>(std::size(vertexIndices)),
+		.vertexOffset    = static_cast<std::uint32_t>(vertexOffset),
+		.primitiveCount  = static_cast<std::uint32_t>(std::size(primIndices)),
+		.primitiveOffset = static_cast<std::uint32_t>(startingIndex)
+	};
+
+	return meshlet;
+}

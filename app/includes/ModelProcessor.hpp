@@ -127,4 +127,22 @@ private:
 	std::uint32_t m_meshletPrimitiveLimit;
 };
 */
+
+union PrimitiveIndices
+{
+	struct
+	{
+		std::uint32_t firstIndex  : 10u;
+		std::uint32_t secondIndex : 10u;
+		std::uint32_t thirdIndex  : 10u;
+	} unpacked;
+	std::uint32_t packed;
+};
+
+Meshlet MakeMeshlet(
+	const std::vector<std::uint32_t>& indices, size_t startingIndex, size_t indexCount,
+	std::uint32_t vertexOffset,
+	std::vector<std::uint32_t>& vertexIndices,
+	std::vector<PrimitiveIndices>& primIndices
+) noexcept;
 #endif

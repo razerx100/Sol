@@ -9,6 +9,7 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 #include <TextureAtlas.hpp>
+#include <ModelProcessor.hpp>
 
 static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube{};
 static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube2{};
@@ -126,6 +127,17 @@ App::App()
 			sCube->SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
 			sCube->SetDiffuseIndex(bindIndex);
 		}
+	}
+
+	{
+		auto quadMesh = std::make_unique<MeshBaseVSWrapper<QuadMesh>>();
+
+		const std::vector<std::uint32_t>& indices = quadMesh->GetIndices();
+
+		std::vector<std::uint32_t> vertexIndices{};
+		std::vector<PrimitiveIndices> primIndices{};
+
+		Meshlet meshlet = MakeMeshlet(indices, 0u, std::size(indices), 0u, vertexIndices, primIndices);
 	}
 
 	/*
@@ -324,6 +336,8 @@ void App::PhysicsUpdate()
 			);
 
 			const std::uint32_t modelIndex = Sol::renderer->AddModel(cube, L"TestFragmentShader");
+
+			cube->SetMaterialIndex(1u);
 
 			sCube2 = std::move(cube);
 		}
