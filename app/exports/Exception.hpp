@@ -3,14 +3,17 @@
 #include <exception>
 #include <string>
 
-class Exception : public std::exception {
+class Exception : public std::exception
+{
 public:
-	Exception(const std::string& errorType, const std::string& errorMessage) noexcept;
+	Exception(const std::string& errorType, const std::string& errorMessage)
+		: m_exceptionType{ std::move(errorType) }, m_errorMessage{ std::move(errorMessage) }
+	{}
 
 	[[nodiscard]]
-	const char* GetType() const noexcept;
+	const char* GetType() const noexcept { return m_exceptionType.c_str(); }
 	[[nodiscard]]
-	const char* what() const noexcept override;
+	const char* what() const noexcept override { return m_exceptionType.c_str(); }
 
 private:
 	std::string m_exceptionType;
