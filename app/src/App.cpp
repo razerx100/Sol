@@ -18,6 +18,7 @@ static std::uint32_t cubeIndexCount   = 0u;
 static std::uint32_t sphereIndexCount = 0u;
 static bool isSphereAdded             = false;
 static size_t secondTextureIndex      = std::numeric_limits<size_t>::max();
+static RenderEngineType engineType    = RenderEngineType::IndividualDraw;
 
 App::App()
 {
@@ -37,9 +38,14 @@ App::App()
 		}
 	);
 
+	engineType = Sol::configManager->GetRenderEngineType();
+
+	if (engineType == RenderEngineType::IndirectDraw)
+		cubeMesh->SetBounds(BoundType::Rectangle);
+
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 
-	const std::uint32_t modelIndex  = Sol::renderer->AddModel(cube, L"TestFragmentShader");
+	const std::uint32_t modelIndex  = Sol::renderer->AddModel(cube, L"TestFragmentShader", meshIndex);
 
 	Sol::renderer->SetMeshIndex(modelIndex, meshIndex);
 
@@ -333,7 +339,7 @@ void App::PhysicsUpdate()
 				}
 			);
 
-			const std::uint32_t modelIndex = Sol::renderer->AddModel(cube, L"TestFragmentShader");
+			const std::uint32_t modelIndex = Sol::renderer->AddModel(cube, L"TestFragmentShader", 0u);
 
 			cube->SetMaterialIndex(1u);
 
@@ -394,6 +400,9 @@ void App::PhysicsUpdate()
 			auto sphereMesh = std::make_unique<MeshBaseVSWrapper<SphereMesh>>(64u, 64u);
 
 			sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
+
+			if (engineType == RenderEngineType::IndirectDraw)
+				sphereMesh->SetBounds(BoundType::Rectangle);
 
 			const std::uint32_t sphereIndex = Sol::renderer->AddMeshBundle(std::move(sphereMesh));
 
