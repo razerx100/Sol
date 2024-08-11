@@ -29,7 +29,7 @@ public:
 	{}
 
 	void AddTexture(
-		const std::string& name, std::unique_ptr<std::uint8_t> texture,
+		const std::string& name, std::shared_ptr<void> texture,
 		std::uint32_t width, std::uint32_t height
 	) noexcept;
 	void AddTexture(const std::string& name, STexture&& texture) noexcept
@@ -76,12 +76,12 @@ private:
 	}
 
 private:
-	STexture                                   m_texture;
-	std::unordered_map<std::string, UVInfo>    m_uvInfoMap;
-	std::vector<TextureInfo>                   m_unprocessedData;
-	std::vector<std::unique_ptr<std::uint8_t>> m_unprocessedTextures;
-	std::uint32_t                              m_textureBorder;
-	bool                                       m_16bitsComponent;
+	STexture                                m_texture;
+	std::unordered_map<std::string, UVInfo> m_uvInfoMap;
+	std::vector<TextureInfo>                m_unprocessedData;
+	std::vector<std::shared_ptr<void>>      m_unprocessedTextures;
+	std::uint32_t                           m_textureBorder;
+	bool                                    m_16bitsComponent;
 
 public:
 	TextureAtlas(const TextureAtlas& other) noexcept = delete;

@@ -47,7 +47,7 @@ namespace TextureTool
 		if (data != nullptr)
 		{
 			STexture texture{};
-			texture.data   = std::unique_ptr<std::uint8_t>(reinterpret_cast<std::uint8_t*>(data));
+			texture.data   = std::shared_ptr<stbi_uc>(data, [](stbi_uc* data) { stbi_image_free(data); });
 			texture.width  = static_cast<std::uint32_t>(width);
 			texture.height = static_cast<std::uint32_t>(height);
 

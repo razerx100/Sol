@@ -6,8 +6,7 @@
 #include <TextureAtlas.hpp>
 
 void TextureAtlas::AddTexture(
-	const std::string& name, std::unique_ptr<std::uint8_t> texture,
-	std::uint32_t width, std::uint32_t height
+	const std::string& name, std::shared_ptr<void> texture, std::uint32_t width, std::uint32_t height
 ) noexcept {
 	m_unprocessedData.emplace_back(TextureInfo{ name, width, height });
 	m_unprocessedTextures.emplace_back(std::move(texture));
@@ -111,7 +110,7 @@ void TextureAtlas::CreateAtlas() noexcept
 	const size_t rowPitch      = static_cast<size_t>(m_texture.width) * bytesPerPixel;
 	const size_t textureSize   = rowPitch * m_texture.height;
 
-	m_texture.data = std::unique_ptr<std::uint8_t>(new std::uint8_t[textureSize]);
+	m_texture.data = std::make_shared<std::uint8_t[]>(textureSize);
 
 	// Copy data
 	for (size_t index = 0u; index < std::size(processedData); ++index)
@@ -119,29 +118,30 @@ void TextureAtlas::CreateAtlas() noexcept
 		const UVU32& currentCoord = processedData[index];
 		const size_t textureIndex = textureIndices[m_unprocessedData[index].name];
 
-		std::unique_ptr<std::uint8_t>& unprocessedTexture = m_unprocessedTextures[textureIndex];
+		std::shared_ptr<void>& unprocessedTexture = m_unprocessedTextures[textureIndex];
 
 		const size_t currentWidth    = static_cast<size_t>(currentCoord.uEnd) - currentCoord.uStart;
 		const size_t currentRowPitch = currentWidth * bytesPerPixel;
 
 		const size_t currentRowPitchStart = static_cast<size_t>(currentCoord.uStart) * bytesPerPixel;
 
+		auto localTextureStart       = reinterpret_cast<std::uint8_t*>(m_texture.data.get());
+		auto unprocessedTextureStart = reinterpret_cast<std::uint8_t*>(unprocessedTexture.get());
+
 		for (size_t columnIndex =
 			static_cast<size_t>(currentCoord.vStart), currentColumnIndex = 0u;
 			columnIndex < currentCoord.vEnd; ++columnIndex, ++currentColumnIndex)
 		{
+			void* dst       = localTextureStart + currentRowPitchStart + (rowPitch * columnIndex);
+			void const* src = unprocessedTextureStart + (currentRowPitch * currentColumnIndex);
 
-			memcpy(
-				m_texture.data.get() + currentRowPitchStart + (rowPitch * columnIndex),
-				unprocessedTexture.get() + (currentRowPitch * currentColumnIndex),
-				currentRowPitch
-			);
+			memcpy(dst, src, currentRowPitch);
 		}
 	}
 
 	// Clean up
-	m_unprocessedTextures = std::vector<std::unique_ptr<std::uint8_t>>();
-	m_unprocessedData     = std::vector<TextureInfo>();
+	m_unprocessedTextures = std::vector<std::shared_ptr<void>>{};
+	m_unprocessedData     = std::vector<TextureInfo>{};
 }
 
 UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept

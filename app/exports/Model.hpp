@@ -22,10 +22,10 @@ struct MeshDetailsVS
 
 struct UVInfo
 {
-	float uOffset;
-	float vOffset;
-	float uScale;
-	float vScale;
+	float uOffset = 0.f;
+	float vOffset = 0.f;
+	float uScale  = 1.f;
+	float vScale  = 1.f;
 };
 
 struct MeshDetailsMS

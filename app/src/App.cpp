@@ -119,9 +119,7 @@ App::App()
 
 			STexture atlastTex = atlas.MoveTexture();
 
-			const size_t textureIndex = Sol::renderer->AddTexture(
-				std::move(atlastTex.data), atlastTex.width, atlastTex.height
-			);
+			const size_t textureIndex     = Sol::renderer->AddTexture(std::move(atlastTex));
 			const std::uint32_t bindIndex = Sol::renderer->BindTexture(textureIndex);
 
 			sCube->SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
@@ -427,11 +425,8 @@ void App::PhysicsUpdate()
 
 			if (testTexure)
 			{
-				STexture& texture = testTexure.value();
-
-				const size_t textureIndex = Sol::renderer->AddTexture(
-					std::move(texture.data), texture.width, texture.height
-				);
+				STexture& texture         = testTexure.value();
+				const size_t textureIndex = Sol::renderer->AddTexture(std::move(texture));
 
 				secondTextureIndex = Sol::renderer->BindTexture(textureIndex);
 			}
@@ -442,6 +437,7 @@ void App::PhysicsUpdate()
 	{
 		if (secondTextureIndex != std::numeric_limits<size_t>::max())
 		{
+			sCube->SetDiffuseUVInfo(UVInfo{});
 			sCube->SetDiffuseIndex(secondTextureIndex);
 		}
 	}
