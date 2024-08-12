@@ -91,4 +91,30 @@ public:
 	// at once. So, I will need to keep them all in a single container, ie move from here.
 	virtual MeshDetailsMS& GetMeshDetailsMS() noexcept = 0;
 };
+
+class ModelBundleVS
+{
+public:
+	virtual ~ModelBundleVS() = default;
+
+	[[nodiscard]]
+	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::shared_ptr<ModelVS>& GetModel(size_t index) noexcept = 0;
+	[[nodiscard]]
+	virtual const std::vector<std::shared_ptr<ModelVS>>& GetModels() const noexcept = 0;
+};
+
+class ModelBundleMS
+{
+public:
+	virtual ~ModelBundleMS() = default;
+
+	[[nodiscard]]
+	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::shared_ptr<ModelMS>& GetModel(size_t index) noexcept = 0;
+	[[nodiscard]]
+	virtual const std::vector<std::shared_ptr<ModelMS>>& GetModels() const noexcept = 0;
+};
 #endif

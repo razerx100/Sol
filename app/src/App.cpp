@@ -11,8 +11,8 @@
 #include <TextureAtlas.hpp>
 #include <ModelProcessor.hpp>
 
-static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube{};
-static std::shared_ptr<ModelBaseVSWrapper<ScalableModel>> sCube2{};
+static std::shared_ptr<ModelBundleBaseVS> sCubeBundle{};
+static std::shared_ptr<ModelBundleBaseVS> sCubeBundle2{};
 static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t cubeIndexCount   = 0u;
 static std::uint32_t sphereIndexCount = 0u;
@@ -45,9 +45,13 @@ App::App()
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 
-	const std::uint32_t modelIndex  = Sol::renderer->AddModel(cube, L"TestFragmentShader", meshIndex);
+	auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
 
-	Sol::renderer->SetMeshIndex(modelIndex, meshIndex);
+	cubeBundle->AddModel(cube);
+
+	const std::uint32_t modelIndex  = Sol::renderer->AddModelBundle(cubeBundle, L"TestFragmentShader");
+
+	sCubeBundle = cubeBundle;
 
 	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(camera);
 
@@ -103,8 +107,6 @@ App::App()
 		const size_t materialIndex = Sol::renderer->AddMaterial(std::move(orangeMat));
 	}
 
-	sCube = cube;
-
 	{
 		auto testTexture  = TextureTool::LoadTextureFromFile("resources/textures/NTHead.jpg");
 		auto testTexture2 = TextureTool::LoadTextureFromFile("resources/textures/Panda.png");
@@ -128,8 +130,8 @@ App::App()
 			const size_t textureIndex     = Sol::renderer->AddTexture(std::move(atlastTex));
 			const std::uint32_t bindIndex = Sol::renderer->BindTexture(textureIndex);
 
-			sCube->SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
-			sCube->SetDiffuseIndex(bindIndex);
+			cube->SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
+			cube->SetDiffuseIndex(bindIndex);
 		}
 	}
 
@@ -318,17 +320,19 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
 	{
-		sCube->GetTransform().MoveTowardsX(0.01f);
+		auto cube = GetVSModel<ScalableModel>(sCubeBundle->GetModel(0u));
+		cube->GetTransform().MoveTowardsX(0.01f);
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::A))
 	{
-		sCube->GetTransform().MoveTowardsX(-0.01f);
+		auto cube = GetVSModel<ScalableModel>(sCubeBundle->GetModel(0u));
+		cube->GetTransform().MoveTowardsX(-0.01f);
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::C))
 	{
-		if (!sCube2)
+		if (!sCubeBundle2)
 		{
 			auto cube = std::make_shared<ModelBaseVSWrapper<ScalableModel>>(0.4f);
 
@@ -339,22 +343,27 @@ void App::PhysicsUpdate()
 				}
 			);
 
-			const std::uint32_t modelIndex = Sol::renderer->AddModel(cube, L"TestFragmentShader", 0u);
-
 			cube->SetMaterialIndex(1u);
 
-			sCube2 = std::move(cube);
+			auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
+			cubeBundle->AddModel(std::move(cube));
+
+			const std::uint32_t modelIndex = Sol::renderer->AddModelBundle(
+				cubeBundle, L"TestFragmentShader"
+			);
+
+			sCubeBundle2 = std::move(cubeBundle);
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::Z))
 	{
-		if (sCube2)
+		if (sCubeBundle2)
 		{
 			const std::uint32_t modelIndex = 1u;
 			Sol::renderer->RemoveModelBundle(modelIndex);
 
-			sCube2.reset();
+			sCubeBundle2.reset();
 		}
 	}
 
@@ -378,13 +387,15 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::Q))
 	{
-		if (sCube2)
+		if (sCubeBundle2)
 		{
 			std::uint32_t index = 2u;
 			if (sTeal)
 				index = 3u;
 
-			sCube2->SetMaterialIndex(index);
+			auto cube = GetVSModel<ScalableModel>(sCubeBundle2->GetModel(0u));
+
+			cube->SetMaterialIndex(index);
 		}
 	}
 
@@ -412,12 +423,13 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::P))
 	{
-		if (sCube && isSphereAdded)
+		if (sCubeBundle && isSphereAdded)
 		{
 			std::uint32_t index = 1u;
 
-			Sol::renderer->SetMeshIndex(0u, index);
-			sCube->SetMeshDetailsVS(
+			auto cube = GetVSModel<ScalableModel>(sCubeBundle->GetModel(0u));
+
+			cube->SetMeshDetailsVS(
 				MeshDetailsVS{
 					.indexCount  = sphereIndexCount,
 					.indexOffset = 0u
@@ -446,8 +458,9 @@ void App::PhysicsUpdate()
 	{
 		if (secondTextureIndex != std::numeric_limits<size_t>::max())
 		{
-			sCube->SetDiffuseUVInfo(UVInfo{});
-			sCube->SetDiffuseIndex(secondTextureIndex);
+			auto cube = GetVSModel<ScalableModel>(sCubeBundle->GetModel(0u));
+			cube->SetDiffuseUVInfo(UVInfo{});
+			cube->SetDiffuseIndex(secondTextureIndex);
 		}
 	}
 

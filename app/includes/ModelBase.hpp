@@ -218,6 +218,58 @@ public:
 	}
 };
 
+class ModelBundleBaseVS : public ModelBundleVS
+{
+public:
+	ModelBundleBaseVS() : ModelBundleVS{}, m_models{}, m_meshIndex{} {}
+
+	void AddModel(std::shared_ptr<ModelVS> model) noexcept
+	{
+		m_models.emplace_back(std::move(model));
+	}
+	void SetMeshIndex(std::uint32_t index) noexcept
+	{
+		m_meshIndex = index;
+	}
+
+	[[nodiscard]]
+	std::shared_ptr<ModelVS>& GetModel(size_t index) noexcept { return m_models[index]; }
+	[[nodiscard]]
+	const std::vector<std::shared_ptr<ModelVS>>& GetModels() const noexcept override { return m_models; }
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept { return m_meshIndex; }
+
+private:
+	std::vector<std::shared_ptr<ModelVS>> m_models;
+	std::uint32_t                         m_meshIndex;
+};
+
+class ModelBundleBaseMS : public ModelBundleMS
+{
+public:
+	ModelBundleBaseMS() : ModelBundleMS{}, m_models{}, m_meshIndex{} {}
+
+	void AddModel(std::shared_ptr<ModelMS> model) noexcept
+	{
+		m_models.emplace_back(std::move(model));
+	}
+	void SetMeshIndex(std::uint32_t index) noexcept
+	{
+		m_meshIndex = index;
+	}
+
+	[[nodiscard]]
+	std::shared_ptr<ModelMS>& GetModel(size_t index) noexcept { return m_models[index]; }
+	[[nodiscard]]
+	const std::vector<std::shared_ptr<ModelMS>>& GetModels() const noexcept override { return m_models; }
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept override { return m_meshIndex; }
+
+private:
+	std::vector<std::shared_ptr<ModelMS>> m_models;
+	std::uint32_t                         m_meshIndex;
+};
+
 // Mostly I should have different child classes of ModelBase with different functionalities.
 // And then in the end before adding them to the renderer, add a wrapper based on the pipeline type.
 template<class Derived>
@@ -314,4 +366,15 @@ public:
 		return Derived::GetSpecularUVInfo();
 	}
 };
+
+template<typename T>
+decltype(auto) GetVSModel(std::shared_ptr<ModelVS>& model)
+{
+	return dynamic_cast<ModelBaseVSWrapper<T>*>(model.get());
+}
+template<typename T>
+decltype(auto) GetVSModel(std::shared_ptr<ModelMS>& model)
+{
+	return dynamic_cast<ModelBaseMSWrapper<T>*>(model.get());
+}
 #endif
