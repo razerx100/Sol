@@ -97,12 +97,12 @@ public:
 		: m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u },
 		m_transform{}, m_diffuseUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
 	{}
-	virtual ~ModelBase() = default;
+	ModelBase(float scale) : ModelBase{}
+	{
+		GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(scale, scale, scale));
+	}
 
 	void SetMaterialIndex(std::uint32_t index) noexcept { m_materialIndex = index; }
-
-	virtual void PhysicsUpdate() noexcept {}
-	virtual void SetResources() {}
 
 	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept { return m_transform.GetModelMatrix(); }
@@ -161,8 +161,8 @@ private:
 class ModelBaseVS : public ModelVS
 {
 public:
-	ModelBaseVS()
-		: ModelVS{}, m_meshDetails{ .indexCount = 0u, .indexOffset = 0u }
+	ModelBaseVS(const ModelBase& modelBase)
+		: ModelVS{}, m_meshDetails{ .indexCount = 0u, .indexOffset = 0u }, m_modelBase{ modelBase }
 	{}
 
 	void SetIndexOffset(std::uint32_t offset) noexcept { m_meshDetails.indexOffset = offset; }
@@ -172,20 +172,83 @@ public:
 	[[nodiscard]]
 	const MeshDetailsVS& GetMeshDetailsVS() const noexcept override { return m_meshDetails; }
 
+	[[nodiscard]]
+	DirectX::XMMATRIX GetModelMatrix() const noexcept final
+	{
+		return m_modelBase.GetModelMatrix();
+	}
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
+	{
+		return m_modelBase.GetModelOffset();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMaterialIndex() const noexcept final
+	{
+		return m_modelBase.GetMaterialIndex();
+	}
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept override
+	{
+		return m_modelBase.GetDiffuseIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept override
+	{
+		return m_modelBase.GetDiffuseUVInfo();
+	}
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept override
+	{
+		return m_modelBase.GetSpecularIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept override
+	{
+		return m_modelBase.GetSpecularUVInfo();
+	}
+
+	ModelBase& GetBase() noexcept { return m_modelBase; }
+
 private:
 	MeshDetailsVS m_meshDetails;
+	ModelBase     m_modelBase;
+
+public:
+	ModelBaseVS(const ModelBaseVS& other) noexcept
+		: m_meshDetails{ other.m_meshDetails }, m_modelBase{ other.m_modelBase }
+	{}
+	ModelBaseVS& operator=(const ModelBaseVS& other) noexcept
+	{
+		m_meshDetails = other.m_meshDetails;
+		m_modelBase   = other.m_modelBase;
+
+		return *this;
+	}
+
+	ModelBaseVS(ModelBaseVS&& other) noexcept
+		: m_meshDetails{ std::move(other.m_meshDetails) }, m_modelBase{ std::move(other.m_modelBase) }
+	{}
+	ModelBaseVS& operator=(ModelBaseVS&& other) noexcept
+	{
+		m_meshDetails = std::move(other.m_meshDetails);
+		m_modelBase   = std::move(other.m_modelBase);
+
+		return *this;
+	}
 };
 
 class ModelBaseMS : public ModelMS
 {
 public:
-	ModelBaseMS() : ModelMS{}, m_meshDetails{} {}
+	ModelBaseMS(const ModelBase& modelBase)
+		: ModelMS{}, m_meshDetails{}, m_modelBase{ modelBase }
+	{}
 
 	void SetMeshlets(std::vector<Meshlet>&& meshlets) noexcept
 	{
 		m_meshDetails.meshlets = std::move(meshlets);
 	}
-	// I should add a function which should take a Mesh and grab its meshlets.
 
 	[[nodiscard]]
 	MeshDetailsMS& GetMeshDetailsMS() noexcept override
@@ -193,188 +256,243 @@ public:
 		return m_meshDetails;
 	}
 
+	[[nodiscard]]
+	DirectX::XMMATRIX GetModelMatrix() const noexcept final
+	{
+		return m_modelBase.GetModelMatrix();
+	}
+	[[nodiscard]]
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
+	{
+		return m_modelBase.GetModelOffset();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMaterialIndex() const noexcept final
+	{
+		return m_modelBase.GetMaterialIndex();
+	}
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept override
+	{
+		return m_modelBase.GetDiffuseIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept override
+	{
+		return m_modelBase.GetDiffuseUVInfo();
+	}
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept override
+	{
+		return m_modelBase.GetSpecularIndex();
+	}
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept override
+	{
+		return m_modelBase.GetSpecularUVInfo();
+	}
+
 private:
 	MeshDetailsMS m_meshDetails;
+	ModelBase     m_modelBase;
 
 public:
 	ModelBaseMS(const ModelBaseMS& other) noexcept
-		: m_meshDetails{ other.m_meshDetails }
+		: m_meshDetails{ other.m_meshDetails }, m_modelBase{ other.m_modelBase }
 	{}
 	ModelBaseMS& operator=(const ModelBaseMS& other) noexcept
 	{
 		m_meshDetails = other.m_meshDetails;
+		m_modelBase   = other.m_modelBase;
 
 		return *this;
 	}
 
 	ModelBaseMS(ModelBaseMS&& other) noexcept
-		: m_meshDetails{ std::move(other.m_meshDetails) }
+		: m_meshDetails{ std::move(other.m_meshDetails) }, m_modelBase{ std::move(other.m_modelBase) }
 	{}
 	ModelBaseMS& operator=(ModelBaseMS&& other) noexcept
 	{
 		m_meshDetails = std::move(other.m_meshDetails);
+		m_modelBase   = std::move(other.m_modelBase);
 
 		return *this;
 	}
 };
 
-class ModelBundleBaseVS : public ModelBundleVS
+class ModelBundleImplVS : public ModelBundleVS
+{
+	friend class ModelBundleBaseVS;
+
+	ModelBundleImplVS() : ModelBundleVS{}, m_models{}, m_meshIndex{} {}
+public:
+
+	[[nodiscard]]
+	const std::vector<std::shared_ptr<ModelVS>>& GetModels() const noexcept override { return m_models; }
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept override { return *m_meshIndex; }
+
+private:
+	std::vector<std::shared_ptr<ModelVS>> m_models;
+	std::shared_ptr<std::uint32_t>        m_meshIndex;
+
+public:
+	ModelBundleImplVS(const ModelBundleImplVS& other) noexcept
+		: m_models{ other.m_models }, m_meshIndex{ other.m_meshIndex }
+	{}
+	ModelBundleImplVS& operator=(const ModelBundleImplVS& other) noexcept
+	{
+		m_models    = other.m_models;
+		m_meshIndex = other.m_meshIndex;
+
+		return *this;
+	}
+	ModelBundleImplVS(ModelBundleImplVS&& other) noexcept
+		: m_models{ std::move(other.m_models) }, m_meshIndex{ std::move(other.m_meshIndex) }
+	{}
+	ModelBundleImplVS& operator=(ModelBundleImplVS&& other) noexcept
+	{
+		m_models    = std::move(other.m_models);
+		m_meshIndex = std::move(other.m_meshIndex);
+
+		return *this;
+	}
+};
+
+class ModelBundleImplMS : public ModelBundleMS
+{
+	friend class ModelBundleBaseMS;
+
+	ModelBundleImplMS() : ModelBundleMS{}, m_models{}, m_meshIndex{} {}
+public:
+
+	[[nodiscard]]
+	const std::vector<std::shared_ptr<ModelMS>>& GetModels() const noexcept override { return m_models; }
+	[[nodiscard]]
+	std::uint32_t GetMeshIndex() const noexcept override { return *m_meshIndex; }
+
+private:
+	std::vector<std::shared_ptr<ModelMS>> m_models;
+	std::shared_ptr<std::uint32_t>        m_meshIndex;
+
+public:
+	ModelBundleImplMS(const ModelBundleImplMS& other) noexcept
+		: m_models{ other.m_models }, m_meshIndex{ other.m_meshIndex }
+	{}
+	ModelBundleImplMS& operator=(const ModelBundleImplMS& other) noexcept
+	{
+		m_models    = other.m_models;
+		m_meshIndex = other.m_meshIndex;
+
+		return *this;
+	}
+	ModelBundleImplMS(ModelBundleImplMS&& other) noexcept
+		: m_models{ std::move(other.m_models) }, m_meshIndex{ std::move(other.m_meshIndex) }
+	{}
+	ModelBundleImplMS& operator=(ModelBundleImplMS&& other) noexcept
+	{
+		m_models    = std::move(other.m_models);
+		m_meshIndex = std::move(other.m_meshIndex);
+
+		return *this;
+	}
+};
+
+class ModelBundleBaseVS
 {
 public:
-	ModelBundleBaseVS() : ModelBundleVS{}, m_models{}, m_meshIndex{} {}
+	ModelBundleBaseVS() : m_models{}, m_meshIndex{ std::make_shared<std::uint32_t>(0u) } {}
 
-	void AddModel(std::shared_ptr<ModelVS> model) noexcept
+	void AddModel(std::shared_ptr<ModelBaseVS> model) noexcept
 	{
 		m_models.emplace_back(std::move(model));
 	}
 	void SetMeshIndex(std::uint32_t index) noexcept
 	{
-		m_meshIndex = index;
+		*m_meshIndex = index;
 	}
 
 	[[nodiscard]]
-	std::shared_ptr<ModelVS>& GetModel(size_t index) noexcept { return m_models[index]; }
+	std::shared_ptr<ModelBaseVS>& GetModel(size_t index) noexcept { return m_models[index]; }
 	[[nodiscard]]
-	const std::vector<std::shared_ptr<ModelVS>>& GetModels() const noexcept override { return m_models; }
+	std::uint32_t GetMeshIndex() const noexcept { return *m_meshIndex; }
+
 	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept { return m_meshIndex; }
+	std::shared_ptr<ModelBundleImplVS> GetBundleImpl() const noexcept;
 
 private:
-	std::vector<std::shared_ptr<ModelVS>> m_models;
-	std::uint32_t                         m_meshIndex;
+	std::vector<std::shared_ptr<ModelBaseVS>> m_models;
+	std::shared_ptr<std::uint32_t>            m_meshIndex;
+
+public:
+	ModelBundleBaseVS(const ModelBundleBaseVS& other) noexcept
+		: m_models{ other.m_models }, m_meshIndex{ other.m_meshIndex }
+	{}
+	ModelBundleBaseVS& operator=(const ModelBundleBaseVS& other) noexcept
+	{
+		m_models    = other.m_models;
+		m_meshIndex = other.m_meshIndex;
+
+		return *this;
+	}
+	ModelBundleBaseVS(ModelBundleBaseVS&& other) noexcept
+		: m_models{ std::move(other.m_models) }, m_meshIndex{ std::move(other.m_meshIndex) }
+	{}
+	ModelBundleBaseVS& operator=(ModelBundleBaseVS&& other) noexcept
+	{
+		m_models    = std::move(other.m_models);
+		m_meshIndex = std::move(other.m_meshIndex);
+
+		return *this;
+	}
 };
 
 class ModelBundleBaseMS : public ModelBundleMS
 {
 public:
-	ModelBundleBaseMS() : ModelBundleMS{}, m_models{}, m_meshIndex{} {}
+	ModelBundleBaseMS() : ModelBundleMS{}, m_models{}, m_meshIndex{ std::make_shared<std::uint32_t>(0u) } {}
 
-	void AddModel(std::shared_ptr<ModelMS> model) noexcept
+	void AddModel(std::shared_ptr<ModelBaseMS> model) noexcept
 	{
 		m_models.emplace_back(std::move(model));
 	}
 	void SetMeshIndex(std::uint32_t index) noexcept
 	{
-		m_meshIndex = index;
+		*m_meshIndex = index;
 	}
 
 	[[nodiscard]]
-	std::shared_ptr<ModelMS>& GetModel(size_t index) noexcept { return m_models[index]; }
+	std::shared_ptr<ModelBaseMS>& GetModel(size_t index) noexcept { return m_models[index]; }
 	[[nodiscard]]
-	const std::vector<std::shared_ptr<ModelMS>>& GetModels() const noexcept override { return m_models; }
+	std::uint32_t GetMeshIndex() const noexcept override { return *m_meshIndex; }
+
 	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept override { return m_meshIndex; }
+	std::shared_ptr<ModelBundleImplMS> GetBundleImpl() const noexcept;
 
 private:
-	std::vector<std::shared_ptr<ModelMS>> m_models;
-	std::uint32_t                         m_meshIndex;
-};
+	std::vector<std::shared_ptr<ModelBaseMS>> m_models;
+	std::shared_ptr<std::uint32_t>            m_meshIndex;
 
-// Mostly I should have different child classes of ModelBase with different functionalities.
-// And then in the end before adding them to the renderer, add a wrapper based on the pipeline type.
-template<class Derived>
-class ModelBaseVSWrapper : public Derived, public ModelBaseVS
-{
 public:
-	using Derived::Derived;
+	ModelBundleBaseMS(const ModelBundleBaseMS& other) noexcept
+		: m_models{ other.m_models }, m_meshIndex{ other.m_meshIndex }
+	{}
+	ModelBundleBaseMS& operator=(const ModelBundleBaseMS& other) noexcept
+	{
+		m_models    = other.m_models;
+		m_meshIndex = other.m_meshIndex;
 
-	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept final
-	{
-		return Derived::GetModelMatrix();
+		return *this;
 	}
-	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
+	ModelBundleBaseMS(ModelBundleBaseMS&& other) noexcept
+		: m_models{ std::move(other.m_models) }, m_meshIndex{ std::move(other.m_meshIndex) }
+	{}
+	ModelBundleBaseMS& operator=(ModelBundleBaseMS&& other) noexcept
 	{
-		return Derived::GetModelOffset();
-	}
-	[[nodiscard]]
-	std::uint32_t GetMaterialIndex() const noexcept final
-	{
-		return Derived::GetMaterialIndex();
-	}
-	[[nodiscard]]
-	std::uint32_t GetDiffuseIndex() const noexcept override
-	{
-		return Derived::GetDiffuseIndex();
-	}
-	[[nodiscard]]
-	UVInfo GetDiffuseUVInfo() const noexcept override
-	{
-		return Derived::GetDiffuseUVInfo();
-	}
-	[[nodiscard]]
-	std::uint32_t GetSpecularIndex() const noexcept override
-	{
-		return Derived::GetSpecularIndex();
-	}
-	[[nodiscard]]
-	UVInfo GetSpecularUVInfo() const noexcept override
-	{
-		return Derived::GetSpecularUVInfo();
+		m_models    = std::move(other.m_models);
+		m_meshIndex = std::move(other.m_meshIndex);
+
+		return *this;
 	}
 };
-template<class Derived>
-class ModelBaseMSWrapper : public Derived, public ModelBaseMS
-{
-public:
-	using Derived::Derived;
-
-	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept final
-	{
-		return Derived::GetModelMatrix();
-	}
-	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept final
-	{
-		return Derived::GetModelOffset();
-	}
-	[[nodiscard]]
-	bool IsLightSource() const noexcept final
-	{
-		return Derived::IsLightSource();
-	}
-	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept final
-	{
-		return Derived::GetMeshIndex();
-	}
-	[[nodiscard]]
-	std::uint32_t GetMaterialIndex() const noexcept final
-	{
-		return Derived::GetMaterialIndex();
-	}
-	[[nodiscard]]
-	std::uint32_t GetDiffuseIndex() const noexcept override
-	{
-		return Derived::GetDiffuseIndex();
-	}
-	[[nodiscard]]
-	UVInfo GetDiffuseUVInfo() const noexcept override
-	{
-		return Derived::GetDiffuseUVInfo();
-	}
-	[[nodiscard]]
-	std::uint32_t GetSpecularIndex() const noexcept override
-	{
-		return Derived::GetSpecularIndex();
-	}
-	[[nodiscard]]
-	UVInfo GetSpecularUVInfo() const noexcept override
-	{
-		return Derived::GetSpecularUVInfo();
-	}
-};
-
-template<typename T>
-decltype(auto) GetVSModel(std::shared_ptr<ModelVS>& model)
-{
-	return dynamic_cast<ModelBaseVSWrapper<T>*>(model.get());
-}
-template<typename T>
-decltype(auto) GetVSModel(std::shared_ptr<ModelMS>& model)
-{
-	return dynamic_cast<ModelBaseMSWrapper<T>*>(model.get());
-}
 #endif

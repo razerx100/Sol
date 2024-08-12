@@ -31,15 +31,15 @@ void ModelWithVelocity::PhysicsUpdate() noexcept {
 	offset.y = m_modelVelocityDirection.y * m_modelVelocitySpeed;
 	offset.z = m_modelVelocityDirection.z * m_modelVelocitySpeed;
 
-	GetTransform().AddToModelOffset(offset);
+	//GetTransform().AddToModelOffset(offset);
 }
 
 void ModelWithVelocity::_physicsUpdate() noexcept {}
 
 // Scalable
-ScalableModel::ScalableModel(float scale) : ModelBase{}
+ScalableModel::ScalableModel(float scale)
 {
-	GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(scale, scale, scale));
+	//GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(scale, scale, scale));
 }
 
 // Orbit
@@ -51,7 +51,7 @@ void OrbitingModel::PhysicsUpdate() noexcept {
 	static constexpr float speedModifier = 0.05f;
 
 	const DirectX::XMFLOAT3 offset = GetAngularOffset();
-	GetTransform().SetModelOffset(offset);
+	//GetTransform().SetModelOffset(offset);
 
 	m_angle += speedModifier;
 	if (m_angle > DirectX::XM_2PI)
@@ -59,7 +59,7 @@ void OrbitingModel::PhysicsUpdate() noexcept {
 }
 
 void OrbitingModel::MeasureRadius() noexcept {
-	DirectX::XMFLOAT3 modelLocation = GetTransform().GetModelOffset();
+	DirectX::XMFLOAT3 modelLocation{};// = GetTransform().GetModelOffset();
 	m_radius = std::sqrt(
 		std::pow(modelLocation.x, 2.f) + std::pow(modelLocation.y, 2.f) +
 		std::pow(modelLocation.z, 2.f)

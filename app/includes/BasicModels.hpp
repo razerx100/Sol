@@ -2,7 +2,7 @@
 #define BASIC_MODELS_HPP_
 #include <ModelBase.hpp>
 
-class ModelWithVelocity : public ModelBase
+class ModelWithVelocity
 {
 public:
 	ModelWithVelocity() noexcept;
@@ -11,7 +11,7 @@ public:
 	void SetVelocitySpeed(float velocitySpeed) noexcept;
 	void SetAcceleration(float acceleration) noexcept;
 
-	void PhysicsUpdate() noexcept final;
+	void PhysicsUpdate() noexcept;
 
 protected:
 	virtual void _physicsUpdate() noexcept;
@@ -28,7 +28,7 @@ enum class TextureType
 	specular
 };
 
-class ScalableModel : public ModelBase
+class ScalableModel
 {
 public:
 	ScalableModel(float scale);
@@ -42,7 +42,7 @@ public:
 
 	void MeasureRadius() noexcept;
 
-	void PhysicsUpdate() noexcept final;
+	void PhysicsUpdate() noexcept;
 
 protected:
 	[[nodiscard]]
