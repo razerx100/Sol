@@ -14,15 +14,20 @@
 static std::shared_ptr<ModelBundleBaseVS> sCubeBundle{};
 static std::shared_ptr<ModelBundleBaseVS> sCubeBundle2{};
 static std::shared_ptr<MaterialBase> sTeal{};
+static std::uint32_t cubeBundleIndex1 = 0u;
+static std::uint32_t cubeBundleIndex2 = 0u;
+
 static std::uint32_t cubeIndexCount   = 0u;
 static std::uint32_t sphereIndexCount = 0u;
+static std::uint32_t whiteMatIndex    = 0u;
 static bool isSphereAdded             = false;
 static size_t secondTextureIndex      = std::numeric_limits<size_t>::max();
 static RenderEngineType engineType    = RenderEngineType::IndividualDraw;
+static TextureAtlas atlas{};
+static std::uint32_t atlasBindingIndex = 0u;
 
 App::App()
 {
-	auto cube     = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
 	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::IndependentFaceTexture);
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
@@ -31,29 +36,12 @@ App::App()
 
 	cubeIndexCount = static_cast<std::uint32_t>(std::size(cubeMesh->GetIndices()));
 
-	cube->SetMeshDetailsVS(
-		MeshDetailsVS{
-			.indexCount  = cubeIndexCount,
-			.indexOffset = 0u
-		}
-	);
-
 	engineType = Sol::configManager->GetRenderEngineType();
 
 	if (engineType == RenderEngineType::IndirectDraw)
 		cubeMesh->SetBounds(BoundType::Rectangle);
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
-
-	auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
-
-	cubeBundle->AddModel(cube);
-
-	const std::uint32_t modelIndex  = Sol::renderer->AddModelBundle(
-		cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-	);
-
-	sCubeBundle = cubeBundle;
 
 	const std::uint32_t cameraIndex = Sol::renderer->AddCamera(camera);
 
@@ -90,7 +78,7 @@ App::App()
 
 		const size_t materialIndex = Sol::renderer->AddMaterial(std::move(whiteMat));
 
-		cube->GetBase().SetMaterialIndex(static_cast<std::uint32_t>(materialIndex));
+		whiteMatIndex = static_cast<std::uint32_t>(materialIndex);
 	}
 
 	{
@@ -113,27 +101,32 @@ App::App()
 		auto testTexture  = TextureTool::LoadTextureFromFile("resources/textures/NTHead.jpg");
 		auto testTexture2 = TextureTool::LoadTextureFromFile("resources/textures/Panda.png");
 		auto testTexture3 = TextureTool::LoadTextureFromFile("resources/textures/unicorn.jpeg");
+		auto testTexture4 = TextureTool::LoadTextureFromFile("resources/textures/Katarin.png");
+		auto testTexture5 = TextureTool::LoadTextureFromFile("resources/textures/MonikaGun.png");
+		auto testTexture6 = TextureTool::LoadTextureFromFile("resources/textures/UltraMarine.jpg");
 
-		if (testTexture && testTexture2 && testTexture3)
+		if (testTexture && testTexture2 && testTexture3 && testTexture4 && testTexture5 && testTexture6)
 		{
 			STexture& texture  = testTexture.value();
 			STexture& texture2 = testTexture2.value();
 			STexture& texture3 = testTexture3.value();
+			STexture& texture4 = testTexture4.value();
+			STexture& texture5 = testTexture5.value();
+			STexture& texture6 = testTexture6.value();
 
-			TextureAtlas atlas{};
 			atlas.AddTexture("Narrative", std::move(texture));
 			atlas.AddTexture("Panda", std::move(texture2));
 			atlas.AddTexture("Unicorn", std::move(texture3));
+			atlas.AddTexture("Katarin", std::move(texture4));
+			atlas.AddTexture("Monika", std::move(texture5));
+			atlas.AddTexture("UltraMarine", std::move(texture6));
 
 			atlas.CreateAtlas();
 
 			STexture atlastTex = atlas.MoveTexture();
 
-			const size_t textureIndex     = Sol::renderer->AddTexture(std::move(atlastTex));
-			const std::uint32_t bindIndex = Sol::renderer->BindTexture(textureIndex);
-
-			cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
-			cube->GetBase().SetDiffuseIndex(bindIndex);
+			const size_t textureIndex = Sol::renderer->AddTexture(std::move(atlastTex));
+			atlasBindingIndex         = Sol::renderer->BindTexture(textureIndex);
 		}
 	}
 
@@ -147,6 +140,50 @@ App::App()
 
 		Meshlet meshlet = MakeMeshlet(indices, 0u, std::size(indices), 0u, vertexIndices, primIndices);
 	}
+
+	auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
+
+	{
+		auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+		cubeBundle->AddModel(cube);
+
+		cube->SetMeshDetailsVS(
+			MeshDetailsVS{
+				.indexCount  = cubeIndexCount,
+				.indexOffset = 0u
+			}
+		);
+
+		cube->GetBase().SetMaterialIndex(whiteMatIndex);
+		cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
+		cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+	}
+
+	{
+		auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+		cubeBundle->AddModel(cube);
+
+		cube->SetMeshDetailsVS(
+			MeshDetailsVS{
+				.indexCount  = cubeIndexCount,
+				.indexOffset = 0u
+			}
+		);
+
+		cube->GetBase().SetMaterialIndex(whiteMatIndex);
+		cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
+		cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+
+		cube->GetBase().GetTransform().MoveTowardsY(1.2f);
+	}
+
+	cubeBundleIndex1 = Sol::renderer->AddModelBundle(
+		cubeBundle->GetBundleImpl(), L"TestFragmentShader"
+	);
+
+	sCubeBundle = cubeBundle;
 
 	/*
 	TextureTool::AddTextureToAtlas("resources/textures/segs.jpg", "segs");
@@ -336,21 +373,43 @@ void App::PhysicsUpdate()
 	{
 		if (!sCubeBundle2)
 		{
-			auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.4f });
-
-			cube->SetMeshDetailsVS(
-				MeshDetailsVS{
-					.indexCount = cubeIndexCount,
-					.indexOffset = 0u
-				}
-			);
-
-			cube->GetBase().SetMaterialIndex(1u);
-
 			auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
-			cubeBundle->AddModel(std::move(cube));
+			{
+				auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
 
-			const std::uint32_t modelIndex = Sol::renderer->AddModelBundle(
+				cube->SetMeshDetailsVS(
+					MeshDetailsVS{
+						.indexCount  = cubeIndexCount,
+						.indexOffset = 0u
+					}
+				);
+
+				cube->GetBase().SetMaterialIndex(1u);
+
+				cubeBundle->AddModel(std::move(cube));
+			}
+			{
+				auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+				cube->SetMeshDetailsVS(
+					MeshDetailsVS{
+						.indexCount  = cubeIndexCount,
+						.indexOffset = 0u
+					}
+				);
+
+				cube->GetBase().SetMaterialIndex(1u);
+
+				cube->GetBase().SetMaterialIndex(whiteMatIndex);
+				cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
+				cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+
+				cube->GetBase().GetTransform().MoveTowardsX(-1.5f);
+
+				cubeBundle->AddModel(std::move(cube));
+			}
+
+			cubeBundleIndex2 = Sol::renderer->AddModelBundle(
 				cubeBundle->GetBundleImpl(), L"TestFragmentShader"
 			);
 
@@ -362,8 +421,7 @@ void App::PhysicsUpdate()
 	{
 		if (sCubeBundle2)
 		{
-			const std::uint32_t modelIndex = 1u;
-			Sol::renderer->RemoveModelBundle(modelIndex);
+			Sol::renderer->RemoveModelBundle(cubeBundleIndex2);
 
 			sCubeBundle2.reset();
 		}
