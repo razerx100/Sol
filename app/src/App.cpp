@@ -12,11 +12,15 @@
 #include <ModelProcessor.hpp>
 
 static std::shared_ptr<ModelBundleBaseVS> sCubeBundle{};
-static std::shared_ptr<ModelBundleBaseVS> sCubeBundle2{};
-static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t cubeBundleIndex1 = 0u;
+static std::shared_ptr<ModelBundleBaseVS> sCubeBundle2{};
 static std::uint32_t cubeBundleIndex2 = 0u;
+static std::shared_ptr<ModelBundleBaseVS> sCubeBundle3{};
+static std::uint32_t cubeBundleIndex3 = 0u;
+static std::shared_ptr<ModelBundleBaseVS> sCubeBundle4{};
+static std::uint32_t cubeBundleIndex4 = 0u;
 
+static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t cubeIndexCount   = 0u;
 static std::uint32_t sphereIndexCount = 0u;
 static std::uint32_t whiteMatIndex    = 0u;
@@ -104,8 +108,10 @@ App::App()
 		auto testTexture4 = TextureTool::LoadTextureFromFile("resources/textures/Katarin.png");
 		auto testTexture5 = TextureTool::LoadTextureFromFile("resources/textures/MonikaGun.png");
 		auto testTexture6 = TextureTool::LoadTextureFromFile("resources/textures/UltraMarine.jpg");
+		auto testTexture7 = TextureTool::LoadTextureFromFile("resources/textures/Goku.jpg");
 
-		if (testTexture && testTexture2 && testTexture3 && testTexture4 && testTexture5 && testTexture6)
+		if (testTexture && testTexture2 && testTexture3 &&
+			testTexture4 && testTexture5 && testTexture6 && testTexture7)
 		{
 			STexture& texture  = testTexture.value();
 			STexture& texture2 = testTexture2.value();
@@ -113,6 +119,7 @@ App::App()
 			STexture& texture4 = testTexture4.value();
 			STexture& texture5 = testTexture5.value();
 			STexture& texture6 = testTexture6.value();
+			STexture& texture7 = testTexture7.value();
 
 			atlas.AddTexture("Narrative", std::move(texture));
 			atlas.AddTexture("Panda", std::move(texture2));
@@ -120,6 +127,7 @@ App::App()
 			atlas.AddTexture("Katarin", std::move(texture4));
 			atlas.AddTexture("Monika", std::move(texture5));
 			atlas.AddTexture("UltraMarine", std::move(texture6));
+			atlas.AddTexture("Goku", std::move(texture7));
 
 			atlas.CreateAtlas();
 
@@ -426,6 +434,135 @@ void App::PhysicsUpdate()
 			sCubeBundle2.reset();
 		}
 	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::V))
+	{
+		if (!sCubeBundle3)
+		{
+			auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
+			{
+				auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+				cube->SetMeshDetailsVS(
+					MeshDetailsVS{
+						.indexCount  = cubeIndexCount,
+						.indexOffset = 0u
+					}
+				);
+
+				cube->GetBase().SetMaterialIndex(1u);
+
+				cube->GetBase().SetMaterialIndex(whiteMatIndex);
+				cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
+				cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+
+				cube->GetBase().GetTransform().MoveTowardsX(-2.4f).MoveTowardsY(-1.2f);
+
+				cubeBundle->AddModel(std::move(cube));
+			}
+			{
+				auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+				cube->SetMeshDetailsVS(
+					MeshDetailsVS{
+						.indexCount  = cubeIndexCount,
+						.indexOffset = 0u
+					}
+				);
+
+				cube->GetBase().SetMaterialIndex(1u);
+
+				cube->GetBase().SetMaterialIndex(whiteMatIndex);
+				cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
+				cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+
+				cube->GetBase().GetTransform().MoveTowardsX(-0.8f).MoveTowardsY(-1.2f);
+
+				cubeBundle->AddModel(std::move(cube));
+			}
+
+			cubeBundleIndex3 = Sol::renderer->AddModelBundle(
+				cubeBundle->GetBundleImpl(), L"TestFragmentShader"
+			);
+
+			sCubeBundle3 = std::move(cubeBundle);
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::B))
+	{
+		if (sCubeBundle3)
+		{
+			Sol::renderer->RemoveModelBundle(cubeBundleIndex3);
+
+			sCubeBundle3.reset();
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::N))
+	{
+		if (!sCubeBundle4)
+		{
+			auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
+			{
+				auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+				cube->SetMeshDetailsVS(
+					MeshDetailsVS{
+						.indexCount  = cubeIndexCount,
+						.indexOffset = 0u
+					}
+				);
+
+				cube->GetBase().SetMaterialIndex(1u);
+
+				cube->GetBase().SetMaterialIndex(whiteMatIndex);
+				cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
+				cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+
+				cube->GetBase().GetTransform().MoveTowardsX(2.4f).MoveTowardsY(-1.2f);
+
+				cubeBundle->AddModel(std::move(cube));
+			}
+			{
+				auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+
+				cube->SetMeshDetailsVS(
+					MeshDetailsVS{
+						.indexCount  = cubeIndexCount,
+						.indexOffset = 0u
+					}
+				);
+
+				cube->GetBase().SetMaterialIndex(1u);
+
+				cube->GetBase().SetMaterialIndex(whiteMatIndex);
+				cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
+				cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+
+				cube->GetBase().GetTransform().MoveTowardsX(0.8f).MoveTowardsY(-1.2f);
+
+				cubeBundle->AddModel(std::move(cube));
+			}
+
+			cubeBundleIndex4 = Sol::renderer->AddModelBundle(
+				cubeBundle->GetBundleImpl(), L"TestFragmentShader"
+			);
+
+			sCubeBundle4 = std::move(cubeBundle);
+		}
+	}
+
+	if (keyboard.IsKeyPressed(SKeyCodes::M))
+	{
+		if (sCubeBundle4)
+		{
+			Sol::renderer->RemoveModelBundle(cubeBundleIndex4);
+
+			sCubeBundle4.reset();
+		}
+	}
+
 
 	if (keyboard.IsKeyPressed(SKeyCodes::F))
 	{
