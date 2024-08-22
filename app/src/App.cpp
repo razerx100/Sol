@@ -32,7 +32,10 @@ static std::uint32_t atlasBindingIndex = 0u;
 
 App::App()
 {
-	auto cubeMesh = std::make_unique<MeshBaseVSWrapper<CubeMesh>>(CubeUVMode::IndependentFaceTexture);
+	auto cubeMesh = std::make_unique<MeshBundleBaseVS>();
+
+	CubeMesh{}.SetMesh(cubeMesh->GetBase(), CubeUVMode::IndependentFaceTexture);
+
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
 
 	camera->SetProjectionMatrix(1920u, 1080u);
@@ -43,7 +46,7 @@ App::App()
 	engineType = Sol::configManager->GetRenderEngineType();
 
 	if (engineType == RenderEngineType::IndirectDraw)
-		cubeMesh->SetBounds(BoundType::Rectangle);
+		cubeMesh->GetBase().SetBounds(BoundType::Rectangle);
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 
@@ -139,7 +142,9 @@ App::App()
 	}
 
 	{
-		auto quadMesh = std::make_unique<MeshBaseVSWrapper<QuadMesh>>();
+		auto quadMesh = std::make_unique<MeshBundleBaseVS>();
+
+		QuadMesh{}.SetMesh(quadMesh->GetBase());
 
 		const std::vector<std::uint32_t>& indices = quadMesh->GetIndices();
 
@@ -605,12 +610,13 @@ void App::PhysicsUpdate()
 	{
 		if (!isSphereAdded)
 		{
-			auto sphereMesh = std::make_unique<MeshBaseVSWrapper<SphereMesh>>(64u, 64u);
+			auto sphereMesh = std::make_unique<MeshBundleBaseVS>();
+			SphereMesh{ 64u, 64u }.SetMesh(sphereMesh->GetBase());
 
 			sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
 
 			if (engineType == RenderEngineType::IndirectDraw)
-				sphereMesh->SetBounds(BoundType::Rectangle);
+				sphereMesh->GetBase().SetBounds(BoundType::Rectangle);
 
 			const std::uint32_t sphereIndex = Sol::renderer->AddMeshBundle(std::move(sphereMesh));
 

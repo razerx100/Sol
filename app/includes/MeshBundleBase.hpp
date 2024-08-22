@@ -11,10 +11,7 @@ enum class BoundType
 class MeshBundleBase
 {
 public:
-	MeshBundleBase(const std::string& name) : m_name{ name }, m_vertices{}, m_indices{}, m_bounds{}
-	{}
-
-	virtual ~MeshBundleBase() = default;
+	MeshBundleBase() : m_name{}, m_vertices{}, m_indices{}, m_bounds{} {}
 
 	void SetBounds(BoundType type) noexcept;
 
@@ -24,14 +21,20 @@ public:
 	const std::vector<Vertex>& GetVertices() const noexcept { return m_vertices; }
 	[[nodiscard]]
 	const std::vector<std::uint32_t>& GetIndices() const noexcept { return m_indices; }
+	[[nodiscard]]
+	std::vector<Vertex>& GetVertices() noexcept { return m_vertices; }
+	[[nodiscard]]
+	std::vector<std::uint32_t>& GetIndices() noexcept { return m_indices; }
+
+	void SetName(std::string name) noexcept { m_name = std::move(name); }
 
 	void CleanUpVertices() noexcept { m_vertices = std::vector<Vertex>{}; }
 
 	[[nodiscard]]
 	const std::string& GetName() const noexcept { return m_name; }
 
-protected:
 	void CalculateNormalsIndependentFaces() noexcept;
+
 	static void SetUVToVertices(
 		std::vector<Vertex>& vertices, const std::vector<DirectX::XMFLOAT2>& uvs
 	) noexcept;
@@ -43,7 +46,7 @@ private:
 		const DirectX::XMFLOAT3& position3
 	) noexcept;
 
-protected:
+private:
 	std::string                m_name;
 	std::vector<Vertex>        m_vertices;
 	std::vector<std::uint32_t> m_indices;
@@ -79,31 +82,56 @@ public:
 	}
 };
 
-template<class Derived>
-class MeshBaseVSWrapper : public Derived, public MeshBundleVS
+class MeshBundleBaseVS : public MeshBundleVS
 {
 public:
-	using Derived::Derived;
+	MeshBundleBaseVS() : m_meshBase{} {}
 
 	[[nodiscard]]
 	const std::vector<std::uint32_t>& GetIndices() const noexcept override
 	{
-		return Derived::GetIndices();
+		return m_meshBase.GetIndices();
 	}
 	[[nodiscard]]
 	const std::vector<MeshBound>& GetBounds() const noexcept override
 	{
-		return Derived::GetBounds();
+		return m_meshBase.GetBounds();
 	};
 	[[nodiscard]]
 	const std::vector<Vertex>& GetVertices() const noexcept override
 	{
-		return Derived::GetVertices();
+		return m_meshBase.GetVertices();
 	}
 
 	void CleanUpVertices() noexcept override
 	{
-		Derived::CleanUpVertices();
+		m_meshBase.CleanUpVertices();
+	}
+
+	MeshBundleBase& GetBase() noexcept { return m_meshBase; }
+
+private:
+	MeshBundleBase m_meshBase;
+
+public:
+	MeshBundleBaseVS(const MeshBundleBaseVS& other) noexcept
+		: m_meshBase{ other.m_meshBase }
+	{}
+	MeshBundleBaseVS& operator=(const MeshBundleBaseVS& other) noexcept
+	{
+		m_meshBase = other.m_meshBase;
+
+		return *this;
+	}
+
+	MeshBundleBaseVS(MeshBundleBaseVS&& other) noexcept
+		: m_meshBase{ std::move(other.m_meshBase) }
+	{}
+	MeshBundleBaseVS& operator=(MeshBundleBaseVS&& other) noexcept
+	{
+		m_meshBase = std::move(other.m_meshBase);
+
+		return *this;
 	}
 };
 #endif

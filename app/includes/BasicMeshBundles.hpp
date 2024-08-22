@@ -2,26 +2,10 @@
 #define BASIC_MESH_BUNDLES_HPP_
 #include <MeshBundleBase.hpp>
 
-class TriangleMesh : public MeshBundleBase
+class TriangleMesh
 {
 public:
-	TriangleMesh();
-
-	TriangleMesh(const TriangleMesh& other) noexcept : MeshBundleBase{ other } {}
-	TriangleMesh& operator=(const TriangleMesh& other) noexcept
-	{
-		MeshBundleBase::operator=(other);
-
-		return *this;
-	}
-
-	TriangleMesh(TriangleMesh&& other) noexcept : MeshBundleBase{ std::move(other) } {}
-	TriangleMesh& operator=(TriangleMesh&& other) noexcept
-	{
-		MeshBundleBase::operator=(std::move(other));
-
-		return *this;
-	}
+	static void SetMesh(MeshBundleBase& meshBundle) noexcept;
 };
 
 enum class CubeUVMode
@@ -30,75 +14,33 @@ enum class CubeUVMode
 	IndependentFaceTexture
 };
 
-class CubeMesh : public MeshBundleBase
+class CubeMesh
 {
 public:
-	CubeMesh(CubeUVMode uvMode);
+	static void SetMesh(MeshBundleBase& meshBundle, CubeUVMode uvMode) noexcept;
 
 private:
-	void SetSingleColourUV() noexcept;
-	void SetIndependentFaceTexUV() noexcept;
-
-private:
-	CubeUVMode m_uvMode;
-
-public:
-	CubeMesh(const CubeMesh& other) noexcept
-		: MeshBundleBase{ other }, m_uvMode{ other.m_uvMode }
-	{}
-	CubeMesh& operator=(const CubeMesh& other) noexcept
-	{
-		MeshBundleBase::operator=(other);
-		m_uvMode = other.m_uvMode;
-
-		return *this;
-	}
-
-	CubeMesh(CubeMesh&& other) noexcept
-		: MeshBundleBase{ std::move(other) }, m_uvMode{ other.m_uvMode }
-	{}
-	CubeMesh& operator=(CubeMesh&& other) noexcept
-	{
-		MeshBundleBase::operator=(std::move(other));
-		m_uvMode = other.m_uvMode;
-
-		return *this;
-	}
+	static void SetSingleColourUV(MeshBundleBase& meshBundle) noexcept;
+	static void SetIndependentFaceTexUV(MeshBundleBase& meshBundle) noexcept;
 };
 
-class QuadMesh : public MeshBundleBase
+class QuadMesh
 {
 public:
-	QuadMesh();
-
-	QuadMesh(const QuadMesh& other) noexcept
-		: MeshBundleBase{ other }
-	{}
-	QuadMesh& operator=(const QuadMesh& other) noexcept
-	{
-		MeshBundleBase::operator=(other);
-
-		return *this;
-	}
-
-	QuadMesh(QuadMesh&& other) noexcept
-		: MeshBundleBase{ std::move(other) }
-	{}
-	QuadMesh& operator=(QuadMesh&& other) noexcept
-	{
-		MeshBundleBase::operator=(std::move(other));
-
-		return *this;
-	}
+	static void SetMesh(MeshBundleBase& meshBundle) noexcept;
 };
 
-class SphereMesh : public MeshBundleBase
+class SphereMesh
 {
 public:
-	SphereMesh(std::uint32_t latDiv, std::uint32_t longDiv);
+	SphereMesh(std::uint32_t latDiv, std::uint32_t longDiv)
+		: m_latitudeDivision{ latDiv }, m_longitudeDivision{ longDiv }
+	{}
+
+	void SetMesh(MeshBundleBase& meshBundle) noexcept;
 
 private:
-	void CalculateNormals() noexcept;
+	static void CalculateNormals(std::vector<Vertex>& vertices) noexcept;
 
 private:
 	std::uint32_t m_latitudeDivision;
@@ -106,13 +48,11 @@ private:
 
 public:
 	SphereMesh(const SphereMesh& other) noexcept
-		: MeshBundleBase{ other },
-		m_latitudeDivision{ other.m_latitudeDivision },
+		: m_latitudeDivision{ other.m_latitudeDivision },
 		m_longitudeDivision{ other.m_longitudeDivision }
 	{}
 	SphereMesh& operator=(const SphereMesh& other) noexcept
 	{
-		MeshBundleBase::operator=(other);
 		m_latitudeDivision  = other.m_latitudeDivision;
 		m_longitudeDivision = other.m_longitudeDivision;
 
@@ -120,13 +60,11 @@ public:
 	}
 
 	SphereMesh(SphereMesh&& other) noexcept
-		: MeshBundleBase{ std::move(other) },
-		m_latitudeDivision{ other.m_latitudeDivision },
+		: m_latitudeDivision{ other.m_latitudeDivision },
 		m_longitudeDivision{ other.m_longitudeDivision }
 	{}
 	SphereMesh& operator=(SphereMesh&& other) noexcept
 	{
-		MeshBundleBase::operator=(std::move(other));
 		m_latitudeDivision  = other.m_latitudeDivision;
 		m_longitudeDivision = other.m_longitudeDivision;
 
