@@ -3,17 +3,16 @@
 #include <string>
 #include <MeshBundle.hpp>
 
-enum class BoundType
-{
-	Rectangle
-};
-
 class MeshBundleBase
 {
 public:
 	MeshBundleBase() : m_name{}, m_vertices{}, m_indices{}, m_bounds{} {}
 
-	void SetBounds(BoundType type) noexcept;
+	template<typename Bounds_t>
+	void SetBounds(const Bounds_t& type) noexcept
+	{
+		m_bounds = type.GetBounds(m_vertices);
+	}
 
 	[[nodiscard]]
 	const std::vector<MeshBound>& GetBounds() const noexcept { return m_bounds; }

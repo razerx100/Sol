@@ -10,6 +10,7 @@
 #include <DirectXMath.h>
 #include <TextureAtlas.hpp>
 #include <ModelProcessor.hpp>
+#include <MeshBounds.hpp>
 
 static std::shared_ptr<ModelBundleBaseVS> sCubeBundle{};
 static std::uint32_t cubeBundleIndex1 = 0u;
@@ -46,7 +47,7 @@ App::App()
 	engineType = Sol::configManager->GetRenderEngineType();
 
 	if (engineType == RenderEngineType::IndirectDraw)
-		cubeMesh->GetBase().SetBounds(BoundType::Rectangle);
+		cubeMesh->GetBase().SetBounds(RectangleBounds{});
 
 	const std::uint32_t meshIndex   = Sol::renderer->AddMeshBundle(std::move(cubeMesh));
 
@@ -616,7 +617,7 @@ void App::PhysicsUpdate()
 			sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
 
 			if (engineType == RenderEngineType::IndirectDraw)
-				sphereMesh->GetBase().SetBounds(BoundType::Rectangle);
+				sphereMesh->GetBase().SetBounds(RectangleBounds{});
 
 			const std::uint32_t sphereIndex = Sol::renderer->AddMeshBundle(std::move(sphereMesh));
 

@@ -2,9 +2,10 @@
 #define MESH_BOUNDS_HPP_
 #include <MeshBundle.hpp>
 
-namespace MeshBoundGenerator
+class RectangleBounds
 {
+public:
 	[[nodiscard]]
-	std::vector<MeshBound> GetRectangle(const std::vector<Vertex>& vertices) noexcept;
+	static std::vector<MeshBound> GetBounds(const std::vector<Vertex>& vertices) noexcept;
 };
 #endif
