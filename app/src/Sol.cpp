@@ -6,76 +6,130 @@
 
 #include <Sol.hpp>
 
-namespace AMods {
-	std::unique_ptr<FrameTime> frameTime;
+Sol::Sol(const std::string& appName)
+	: m_appName{ appName },
+	m_configManager{ L"config.ini" }, m_frameTime{}, m_threadPool{}, m_inputManager{},
+	m_window{}, m_renderer{}, m_app{}
+{
+	m_configManager.ReadConfigFile();
 
-	void InitAppModules(ObjectManager& om) {
-		om.CreateObject(frameTime, 0u);
-	}
+	m_threadPool = std::make_shared<ThreadPool>( 8u );
+
+	const std::uint32_t width  = 1920u;
+	const std::uint32_t height = 1080u;
+
+	InitInputManager();
+	InitWindow(width, height);
+	InitRenderer(width, height);
+	InitApp();
 }
 
-namespace Sol {
-	// Variables
-	std::unique_ptr<App> app;
-	std::shared_ptr<InputManager> ioMan;
-	std::unique_ptr<Window> window;
-	std::shared_ptr<Renderer> renderer;
-	//std::unique_ptr<ModelProcessor> modelProcessor;
-	//std::unique_ptr<ModelContainer> modelContainer;
-	std::unique_ptr<TextureAtlas> textureAtlas;
-	std::shared_ptr<ThreadPool> threadPool;
-	std::unique_ptr<ConfigManager> configManager;
+void Sol::InitInputManager()
+{
+	if (m_configManager.GeIOName() == "Pluto")
+		m_inputManager = std::shared_ptr<InputManager>{ CreatePlutoInstance() };
 
-	// Functions
-	void InitIoMan(ObjectManager& om, std::string moduleName) {
-		if (moduleName == "Pluto")
-			om.CreateObject(ioMan, CreatePlutoInstance(), 3u);
-	}
+	m_inputManager->AddGamepadSupport(1u);
+}
 
-	void InitWindow(
-		ObjectManager& om, std::uint32_t width, std::uint32_t height, const char* name,
-		std::string moduleName
-	) {
-		if (moduleName == "Luna")
-			om.CreateObject(window, CreateLunaInstance(width, height, name), 3u);
-	}
+void Sol::InitWindow(std::uint32_t width, std::uint32_t height)
+{
+	if (m_configManager.GetWindowName() == "Luna")
+		m_window = std::unique_ptr<Window>{ CreateLunaInstance(width, height, m_appName.c_str()) };
 
-	void InitRenderer(
-		ObjectManager& om,
-		const char* appName,
-		void* windowHandle,
-		void* moduleHandle,
-		std::uint32_t width, std::uint32_t height,
-		std::shared_ptr<ThreadPool> threadPooll,
-		RenderEngineType engineType,
-		std::string moduleName,
-		std::uint8_t bufferCount
-	) {
-		if (moduleName == "Gaia")
-			om.CreateObject(
-				renderer, CreateGaiaInstance(
-					appName,
-					windowHandle,
-					width, height,
-					std::move(threadPooll),
-					engineType,
-					bufferCount
-				), 2u
+	m_window->SetWindowIcon(L"resources/icon/Sol.ico");
+	m_window->SetInputManager(m_inputManager);
+
+	m_window->SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
+}
+
+void Sol::InitRenderer(std::uint32_t width, std::uint32_t height)
+{
+	const std::uint32_t bufferCount = 2u;
+	void* windowHandle              = m_window->GetWindowHandle();
+	void* moduleHandle              = m_window->GetModuleInstance();
+	RenderEngineType engineType     = m_configManager.GetRenderEngineType();
+	const std::string moduleName    = m_configManager.GetRendererName();
+
+	if (moduleName == "Gaia")
+		m_renderer = std::shared_ptr<Renderer>{
+			CreateGaiaInstance(
+				m_appName.c_str(), windowHandle, width, height, m_threadPool, engineType, bufferCount
+			)
+		};
+	else if (moduleName == "Terra")
+		m_renderer = std::shared_ptr<Renderer>{
+			CreateTerraInstance(
+				m_appName.c_str(), windowHandle, moduleHandle,
+				width, height, m_threadPool, engineType, bufferCount
+			)
+		};
+
+	m_renderer->SetShaderPath(L"resources/shaders/");
+	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
+
+	m_window->SetRenderer(m_renderer);
+}
+
+void Sol::InitApp()
+{
+	m_app = std::make_unique<App>(
+		m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType()
+	);
+	m_app->Init();
+}
+
+int Sol::Run()
+{
+	int errorCode                = -1;
+	float accumulatedElapsedTime = 0;
+
+	while (true)
+	{
+		m_frameTime.GetTimer().SetTimer();
+
+		if (auto ecode = m_window->Update(); ecode)
+		{
+			errorCode = *ecode;
+			break;
+		}
+
+		if(!m_window->IsMinimized())
+		{
+			float deltaTime   = m_frameTime.GetDeltaTime();
+			float updateDelta = m_frameTime.GetGraphicsUpdateDelta();
+
+			if (accumulatedElapsedTime >= updateDelta)
+			{
+				while (accumulatedElapsedTime >= updateDelta)
+				{
+					m_app->PhysicsUpdate();
+					accumulatedElapsedTime -= updateDelta;
+				}
+
+				accumulatedElapsedTime = 0;
+			}
+			else
+				accumulatedElapsedTime += deltaTime;
+
+			m_window->UpdateIndependentInputs();
+			m_renderer->Render();
+		}
+
+		m_frameTime.EndTimer();
+
+		if (m_frameTime.HasASecondPassed())
+		{
+			static std::string rendererName = m_configManager.GetRendererName();
+			m_window->SetTitle(
+				m_appName + " Renderer : " + rendererName
+				+ " " + std::to_string(m_frameTime.GetFrameCount()) + "fps"
 			);
-		else if (moduleName == "Terra")
-			om.CreateObject(
-				renderer, CreateTerraInstance(
-					appName,
-					windowHandle, moduleHandle,
-					width, height,
-					std::move(threadPooll),
-					engineType,
-					bufferCount
-				), 2u
-			);
+			m_frameTime.ResetFrameCount();
+		}
 	}
 
-	void InitThreadPool(ObjectManager& om, size_t threadCount) {
-		om.CreateObject(threadPool, std::make_shared<ThreadPool>(threadCount), 3u);
-	}
+	m_renderer->WaitForGPUToFinish();
+
+	return errorCode;
 }

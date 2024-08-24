@@ -1,4 +1,4 @@
-#include <Engine.hpp>
+#include <Sol.hpp>
 #include <Exception.hpp>
 #include <ExceptionMessageBox.hpp>
 
@@ -6,7 +6,9 @@ int main()
 {
 	try
 	{
-		return Engine().Run();
+		Sol sol{ "Sol" };
+
+		return sol.Run();
 	}
 	catch (const Exception& e)
 	{

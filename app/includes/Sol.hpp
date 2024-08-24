@@ -7,47 +7,60 @@
 #include <ThreadPool.hpp>
 #include <ConfigManager.hpp>
 #include <TimeManager.hpp>
-#include <ObjectManager.hpp>
 
 #include <Renderer.hpp>
 #include <TextureAtlas.hpp>
 #include <CameraManagerSol.hpp>
 
-namespace AMods {
-	extern std::unique_ptr<FrameTime> frameTime;
+class Sol
+{
+public:
+	Sol(const std::string& appName);
 
-	void InitAppModules(ObjectManager& om);
-}
+	int Run();
 
-namespace Sol {
-	// Variables
-	extern std::unique_ptr<App> app;
-	extern std::shared_ptr<InputManager> ioMan;
-	extern std::unique_ptr<Window> window;
-	extern std::shared_ptr<Renderer> renderer;
-	//extern std::unique_ptr<ModelProcessor> modelProcessor;
-	//extern std::unique_ptr<ModelContainer> modelContainer;
-	extern std::unique_ptr<TextureAtlas> textureAtlas;
-	extern std::shared_ptr<ThreadPool> threadPool;
-	extern std::unique_ptr<ConfigManager> configManager;
+private:
+	void InitInputManager();
+	void InitWindow(std::uint32_t width, std::uint32_t height);
+	void InitRenderer(std::uint32_t width, std::uint32_t height);
+	void InitApp();
 
-	// Initialization functions
-	void InitIoMan(ObjectManager& om, std::string moduleName = "Pluto");
-	void InitWindow(
-		ObjectManager& om, std::uint32_t width, std::uint32_t height, const char* name,
-		std::string moduleName = "Luna"
-	);
-	void InitRenderer(
-		ObjectManager& om,
-		const char* appName,
-		void* windowHandle,
-		void* moduleHandle,
-		std::uint32_t width, std::uint32_t height,
-		std::shared_ptr<ThreadPool> threadPooll,
-		RenderEngineType engineType,
-		std::string moduleName = "Gaia",
-		std::uint8_t bufferCount = 2u
-	);
-	void InitThreadPool(ObjectManager& om, size_t threadCount);
-}
+private:
+	std::string                   m_appName;
+	ConfigManager                 m_configManager;
+	FrameTime                     m_frameTime;
+	std::shared_ptr<ThreadPool>   m_threadPool;
+	std::shared_ptr<InputManager> m_inputManager;
+	std::unique_ptr<Window>       m_window;
+	std::shared_ptr<Renderer>     m_renderer;
+	std::unique_ptr<App>          m_app;
+
+public:
+	Sol(const Sol&) = delete;
+	Sol& operator=(const Sol&) = delete;
+
+	Sol(Sol&& other) noexcept
+		: m_appName{ std::move(other.m_appName) },
+		m_configManager{ std::move(other.m_configManager) },
+		m_frameTime{ std::move(other.m_frameTime) },
+		m_threadPool{ std::move(other.m_threadPool) },
+		m_inputManager{ std::move(other.m_inputManager) },
+		m_window{ std::move(other.m_window) },
+		m_renderer{ std::move(other.m_renderer) },
+		m_app{ std::move(other.m_app) }
+	{}
+	Sol& operator=(Sol&& other) noexcept
+	{
+		m_appName       = std::move(other.m_appName);
+		m_configManager = std::move(other.m_configManager);
+		m_frameTime     = std::move(other.m_frameTime);
+		m_threadPool    = std::move(other.m_threadPool);
+		m_inputManager  = std::move(other.m_inputManager);
+		m_window        = std::move(other.m_window);
+		m_renderer      = std::move(other.m_renderer);
+		m_app           = std::move(other.m_app);
+
+		return *this;
+	}
+};
 #endif

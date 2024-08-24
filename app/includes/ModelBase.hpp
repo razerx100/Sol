@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <array>
-#include <SolConcepts.hpp>
 
 #include <Model.hpp>
 
