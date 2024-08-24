@@ -167,10 +167,10 @@ public:
 
 	void SetIndexOffset(std::uint32_t offset) noexcept { m_meshDetails.indexOffset = offset; }
 	void SetIndexCount(std::uint32_t count) noexcept { m_meshDetails.indexCount = count; }
-	void SetMeshDetailsVS(const MeshDetailsVS& meshDetails) noexcept { m_meshDetails = meshDetails; }
+	void SetMeshDetailsVS(MeshDetailsVS meshDetails) noexcept { m_meshDetails = meshDetails; }
 
 	[[nodiscard]]
-	const MeshDetailsVS& GetMeshDetailsVS() const noexcept override { return m_meshDetails; }
+	MeshDetailsVS GetMeshDetailsVS() const noexcept override { return m_meshDetails; }
 
 	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept final
@@ -245,13 +245,8 @@ public:
 		: ModelMS{}, m_meshDetails{}, m_modelBase{ modelBase }
 	{}
 
-	void SetMeshlets(std::vector<Meshlet>&& meshlets) noexcept
-	{
-		m_meshDetails.meshlets = std::move(meshlets);
-	}
-
 	[[nodiscard]]
-	MeshDetailsMS& GetMeshDetailsMS() noexcept override
+	MeshDetailsMS GetMeshDetailsMS() const noexcept override
 	{
 		return m_meshDetails;
 	}

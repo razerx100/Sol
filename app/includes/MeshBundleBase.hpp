@@ -1,6 +1,7 @@
 #ifndef MESH_BUNDLE_BASE_HPP_
 #define MESH_BUNDLE_BASE_HPP_
 #include <string>
+#include <unordered_map>
 #include <MeshBundle.hpp>
 
 class MeshBundleBase
@@ -102,11 +103,6 @@ public:
 		return m_meshBase.GetVertices();
 	}
 
-	void CleanUpVertices() noexcept override
-	{
-		m_meshBase.CleanUpVertices();
-	}
-
 	MeshBundleBase& GetBase() noexcept { return m_meshBase; }
 
 private:
@@ -132,5 +128,128 @@ public:
 
 		return *this;
 	}
+};
+
+class MeshBundleBaseMS : public MeshBundleMS
+{
+public:
+	MeshBundleBaseMS() : m_meshBase{}, m_primIndices{}, m_meshlets{} {}
+
+	[[nodiscard]]
+	const std::vector<std::uint32_t>& GetVertexIndices() const noexcept override
+	{
+		return m_meshBase.GetIndices();
+	}
+	[[nodiscard]]
+	const std::vector<std::uint32_t>& GetPrimIndices() const noexcept override
+	{
+		return m_primIndices;
+	}
+	[[nodiscard]]
+	const std::vector<Meshlet>& GetMeshlets() const noexcept override
+	{
+		return m_meshlets;
+	}
+	[[nodiscard]]
+	const std::vector<MeshBound>& GetBounds() const noexcept override
+	{
+		return m_meshBase.GetBounds();
+	};
+	[[nodiscard]]
+	const std::vector<Vertex>& GetVertices() const noexcept override
+	{
+		return m_meshBase.GetVertices();
+	}
+
+	MeshBundleBase& GetBase() noexcept { return m_meshBase; }
+
+	void SetMeshlets() noexcept;
+
+private:
+	MeshBundleBase             m_meshBase;
+	std::vector<std::uint32_t> m_primIndices;
+	std::vector<Meshlet>       m_meshlets;
+
+public:
+	MeshBundleBaseMS(const MeshBundleBaseMS& other) noexcept
+		: m_meshBase{ other.m_meshBase }, m_primIndices{ other.m_primIndices },
+		m_meshlets{ other.m_meshlets }
+	{}
+	MeshBundleBaseMS& operator=(const MeshBundleBaseMS& other) noexcept
+	{
+		m_meshBase    = other.m_meshBase;
+		m_primIndices = other.m_primIndices;
+		m_meshlets    = other.m_meshlets;
+
+		return *this;
+	}
+
+	MeshBundleBaseMS(MeshBundleBaseMS&& other) noexcept
+		: m_meshBase{ std::move(other.m_meshBase) }, m_primIndices{ std::move(other.m_primIndices) },
+		m_meshlets{ std::move(other.m_meshlets) }
+	{}
+	MeshBundleBaseMS& operator=(MeshBundleBaseMS&& other) noexcept
+	{
+		m_meshBase    = std::move(other.m_meshBase);
+		m_primIndices = std::move(other.m_primIndices);
+		m_meshlets    = std::move(other.m_meshlets);
+
+		return *this;
+	}
+};
+
+class MeshletMaker
+{
+public:
+	MeshletMaker();
+
+	void GenerateMeshlets(const std::vector<std::uint32_t>& indices);
+
+	void LoadMeshlets(
+		std::vector<Meshlet>& meshlets,
+		std::vector<std::uint32_t>& vertexIndices, std::vector<std::uint32_t>& primitiveIndices
+	);
+
+private:
+	[[nodiscard]]
+	static bool IsInMap(
+		const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
+		std::uint32_t vIndex
+	) noexcept;
+	[[nodiscard]]
+	static std::uint32_t GetPrimIndex(
+		std::uint32_t vIndex, std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
+		std::vector<std::uint32_t>& vertexIndices
+	) noexcept;
+	[[nodiscard]]
+	static std::uint32_t GetExtraVertexCount(
+		const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
+		std::uint32_t primIndex1, std::uint32_t primIndex2, std::uint32_t primIndex3
+	) noexcept;
+
+	[[nodiscard]]
+	size_t MakeMeshlet(const std::vector<std::uint32_t>& indices, size_t startingIndex) noexcept;
+
+private:
+	union PrimitiveIndices
+	{
+		struct
+		{
+			std::uint32_t firstIndex  : 10u;
+			std::uint32_t secondIndex : 10u;
+			std::uint32_t thirdIndex  : 10u;
+		} unpacked;
+		std::uint32_t packed;
+	};
+
+	static constexpr size_t s_meshletVertexLimit    = 64u;
+	static constexpr size_t s_meshletPrimitiveLimit = 126u;
+
+private:
+	std::vector<std::uint32_t> m_tempVertexIndices;
+	std::vector<std::uint32_t> m_tempPrimitiveIndices;
+	std::vector<std::uint32_t> m_vertexIndices;
+	std::vector<std::uint32_t> m_primitiveIndices;
+	std::vector<Meshlet>       m_meshlets;
 };
 #endif

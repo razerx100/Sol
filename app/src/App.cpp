@@ -9,7 +9,6 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 #include <TextureAtlas.hpp>
-#include <ModelProcessor.hpp>
 #include <MeshBounds.hpp>
 
 static std::shared_ptr<ModelBundleBaseVS> sCubeBundle{};
@@ -143,16 +142,11 @@ App::App()
 	}
 
 	{
-		auto quadMesh = std::make_unique<MeshBundleBaseVS>();
+		auto sphereMesh = std::make_unique<MeshBundleBaseMS>();
 
-		QuadMesh{}.SetMesh(quadMesh->GetBase());
+		CubeMesh{}.SetMesh(sphereMesh->GetBase(), CubeUVMode::IndependentFaceTexture);
 
-		const std::vector<std::uint32_t>& indices = quadMesh->GetIndices();
-
-		std::vector<std::uint32_t> vertexIndices{};
-		std::vector<PrimitiveIndices> primIndices{};
-
-		Meshlet meshlet = MakeMeshlet(indices, 0u, std::size(indices), 0u, vertexIndices, primIndices);
+		sphereMesh->SetMeshlets();
 	}
 
 	auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
