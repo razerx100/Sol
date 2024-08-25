@@ -71,19 +71,14 @@ std::shared_ptr<Renderer> Sol::CreateRenderer(
 	std::shared_ptr<Renderer> renderer{};
 
 	if (moduleName == "Gaia")
-		renderer = std::shared_ptr<Renderer>{
-			CreateGaiaInstance(
-				appName.c_str(), windowHandle, width, height, std::move(threadPool), engineType,
-				frameCount
-			)
-		};
+		renderer = CreateGaiaInstance(
+				appName.c_str(), windowHandle, width, height, std::move(threadPool), engineType, frameCount
+			);
 	else if (moduleName == "Terra")
-		renderer = std::shared_ptr<Renderer>{
-			CreateTerraInstance(
+		renderer = CreateTerraInstance(
 				appName.c_str(), windowHandle, moduleHandle, width, height, std::move(threadPool),
 				engineType, frameCount
-			)
-		};
+			);
 
 	return renderer;
 }
