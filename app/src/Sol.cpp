@@ -8,75 +8,84 @@
 
 Sol::Sol(const std::string& appName)
 	: m_appName{ appName },
-	m_configManager{ L"config.ini" }, m_frameTime{}, m_threadPool{}, m_inputManager{},
-	m_window{}, m_renderer{}, m_app{}
+	m_configManager{ L"config.ini" }, m_frameTime{},
+	m_threadPool{ std::make_shared<ThreadPool>( 8u ) },
+	m_inputManager{ CreateInputManager(m_configManager.GeIOName()) },
+	m_window{ CreateWindow(m_configManager.GetWindowName(), appName, s_width, s_height) },
+	m_renderer{
+		CreateRenderer(
+			m_configManager.GetRendererName(), appName, s_width, s_height, s_frameCount,
+			m_threadPool, m_window->GetWindowHandle(), m_window->GetModuleInstance(),
+			m_configManager.GetRenderEngineType()
+		)
+	},
+	m_app{
+		std::make_unique<App>(m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType())
+	}
 {
-	m_configManager.ReadConfigFile();
-
-	m_threadPool = std::make_shared<ThreadPool>( 8u );
-
-	const std::uint32_t width  = 1920u;
-	const std::uint32_t height = 1080u;
-
-	InitInputManager();
-	InitWindow(width, height);
-	InitRenderer(width, height);
-	InitApp();
-}
-
-void Sol::InitInputManager()
-{
-	if (m_configManager.GeIOName() == "Pluto")
-		m_inputManager = std::shared_ptr<InputManager>{ CreatePlutoInstance() };
-
+	// Input Manager
 	m_inputManager->AddGamepadSupport(1u);
-}
 
-void Sol::InitWindow(std::uint32_t width, std::uint32_t height)
-{
-	if (m_configManager.GetWindowName() == "Luna")
-		m_window = std::unique_ptr<Window>{ CreateLunaInstance(width, height, m_appName.c_str()) };
-
+	// Window
 	m_window->SetWindowIcon(L"resources/icon/Sol.ico");
-	m_window->SetInputManager(m_inputManager);
-
 	m_window->SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
-}
 
-void Sol::InitRenderer(std::uint32_t width, std::uint32_t height)
-{
-	const std::uint32_t bufferCount = 2u;
-	void* windowHandle              = m_window->GetWindowHandle();
-	void* moduleHandle              = m_window->GetModuleInstance();
-	RenderEngineType engineType     = m_configManager.GetRenderEngineType();
-	const std::string moduleName    = m_configManager.GetRendererName();
+	m_window->SetInputManager(m_inputManager);
+	m_window->SetRenderer(m_renderer);
 
-	if (moduleName == "Gaia")
-		m_renderer = std::shared_ptr<Renderer>{
-			CreateGaiaInstance(
-				m_appName.c_str(), windowHandle, width, height, m_threadPool, engineType, bufferCount
-			)
-		};
-	else if (moduleName == "Terra")
-		m_renderer = std::shared_ptr<Renderer>{
-			CreateTerraInstance(
-				m_appName.c_str(), windowHandle, moduleHandle,
-				width, height, m_threadPool, engineType, bufferCount
-			)
-		};
-
+	// Renderer
 	m_renderer->SetShaderPath(L"resources/shaders/");
 	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
-	m_window->SetRenderer(m_renderer);
+	// App
+	m_app->Init();
 }
 
-void Sol::InitApp()
+std::shared_ptr<InputManager> Sol::CreateInputManager(const std::string& moduleName)
 {
-	m_app = std::make_unique<App>(
-		m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType()
-	);
-	m_app->Init();
+	std::shared_ptr<InputManager> inputManager{};
+
+	if (moduleName == "Pluto")
+		inputManager = std::shared_ptr<InputManager>{ CreatePlutoInstance() };
+
+	return inputManager;
+}
+
+std::unique_ptr<Window> Sol::CreateWindow(
+	const std::string& moduleName, const std::string& appName, std::uint32_t width, std::uint32_t height
+) {
+	std::unique_ptr<Window> window{};
+
+	if (moduleName == "Luna")
+		window = std::unique_ptr<Window>{ CreateLunaInstance(width, height, appName.c_str()) };
+
+	return window;
+}
+
+std::shared_ptr<Renderer> Sol::CreateRenderer(
+	const std::string& moduleName, const std::string& appName,
+	std::uint32_t width, std::uint32_t height, std::uint32_t frameCount,
+	std::shared_ptr<ThreadPool> threadPool,
+	void* windowHandle, void* moduleHandle, RenderEngineType engineType
+) {
+	std::shared_ptr<Renderer> renderer{};
+
+	if (moduleName == "Gaia")
+		renderer = std::shared_ptr<Renderer>{
+			CreateGaiaInstance(
+				appName.c_str(), windowHandle, width, height, std::move(threadPool), engineType,
+				frameCount
+			)
+		};
+	else if (moduleName == "Terra")
+		renderer = std::shared_ptr<Renderer>{
+			CreateTerraInstance(
+				appName.c_str(), windowHandle, moduleHandle, width, height, std::move(threadPool),
+				engineType, frameCount
+			)
+		};
+
+	return renderer;
 }
 
 int Sol::Run()

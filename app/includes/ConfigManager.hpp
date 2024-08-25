@@ -8,7 +8,10 @@
 class ConfigManager
 {
 public:
-	ConfigManager(std::wstring fileName) : m_parser{ std::move(fileName) } {}
+	ConfigManager(std::wstring fileName) : m_parser{ std::move(fileName) }
+	{
+		ReadConfigFile();
+	}
 	~ConfigManager() noexcept { m_parser.WriteBack(); }
 
 	void ReadConfigFile() noexcept;

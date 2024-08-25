@@ -20,10 +20,25 @@ public:
 	int Run();
 
 private:
-	void InitInputManager();
-	void InitWindow(std::uint32_t width, std::uint32_t height);
-	void InitRenderer(std::uint32_t width, std::uint32_t height);
-	void InitApp();
+	[[nodiscard]]
+	static std::shared_ptr<InputManager> CreateInputManager(const std::string& moduleName);
+	[[nodiscard]]
+	static std::unique_ptr<Window> CreateWindow(
+		const std::string& moduleName, const std::string& appName,
+		std::uint32_t width, std::uint32_t height
+	);
+	[[nodiscard]]
+	static std::shared_ptr<Renderer> CreateRenderer(
+		const std::string& moduleName, const std::string& appName,
+		std::uint32_t width, std::uint32_t height, std::uint32_t frameCount,
+		std::shared_ptr<ThreadPool> threadPool,
+		void* windowHandle, void* moduleHandle, RenderEngineType engineType
+	);
+
+private:
+	static constexpr std::uint32_t s_width      = 1920u;
+	static constexpr std::uint32_t s_height     = 1080u;
+	static constexpr std::uint32_t s_frameCount = 2u;
 
 private:
 	std::string                   m_appName;
