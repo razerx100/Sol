@@ -244,6 +244,10 @@ public:
 		: ModelMS{}, m_meshDetails{}, m_modelBase{ modelBase }
 	{}
 
+	void SetMeshletOffset(std::uint32_t offset) noexcept { m_meshDetails.meshletOffset = offset; }
+	void SetMeshletCount(std::uint32_t count) noexcept { m_meshDetails.meshletCount = count; }
+	void SetMeshDetailsMS(MeshDetailsMS meshDetails) noexcept { m_meshDetails = meshDetails; }
+
 	[[nodiscard]]
 	MeshDetailsMS GetMeshDetailsMS() const noexcept override
 	{
@@ -285,6 +289,8 @@ public:
 	{
 		return m_modelBase.GetSpecularUVInfo();
 	}
+
+	ModelBase& GetBase() noexcept { return m_modelBase; }
 
 private:
 	MeshDetailsMS m_meshDetails;
@@ -441,10 +447,10 @@ public:
 	}
 };
 
-class ModelBundleBaseMS : public ModelBundleMS
+class ModelBundleBaseMS
 {
 public:
-	ModelBundleBaseMS() : ModelBundleMS{}, m_models{}, m_meshIndex{ std::make_shared<std::uint32_t>(0u) } {}
+	ModelBundleBaseMS() : m_models{}, m_meshIndex{ std::make_shared<std::uint32_t>(0u) } {}
 
 	void AddModel(std::shared_ptr<ModelBaseMS> model) noexcept
 	{
@@ -458,7 +464,7 @@ public:
 	[[nodiscard]]
 	std::shared_ptr<ModelBaseMS>& GetModel(size_t index) noexcept { return m_models[index]; }
 	[[nodiscard]]
-	std::uint32_t GetMeshIndex() const noexcept override { return *m_meshIndex; }
+	std::uint32_t GetMeshIndex() const noexcept { return *m_meshIndex; }
 
 	[[nodiscard]]
 	std::shared_ptr<ModelBundleImplMS> GetBundleImpl() const noexcept;
