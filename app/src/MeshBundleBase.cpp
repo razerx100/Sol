@@ -143,14 +143,12 @@ size_t MeshletMaker::MakeMeshlet(const std::vector<std::uint32_t>& indices, size
 	size_t indexOffset                   = startingIndex;
 	constexpr size_t triangleVertexCount = 3u;
 
-	const auto vertexOffset = static_cast<std::uint32_t>(std::size(m_vertexIndices));
-
 	for (; indexOffset + 2u < std::size(indices) && indexOffset < meshletIndexLimit;
 		indexOffset += triangleVertexCount)
 	{
-		const std::uint32_t vIndex1 = indices[indexOffset] + vertexOffset;
-		const std::uint32_t vIndex2 = indices[indexOffset + 1u] + vertexOffset;
-		const std::uint32_t vIndex3 = indices[indexOffset + 2u] + vertexOffset;
+		const std::uint32_t vIndex1 = indices[indexOffset];
+		const std::uint32_t vIndex2 = indices[indexOffset + 1u];
+		const std::uint32_t vIndex3 = indices[indexOffset + 2u];
 
 		const auto vertexCount = static_cast<std::uint32_t>(std::size(m_tempVertexIndices));
 
@@ -175,11 +173,14 @@ size_t MeshletMaker::MakeMeshlet(const std::vector<std::uint32_t>& indices, size
 		);
 	}
 
+	const auto vertexOffset    = static_cast<std::uint32_t>(std::size(m_vertexIndices));
+	const auto primitiveOffset = static_cast<std::uint32_t>(std::size(m_primitiveIndices));
+
 	m_meshlets.emplace_back(Meshlet{
 		.vertexCount     = static_cast<std::uint32_t>(std::size(m_tempVertexIndices)),
 		.vertexOffset    = static_cast<std::uint32_t>(vertexOffset),
 		.primitiveCount  = static_cast<std::uint32_t>(std::size(m_tempPrimitiveIndices)),
-		.primitiveOffset = static_cast<std::uint32_t>(startingIndex)
+		.primitiveOffset = static_cast<std::uint32_t>(primitiveOffset)
 	});
 
 	std::ranges::move(m_tempVertexIndices, std::back_inserter(m_vertexIndices));
