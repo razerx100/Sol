@@ -28,6 +28,7 @@ static std::uint32_t cubeIndexCount     = 0u;
 static std::uint32_t sphereIndexCount   = 0u;
 static std::uint32_t cubeMeshletCount   = 0u;
 static std::uint32_t sphereMeshletCount = 0u;
+static std::uint32_t sphereIndex        = 0u;
 static std::uint32_t whiteMatIndex      = 0u;
 static bool isSphereAdded               = false;
 static size_t secondTextureIndex        = std::numeric_limits<size_t>::max();
@@ -736,8 +737,7 @@ void App::PhysicsUpdate()
 
 				sphereMeshletCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetMeshlets()));
 
-				const std::uint32_t sphereIndex = m_renderer->AddMeshBundle(std::move(sphereMesh));
-
+				sphereIndex = m_renderer->AddMeshBundle(std::move(sphereMesh));
 			}
 			else
 			{
@@ -749,7 +749,7 @@ void App::PhysicsUpdate()
 				if (m_engineType == RenderEngineType::IndirectDraw)
 					sphereMesh->GetBase().SetBounds(RectangleBounds{});
 
-				const std::uint32_t sphereIndex = m_renderer->AddMeshBundle(std::move(sphereMesh));
+				sphereIndex = m_renderer->AddMeshBundle(std::move(sphereMesh));
 			}
 
 			isSphereAdded = true;
@@ -762,36 +762,34 @@ void App::PhysicsUpdate()
 		{
 			if (sCubeBundleMS && isSphereAdded)
 			{
-				std::uint32_t index = 1u;
+				auto& models = sCubeBundleMS->GetModels();
 
-				auto& cube = sCubeBundleMS->GetModel(0u);
+				for (auto& model : models)
+					model->SetMeshDetailsMS(
+						MeshDetailsMS{
+							.meshletCount  = sphereMeshletCount,
+							.meshletOffset = 0u
+						}
+					);
 
-				cube->SetMeshDetailsMS(
-					MeshDetailsMS{
-						.meshletCount  = sphereMeshletCount,
-						.meshletOffset = 0u
-					}
-				);
-
-				sCubeBundleMS->SetMeshIndex(index);
+				sCubeBundleMS->SetMeshIndex(sphereIndex);
 			}
 		}
 		else
 		{
 			if (sCubeBundle && isSphereAdded)
 			{
-				std::uint32_t index = 1u;
+				auto& models = sCubeBundle->GetModels();
 
-				auto& cube = sCubeBundle->GetModel(0u);
+				for (auto& model : models)
+					model->SetMeshDetailsVS(
+						MeshDetailsVS{
+							.indexCount  = sphereIndexCount,
+							.indexOffset = 0u
+						}
+					);
 
-				cube->SetMeshDetailsVS(
-					MeshDetailsVS{
-						.indexCount  = sphereIndexCount,
-						.indexOffset = 0u
-					}
-				);
-
-				sCubeBundle->SetMeshIndex(index);
+				sCubeBundle->SetMeshIndex(sphereIndex);
 			}
 		}
 	}

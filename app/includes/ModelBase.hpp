@@ -413,6 +413,8 @@ public:
 	}
 
 	[[nodiscard]]
+	std::vector<std::shared_ptr<ModelBaseVS>>& GetModels() noexcept { return m_models; }
+	[[nodiscard]]
 	std::shared_ptr<ModelBaseVS>& GetModel(size_t index) noexcept { return m_models[index]; }
 	[[nodiscard]]
 	std::uint32_t GetMeshIndex() const noexcept { return *m_meshIndex; }
@@ -461,6 +463,8 @@ public:
 		*m_meshIndex = index;
 	}
 
+	[[nodiscard]]
+	std::vector<std::shared_ptr<ModelBaseMS>>& GetModels() noexcept { return m_models; }
 	[[nodiscard]]
 	std::shared_ptr<ModelBaseMS>& GetModel(size_t index) noexcept { return m_models[index]; }
 	[[nodiscard]]
