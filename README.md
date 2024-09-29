@@ -16,21 +16,22 @@ Manager module/executable which dynamically links to different modules to form a
 ## Instructions
 Use the ADD_TEST_SOL cmake flag to add unit testing.
 
-Use the ***config.ini*** file from the executable directory to change the modules at the start of the app. The file will be automatically generated, if it doesn't exist upon starting the app.
+Use the ***config.ini*** file from the executable directory to change the modules during the app launch. The file will be automatically generated with default values, if it doesn't exist.
 
 Currently supported changeable modules/systems:\
-[Modules] Renderer = Gaia\
-[Modules] Renderer = Terra
+[Modules] Renderer = Gaia  - DirectX12 based.\
+[Modules] Renderer = Terra - Vulkan based.
 
-[Systems] RenderEngine = IndirectDraw\
-[Systems] RenderEngine = IndividualDraw
+[Systems] RenderEngine = IndirectDraw   - Compute Shader based Frustum Culling with Indirect Draw calls.\
+[Systems] RenderEngine = IndividualDraw - Legacy draw calls.\
+[Systems] RenderEngine = MeshDraw       - Mesh Shader based. No culling for now.
 
 ## Resources
 ### Default Window Icon
 Default window icon location is {executable_directory}/resources/icon/Sol.ico.
 
 ## Executable icon
-To change the executable icon for Windows, add the path to the icon in ***icon/win32ExecutableIcon.rc***. 
+To change the executable icon for Windows, add the path to the icon in ***icon/win32ExecutableIcon.rc***.
 
 ## Requirements
 cmake 3.21+.\

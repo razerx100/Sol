@@ -77,8 +77,8 @@ void App::Init()
 		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Green);
 		const MaterialData green{
-			.ambient = colourBuffer,
-			.diffuse = colourBuffer,
+			.ambient  = colourBuffer,
+			.diffuse  = colourBuffer,
 			.specular = { 1.f, 1.f, 1.f, 1.f }
 		};
 
@@ -93,8 +93,8 @@ void App::Init()
 		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::White);
 		const MaterialData white{
-			.ambient = colourBuffer,
-			.diffuse = colourBuffer,
+			.ambient  = colourBuffer,
+			.diffuse  = colourBuffer,
 			.specular = { 1.f, 1.f, 1.f, 1.f }
 		};
 
