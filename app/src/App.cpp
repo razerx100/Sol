@@ -2,7 +2,7 @@
 
 #include <App.hpp>
 #include <MaterialBase.hpp>
-#include <BasicModels.hpp>
+#include <ModelBase.hpp>
 #include <BasicMeshBundles.hpp>
 #include <CameraManagerSol.hpp>
 #include <DirectXColors.h>
