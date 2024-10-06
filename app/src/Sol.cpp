@@ -98,7 +98,7 @@ int Sol::Run()
 			break;
 		}
 
-		if(!m_window->IsMinimized())
+		if (!m_window->IsMinimised())
 		{
 			float deltaTime   = m_frameTime.GetDeltaTime();
 			float updateDelta = m_frameTime.GetGraphicsUpdateDelta();
