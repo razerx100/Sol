@@ -57,7 +57,7 @@ std::unique_ptr<Window> Sol::CreateWindow(
 	std::unique_ptr<Window> window{};
 
 	if (moduleName == "Luna")
-		window = std::unique_ptr<Window>{ CreateLunaInstance(width, height, appName.c_str()) };
+		window = CreateLunaInstance(width, height, appName.c_str());
 
 	return window;
 }
