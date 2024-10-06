@@ -83,7 +83,7 @@ FetchContent_MakeAvailable(Terra)
 
 message(STATUS "Fetched Terra")
 
-message(STATUS "Fetching Luna....")
+message(STATUS "Fetching Luna from the branch ${BRANCH}....")
 
 FetchContent_Declare(
     Luna
@@ -132,7 +132,7 @@ FetchContent_MakeAvailable(STB)
 message(STATUS "Fetched STB")
 
 target_link_libraries(SolApp PRIVATE
-    razer::venus Pluto razer::gaiaX razer::terra Luna razer::DxMath razer::stb
+    razer::venus Pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
 )
 
 add_dependencies(SolApp GLSL HLSL)
