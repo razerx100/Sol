@@ -32,7 +32,7 @@ FetchContent_MakeAvailable(googletest)
 
 target_link_libraries(SolTest PRIVATE
     GTest::gtest_main SolApp
-    razer::venus Pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
+    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
 )
 
 include(GoogleTest)

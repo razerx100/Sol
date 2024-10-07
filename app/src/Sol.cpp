@@ -46,7 +46,7 @@ std::shared_ptr<InputManager> Sol::CreateInputManager(const std::string& moduleN
 	std::shared_ptr<InputManager> inputManager{};
 
 	if (moduleName == "Pluto")
-		inputManager = std::shared_ptr<InputManager>{ CreatePlutoInstance() };
+		inputManager = CreatePlutoInstance();
 
 	return inputManager;
 }

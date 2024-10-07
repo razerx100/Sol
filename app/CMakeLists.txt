@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp templates/*.hpp)
+file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp exports/*.hpp)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -19,7 +19,7 @@ else()
     endif()
 endif()
 
-set(SOL_PRIVATE_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/includes/ ${CMAKE_CURRENT_SOURCE_DIR}/exports/ ${CMAKE_CURRENT_SOURCE_DIR}/includes/Exceptions/ ${CMAKE_CURRENT_SOURCE_DIR}/templates/ ${CMAKE_CURRENT_SOURCE_DIR}/templates/modules/)
+set(SOL_PRIVATE_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/includes/ ${CMAKE_CURRENT_SOURCE_DIR}/exports/ ${CMAKE_CURRENT_SOURCE_DIR}/includes/Exceptions/)
 
 set(SOL_PRIVATE_INCLUDES ${SOL_PRIVATE_INCLUDES} PARENT_SCOPE)
 
@@ -47,7 +47,7 @@ FetchContent_MakeAvailable(Venus)
 
 message(STATUS "Fetched Venus")
 
-message(STATUS "Fetching Pluto....")
+message(STATUS "Fetching Pluto from the branch ${BRANCH}....")
 
 FetchContent_Declare(
     Pluto
@@ -132,7 +132,7 @@ FetchContent_MakeAvailable(STB)
 message(STATUS "Fetched STB")
 
 target_link_libraries(SolApp PRIVATE
-    razer::venus Pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
+    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
 )
 
 add_dependencies(SolApp GLSL HLSL)
