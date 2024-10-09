@@ -30,7 +30,8 @@ Sol::Sol(const std::string& appName)
 	m_window->SetWindowIcon(L"resources/icon/Sol.ico");
 	m_window->SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
 
-	m_window->SetInputManager(m_inputManager);
+	SetInputCallback(*m_window, m_inputManager.get(), m_configManager.GeIOName());
+
 	m_window->SetRenderer(m_renderer);
 
 	// Renderer
@@ -116,7 +117,7 @@ int Sol::Run()
 			else
 				accumulatedElapsedTime += deltaTime;
 
-			m_window->UpdateIndependentInputs();
+			m_inputManager->UpdateIndependentInputs();
 			m_renderer->Render();
 		}
 
@@ -136,4 +137,20 @@ int Sol::Run()
 	m_renderer->WaitForGPUToFinish();
 
 	return errorCode;
+}
+
+void Sol::SetInputCallback(
+	Window& window, InputManager* inputManager, const std::string& ioModuleName
+) {
+	if (ioModuleName == "Pluto")
+		window.AddInputCallback(&Win32InputCallbackProxy, inputManager);
+}
+
+void Sol::Win32InputCallbackProxy(
+	void* hwnd, std::uint32_t message, std::uint64_t wParam, std::uint64_t lParam,
+	void* extraData
+) {
+	auto inputManager = reinterpret_cast<InputManager*>(extraData);
+
+	inputManager->InputCallback(hwnd, message, wParam, lParam);
 }

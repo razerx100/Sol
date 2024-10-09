@@ -257,7 +257,7 @@ void App::PhysicsUpdate()
 {
 	constexpr float cameraMoveSpeed = 0.5f;
 
-	Keyboard& keyboard = m_inputManager->GetKeyboard();
+	const Keyboard& keyboard = m_inputManager->GetKeyboard();
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
 	{

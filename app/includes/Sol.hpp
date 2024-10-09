@@ -35,6 +35,14 @@ private:
 		void* windowHandle, void* moduleHandle, RenderEngineType engineType
 	);
 
+	static void Win32InputCallbackProxy(
+		void* hwnd, std::uint32_t message, std::uint64_t wParam, std::uint64_t lParam,
+		void* extraData
+	);
+	static void SetInputCallback(
+		Window& window, InputManager* inputManager, const std::string& ioModuleName
+	);
+
 private:
 	static constexpr std::uint32_t s_width      = 1920u;
 	static constexpr std::uint32_t s_height     = 1080u;
