@@ -87,16 +87,19 @@ std::unique_ptr<Renderer> Sol::CreateRenderer(
 
 int Sol::Run()
 {
-	int errorCode                = -1;
+	std::int32_t errorCode       = -1;
 	float accumulatedElapsedTime = 0;
 
 	while (true)
 	{
 		m_frameTime.GetTimer().SetTimer();
 
-		if (auto ecode = m_window->Update(); ecode)
+		const std::int32_t exitCode = m_window->Update();
+
+		if (!exitCode)
 		{
-			errorCode = *ecode;
+			errorCode = exitCode;
+
 			break;
 		}
 
