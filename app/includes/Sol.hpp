@@ -21,14 +21,14 @@ public:
 
 private:
 	[[nodiscard]]
-	static std::shared_ptr<InputManager> CreateInputManager(const std::string& moduleName);
+	static std::unique_ptr<InputManager> CreateInputManager(const std::string& moduleName);
 	[[nodiscard]]
 	static std::unique_ptr<Window> CreateWindow(
 		const std::string& moduleName, const std::string& appName,
 		std::uint32_t width, std::uint32_t height
 	);
 	[[nodiscard]]
-	static std::shared_ptr<Renderer> CreateRenderer(
+	static std::unique_ptr<Renderer> CreateRenderer(
 		const std::string& moduleName, const std::string& appName,
 		std::uint32_t width, std::uint32_t height, std::uint32_t frameCount,
 		std::shared_ptr<ThreadPool> threadPool,
@@ -43,6 +43,9 @@ private:
 		Window& window, InputManager* inputManager, const std::string& ioModuleName
 	);
 
+	static void ResizeCallback(void* callbackData, void* extraData);
+	static void FullscreenCallback(void* callbackData, void* extraData);
+
 private:
 	static constexpr std::uint32_t s_width      = 1920u;
 	static constexpr std::uint32_t s_height     = 1080u;
@@ -53,9 +56,9 @@ private:
 	ConfigManager                 m_configManager;
 	FrameTime                     m_frameTime;
 	std::shared_ptr<ThreadPool>   m_threadPool;
-	std::shared_ptr<InputManager> m_inputManager;
+	std::unique_ptr<InputManager> m_inputManager;
 	std::unique_ptr<Window>       m_window;
-	std::shared_ptr<Renderer>     m_renderer;
+	std::unique_ptr<Renderer>     m_renderer;
 	std::unique_ptr<App>          m_app;
 
 public:

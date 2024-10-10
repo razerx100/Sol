@@ -26,13 +26,14 @@ Sol::Sol(const std::string& appName)
 	// Input Manager
 	m_inputManager->AddGamepadSupport(1u);
 
+	m_inputManager->SubscribeToEvent(InputEvent::Fullscreen, &FullscreenCallback, this);
+	m_inputManager->SubscribeToEvent(InputEvent::Resize, &ResizeCallback, m_renderer.get());
+
 	// Window
 	m_window->SetWindowIcon(L"resources/icon/Sol.ico");
 	m_window->SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
 
 	SetInputCallback(*m_window, m_inputManager.get(), m_configManager.GeIOName());
-
-	m_window->SetRenderer(m_renderer);
 
 	// Renderer
 	m_renderer->SetShaderPath(L"resources/shaders/");
@@ -42,9 +43,9 @@ Sol::Sol(const std::string& appName)
 	m_app->Init();
 }
 
-std::shared_ptr<InputManager> Sol::CreateInputManager(const std::string& moduleName)
+std::unique_ptr<InputManager> Sol::CreateInputManager(const std::string& moduleName)
 {
-	std::shared_ptr<InputManager> inputManager{};
+	std::unique_ptr<InputManager> inputManager{};
 
 	if (moduleName == "Pluto")
 		inputManager = CreatePlutoInstance();
@@ -63,13 +64,13 @@ std::unique_ptr<Window> Sol::CreateWindow(
 	return window;
 }
 
-std::shared_ptr<Renderer> Sol::CreateRenderer(
+std::unique_ptr<Renderer> Sol::CreateRenderer(
 	const std::string& moduleName, const std::string& appName,
 	std::uint32_t width, std::uint32_t height, std::uint32_t frameCount,
 	std::shared_ptr<ThreadPool> threadPool,
 	void* windowHandle, void* moduleHandle, RenderEngineType engineType
 ) {
-	std::shared_ptr<Renderer> renderer{};
+	std::unique_ptr<Renderer> renderer{};
 
 	if (moduleName == "Gaia")
 		renderer = CreateGaiaInstance(
@@ -150,7 +151,24 @@ void Sol::Win32InputCallbackProxy(
 	void* hwnd, std::uint32_t message, std::uint64_t wParam, std::uint64_t lParam,
 	void* extraData
 ) {
-	auto inputManager = reinterpret_cast<InputManager*>(extraData);
+	auto inputManager = static_cast<InputManager*>(extraData);
 
 	inputManager->InputCallback(hwnd, message, wParam, lParam);
+}
+
+void Sol::ResizeCallback(void* callbackData, void* extraData)
+{
+	auto resizeData = static_cast<ResizeData*>(callbackData);
+	auto renderer   = static_cast<Renderer*>(extraData);
+
+	renderer->Resize(resizeData->width, resizeData->height);
+}
+
+void Sol::FullscreenCallback([[maybe_unused]]void* callbackData, void* extraData)
+{
+	auto sol = static_cast<Sol*>(extraData);
+
+	const Renderer::Resolution resolution = sol->m_renderer->GetFirstDisplayCoordinates();
+
+	sol->m_window->ToggleFullscreen(resolution.width, resolution.height);
 }
