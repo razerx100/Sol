@@ -2,13 +2,24 @@
 #include <ranges>
 #include <algorithm>
 
-void MeshBundleBase::CalculateNormalsIndependentFaces() noexcept
+void MeshBundleBase::AddVertices(std::vector<Vertex> vertices) noexcept
 {
-	for (size_t index = 0u; index < std::size(m_indices); index += 3)
+	std::ranges::move(vertices, std::back_inserter(m_vertices));
+}
+
+void MeshBundleBase::AddIndices(std::vector<std::uint32_t> indices) noexcept
+{
+	std::ranges::move(indices, std::back_inserter(m_indices));
+}
+
+void MeshBundleBase::CalculateNormalsIndependentFaces(
+	std::vector<Vertex>& vertices, std::vector<std::uint32_t>& indices
+) noexcept {
+	for (size_t index = 0u; index < std::size(indices); index += 3)
 	{
-		Vertex& vertex1 = m_vertices[m_indices[index]];
-		Vertex& vertex2 = m_vertices[m_indices[index + 1u]];
-		Vertex& vertex3 = m_vertices[m_indices[index + 2u]];
+		Vertex& vertex1 = vertices[indices[index]];
+		Vertex& vertex2 = vertices[indices[index + 1u]];
+		Vertex& vertex3 = vertices[indices[index + 2u]];
 
 		DirectX::XMFLOAT3 faceNormal = GetFaceNormal(
 			vertex1.position, vertex2.position, vertex3.position
@@ -54,7 +65,11 @@ void MeshBundleBaseMS::SetMeshlets() noexcept
 {
 	MeshletMaker maker{};
 	maker.GenerateMeshlets(m_meshBase.GetIndices());
-	maker.LoadMeshlets(m_meshlets, m_meshBase.GetIndices(), m_primIndices);
+
+	std::vector<std::uint32_t> vertexIndices{};
+	maker.LoadMeshlets(m_meshlets, vertexIndices, m_primIndices);
+
+	m_meshBase.AddIndices(std::move(vertexIndices));
 }
 
 // Meshlet Maker
@@ -80,7 +95,6 @@ void MeshletMaker::LoadMeshlets(
 	vertexIndices    = std::move(m_vertexIndices);
 	primitiveIndices = std::move(m_primitiveIndices);
 }
-
 
 bool MeshletMaker::IsInMap(
 	const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,

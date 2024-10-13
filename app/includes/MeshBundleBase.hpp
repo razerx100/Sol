@@ -21,10 +21,9 @@ public:
 	const std::vector<Vertex>& GetVertices() const noexcept { return m_vertices; }
 	[[nodiscard]]
 	const std::vector<std::uint32_t>& GetIndices() const noexcept { return m_indices; }
-	[[nodiscard]]
-	std::vector<Vertex>& GetVertices() noexcept { return m_vertices; }
-	[[nodiscard]]
-	std::vector<std::uint32_t>& GetIndices() noexcept { return m_indices; }
+
+	void AddVertices(std::vector<Vertex> vertices) noexcept;
+	void AddIndices(std::vector<std::uint32_t> indices) noexcept;
 
 	void SetName(std::string name) noexcept { m_name = std::move(name); }
 
@@ -33,7 +32,9 @@ public:
 	[[nodiscard]]
 	const std::string& GetName() const noexcept { return m_name; }
 
-	void CalculateNormalsIndependentFaces() noexcept;
+	static void CalculateNormalsIndependentFaces(
+		std::vector<Vertex>& vertices, std::vector<std::uint32_t>& indices
+	) noexcept;
 
 	static void SetUVToVertices(
 		std::vector<Vertex>& vertices, const std::vector<DirectX::XMFLOAT2>& uvs

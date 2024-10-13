@@ -20,8 +20,8 @@ public:
 	static void SetMesh(MeshBundleBase& meshBundle, CubeUVMode uvMode) noexcept;
 
 private:
-	static void SetSingleColourUV(MeshBundleBase& meshBundle) noexcept;
-	static void SetIndependentFaceTexUV(MeshBundleBase& meshBundle) noexcept;
+	static void SetSingleColourUV(std::vector<Vertex>& vertices) noexcept;
+	static void SetIndependentFaceTexUV(std::vector<Vertex>& vertices) noexcept;
 };
 
 class QuadMesh

@@ -5,7 +5,8 @@
 void TriangleMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 {
 	meshBundle.SetName("Triangle");
-	std::vector<Vertex>& vertices = meshBundle.GetVertices();
+
+	std::vector<Vertex> vertices{};
 
 	vertices.resize(6);
 	vertices[0].position = { 0.f, 1.f, 0.f };
@@ -18,11 +19,14 @@ void TriangleMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { 3u, singleColourUV };
 
-	meshBundle.SetUVToVertices(vertices, uvs);
+	MeshBundleBase::SetUVToVertices(vertices, uvs);
 
-	meshBundle.GetIndices() = { 0u, 1u, 2u, 5u, 4u, 3u };
+	std::vector<std::uint32_t> indices{ 0u, 1u, 2u, 5u, 4u, 3u };
 
-	meshBundle.CalculateNormalsIndependentFaces();
+	MeshBundleBase::CalculateNormalsIndependentFaces(vertices, indices);
+
+	meshBundle.AddVertices(std::move(vertices));
+	meshBundle.AddIndices(std::move(indices));
 }
 
 // Cube
@@ -30,7 +34,7 @@ void CubeMesh::SetMesh(MeshBundleBase& meshBundle, CubeUVMode uvMode) noexcept
 {
 	constexpr float side = 1.0f / 2.0f;
 
-	std::vector<Vertex>& vertices = meshBundle.GetVertices();
+	std::vector<Vertex> vertices{};
 
 	vertices.resize(24);
 	vertices[0].position  = { -side,-side,-side };// 0 near side
@@ -63,42 +67,43 @@ void CubeMesh::SetMesh(MeshBundleBase& meshBundle, CubeUVMode uvMode) noexcept
 	if (uvMode == CubeUVMode::SingleColour)
 	{
 		name.append("-SingleColour");
-		SetSingleColourUV(meshBundle);
+		SetSingleColourUV(vertices);
 	}
 	else if (uvMode == CubeUVMode::IndependentFaceTexture)
 	{
 		name.append("-IndependentFaceTexture");
-		SetIndependentFaceTexUV(meshBundle);
+		SetIndependentFaceTexUV(vertices);
 	}
 
 	meshBundle.SetName(std::move(name));
 
-	meshBundle.GetIndices() = {
-			0u, 2u, 1u,     2u, 3u, 1u,
-			4u, 5u, 7u,     4u, 7u, 6u,
-			8u, 10u, 9u,    10u, 11u, 9u,
+	std::vector<std::uint32_t> indices
+	{
+			0u,  2u,  1u,   2u,  3u,  1u,
+			4u,  5u,  7u,   4u,  7u,  6u,
+			8u,  10u, 9u,   10u, 11u, 9u,
 			12u, 13u, 15u,  12u, 15u, 14u,
 			16u, 17u, 18u,  18u, 17u, 19u,
 			20u, 23u, 21u,  20u, 22u, 23u
 	};
 
-	meshBundle.CalculateNormalsIndependentFaces();
+	meshBundle.CalculateNormalsIndependentFaces(vertices, indices);
+
+	meshBundle.AddVertices(std::move(vertices));
+	meshBundle.AddIndices(std::move(indices));
 }
 
-void CubeMesh::SetSingleColourUV(MeshBundleBase& meshBundle) noexcept
+void CubeMesh::SetSingleColourUV(std::vector<Vertex>& vertices) noexcept
 {
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
+
 	std::vector<DirectX::XMFLOAT2> uvs{ 24u, singleColourUV };
 
-	std::vector<Vertex>& vertices = meshBundle.GetVertices();
-
-	meshBundle.SetUVToVertices(vertices, uvs);
+	MeshBundleBase::SetUVToVertices(vertices, uvs);
 }
 
-void CubeMesh::SetIndependentFaceTexUV(MeshBundleBase& meshBundle) noexcept
+void CubeMesh::SetIndependentFaceTexUV(std::vector<Vertex>& vertices) noexcept
 {
-	std::vector<Vertex>& vertices = meshBundle.GetVertices();
-
 	std::vector<DirectX::XMFLOAT2> uvs{};
 
 	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 1.f });
@@ -126,13 +131,14 @@ void CubeMesh::SetIndependentFaceTexUV(MeshBundleBase& meshBundle) noexcept
 	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
 	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
 
-	meshBundle.SetUVToVertices(vertices, uvs);
+	MeshBundleBase::SetUVToVertices(vertices, uvs);
 }
 
 // Quad
 void QuadMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 {
-	std::vector<Vertex>& vertices = meshBundle.GetVertices();
+	std::vector<Vertex> vertices{};
+
 	meshBundle.SetName("Quad");
 
 	constexpr float side = 1.0f / 2.0f;
@@ -147,20 +153,26 @@ void QuadMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 	vertices[6].position = { -side, -side, 0.f };
 	vertices[7].position = { side, -side, 0.f };
 
-	std::vector<DirectX::XMFLOAT2> uvs{
-		{0.f, 0.f}, {1.f, 0.f},
-		{0.f, 1.f}, {1.f, 1.f},
-		{1.f, 0.f}, {0.f, 0.f},
-		{1.f, 1.f}, {0.f, 1.f}
+	std::vector<DirectX::XMFLOAT2> uvs
+	{
+		{ 0.f, 0.f }, { 1.f, 0.f },
+		{ 0.f, 1.f }, { 1.f, 1.f },
+		{ 1.f, 0.f }, { 0.f, 0.f },
+		{ 1.f, 1.f }, { 0.f, 1.f }
 	};
-	meshBundle.SetUVToVertices(vertices, uvs);
 
-	meshBundle.GetIndices() = {
+	MeshBundleBase::SetUVToVertices(vertices, uvs);
+
+	std::vector<std::uint32_t> indices
+	{
 		0u, 1u, 2u, 2u, 1u, 3u,
 		6u, 7u, 5u, 5u, 4u, 6u
 	};
 
-	meshBundle.CalculateNormalsIndependentFaces();
+	meshBundle.CalculateNormalsIndependentFaces(vertices, indices);
+
+	meshBundle.AddVertices(std::move(vertices));
+	meshBundle.AddIndices(std::move(indices));
 }
 
 // Sphere
@@ -171,7 +183,7 @@ void SphereMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 
 	meshBundle.SetName(std::format("Sphere{}{}", m_latitudeDivision, m_longitudeDivision));
 
-	std::vector<Vertex>& vertices = meshBundle.GetVertices();
+	std::vector<Vertex> vertices{};
 
 	constexpr float radius       = 1.f;
 	const DirectX::XMVECTOR base = DirectX::XMVectorSet(0.f, 0.f, radius, 0.f);
@@ -211,10 +223,12 @@ void SphereMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { std::size(vertices), singleColourUV};
 
-	meshBundle.SetUVToVertices(vertices, uvs);
+	MeshBundleBase::SetUVToVertices(vertices, uvs);
 
 	// Normals
 	CalculateNormals(vertices);
+
+	meshBundle.AddVertices(std::move(vertices));
 
 	// Indices
 	const auto calcIndex = [longDiv = m_longitudeDivision]
@@ -222,7 +236,7 @@ void SphereMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 		return iLat * longDiv + iLong;
 	};
 
-	std::vector<std::uint32_t>& indices = meshBundle.GetIndices();
+	std::vector<std::uint32_t> indices{};
 
 	for (std::uint32_t iLat = 0u; iLat < m_latitudeDivision - 2u; iLat++)
 	{
@@ -265,6 +279,8 @@ void SphereMesh::SetMesh(MeshBundleBase& meshBundle) noexcept
 	indices.emplace_back(calcIndex(m_latitudeDivision - 2u, 0u));
 	indices.emplace_back(calcIndex(m_latitudeDivision - 2u, m_longitudeDivision - 1u));
 	indices.emplace_back(iSouthPole);
+
+	meshBundle.AddIndices(std::move(indices));
 }
 
 void SphereMesh::CalculateNormals(std::vector<Vertex>& vertices) noexcept
