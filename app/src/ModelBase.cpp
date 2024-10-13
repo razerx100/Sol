@@ -33,3 +33,52 @@ std::shared_ptr<ModelBundleImplMS> ModelBundleBaseMS::GetBundleImpl() const noex
 
 	return bundleImpl;
 }
+
+// Model Bundle
+ModelBundle& ModelBundle::AddModel(float scale /* = 1.f */) noexcept
+{
+	if (!s_modelTypeVS)
+		m_bundleMS->AddModel(std::make_shared<ModelBaseMS>(ModelBase{ scale }));
+	else
+		m_bundleVS->AddModel(std::make_shared<ModelBaseVS>(ModelBase{ scale }));
+
+	return *this;
+}
+
+ModelBase& ModelBundle::GetModel(size_t index) noexcept
+{
+	if (!s_modelTypeVS)
+		return m_bundleMS->GetModel(index)->GetBase();
+	else
+		return m_bundleVS->GetModel(index)->GetBase();
+}
+
+void ModelBundle::SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseVS& meshBundle) noexcept
+{
+	m_bundleVS->GetModel(modelIndex)->SetMeshDetailsVS(
+		MeshDetailsVS
+		{
+			.indexCount  = static_cast<std::uint32_t>(std::size(meshBundle.GetIndices())),
+			.indexOffset = 0u
+		}
+	);
+}
+
+void ModelBundle::SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseMS& meshBundle) noexcept
+{
+	m_bundleMS->GetModel(modelIndex)->SetMeshDetailsMS(
+		MeshDetailsMS
+		{
+			.meshletCount  = static_cast<std::uint32_t>(std::size(meshBundle.GetMeshlets())),
+			.meshletOffset = 0u
+		}
+	);
+}
+
+std::uint32_t ModelBundle::SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName)
+{
+	if (!s_modelTypeVS)
+		return renderer.AddModelBundle(m_bundleMS->GetBundleImpl(), pixelShaderName);
+	else
+		return renderer.AddModelBundle(m_bundleVS->GetBundleImpl(), pixelShaderName);
+}

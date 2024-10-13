@@ -4,7 +4,9 @@
 #include <string>
 #include <array>
 
+#include <MeshBundleBase.hpp>
 #include <Model.hpp>
+#include <Renderer.hpp>
 
 class ModelTransform
 {
@@ -495,6 +497,54 @@ public:
 	{
 		m_models    = std::move(other.m_models);
 		m_meshIndex = std::move(other.m_meshIndex);
+
+		return *this;
+	}
+};
+
+class ModelBundle
+{
+public:
+	ModelBundle()
+		: m_bundleVS{ s_modelTypeVS ? std::make_unique<ModelBundleBaseVS>() : nullptr },
+		m_bundleMS{ s_modelTypeVS ? nullptr : std::make_unique<ModelBundleBaseMS>() }
+	{}
+
+	static void SetModelType(bool meshShader) noexcept { s_modelTypeVS = !meshShader; }
+
+	ModelBundle& AddModel(float scale = 1.f) noexcept;
+
+	// These two functions aren't going to work, since the mesh bundle is a unique_ptr
+	// and it's not going to be stored.
+	void SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseVS& meshBundle) noexcept;
+	void SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseMS& meshBundle) noexcept;
+
+	[[nodiscard]]
+	ModelBase& GetModel(size_t index) noexcept;
+	[[nodiscard]]
+	const ModelBase& GetModel(size_t index) const noexcept { return GetModel(index); }
+
+	[[nodiscard]]
+	std::uint32_t SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName);
+
+private:
+	std::unique_ptr<ModelBundleBaseVS> m_bundleVS;
+	std::unique_ptr<ModelBundleBaseMS> m_bundleMS;
+
+	inline static bool s_modelTypeVS = true;
+
+public:
+	ModelBundle(const ModelBundle&) = delete;
+	ModelBundle& operator=(const ModelBundle&) = delete;
+
+	ModelBundle(ModelBundle&& other) noexcept
+		: m_bundleVS{ std::move(other.m_bundleVS) },
+		m_bundleMS{ std::move(other.m_bundleMS) }
+	{}
+	ModelBundle& operator=(ModelBundle&& other) noexcept
+	{
+		m_bundleVS = std::move(other.m_bundleVS);
+		m_bundleMS = std::move(other.m_bundleMS);
 
 		return *this;
 	}

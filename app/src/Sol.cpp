@@ -4,6 +4,7 @@
 #include <TerraInstance.hpp>
 #include <vector>
 
+#include <ModelBase.hpp>
 #include <Sol.hpp>
 
 Sol::Sol(const std::string& appName)
@@ -38,6 +39,9 @@ Sol::Sol(const std::string& appName)
 	// Renderer
 	m_renderer->SetShaderPath(L"resources/shaders/");
 	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
+
+	// Other stuff.
+	ModelBundle::SetModelType(m_configManager.GetRenderEngineType() == RenderEngineType::MeshDraw);
 
 	// App
 	m_app->Init();
