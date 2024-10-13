@@ -2,14 +2,28 @@
 #include <algorithm>
 #include <cstring>
 #include <optional>
+#include <format>
+#include <Exception.hpp>
 
 #include <TextureAtlas.hpp>
 
-void TextureAtlas::AddTexture(
+TextureAtlas& TextureAtlas::AddTexture(
 	const std::string& name, std::shared_ptr<void> texture, std::uint32_t width, std::uint32_t height
 ) noexcept {
 	m_unprocessedData.emplace_back(TextureInfo{ name, width, height });
 	m_unprocessedTextures.emplace_back(std::move(texture));
+
+	return *this;
+}
+
+TextureAtlas& TextureAtlas::AddTexture(const std::string& name, const std::string& fileName)
+{
+	auto texture = TextureTool::LoadTextureFromFile(fileName);
+
+	if (texture)
+		return AddTexture(name, std::move(texture.value()));
+	else
+		throw Exception{ "FileException", std::format("The texture file {} couldn't be found.", fileName) };
 }
 
 void TextureAtlas::CreateAtlas() noexcept

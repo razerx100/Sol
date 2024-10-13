@@ -28,14 +28,15 @@ public:
 		m_textureBorder{ 1u }, m_16bitsComponent{ false }
 	{}
 
-	void AddTexture(
+	TextureAtlas& AddTexture(
 		const std::string& name, std::shared_ptr<void> texture,
 		std::uint32_t width, std::uint32_t height
 	) noexcept;
-	void AddTexture(const std::string& name, STexture&& texture) noexcept
+	TextureAtlas& AddTexture(const std::string& name, STexture&& texture) noexcept
 	{
-		AddTexture(name, std::move(texture.data), texture.width, texture.height);
+		return AddTexture(name, std::move(texture.data), texture.width, texture.height);
 	}
+	TextureAtlas& AddTexture(const std::string& name, const std::string& fileName);
 
 	void SetIfComponentsAre16bits(bool component16bits) noexcept { m_16bitsComponent = component16bits; }
 	void SetBorder(std::uint32_t border) noexcept { m_textureBorder = border; }

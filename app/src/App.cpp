@@ -123,40 +123,20 @@ void App::Init()
 	}
 
 	{
-		auto testTexture  = TextureTool::LoadTextureFromFile("resources/textures/NTHead.jpg");
-		auto testTexture2 = TextureTool::LoadTextureFromFile("resources/textures/Panda.png");
-		auto testTexture3 = TextureTool::LoadTextureFromFile("resources/textures/unicorn.jpeg");
-		auto testTexture4 = TextureTool::LoadTextureFromFile("resources/textures/Katarin.png");
-		auto testTexture5 = TextureTool::LoadTextureFromFile("resources/textures/MonikaGun.png");
-		auto testTexture6 = TextureTool::LoadTextureFromFile("resources/textures/UltraMarine.jpg");
-		auto testTexture7 = TextureTool::LoadTextureFromFile("resources/textures/Goku.jpg");
+		atlas.AddTexture("Narrative",  "resources/textures/NTHead.jpg")
+			.AddTexture("Panda",       "resources/textures/Panda.png")
+			.AddTexture("Unicorn",     "resources/textures/unicorn.jpeg")
+			.AddTexture("Katarin",     "resources/textures/Katarin.png")
+			.AddTexture("Monika",      "resources/textures/MonikaGun.png")
+			.AddTexture("UltraMarine", "resources/textures/UltraMarine.jpg")
+			.AddTexture("Goku",        "resources/textures/Goku.jpg");
 
-		if (testTexture && testTexture2 && testTexture3 &&
-			testTexture4 && testTexture5 && testTexture6 && testTexture7)
-		{
-			STexture& texture  = testTexture.value();
-			STexture& texture2 = testTexture2.value();
-			STexture& texture3 = testTexture3.value();
-			STexture& texture4 = testTexture4.value();
-			STexture& texture5 = testTexture5.value();
-			STexture& texture6 = testTexture6.value();
-			STexture& texture7 = testTexture7.value();
+		atlas.CreateAtlas();
 
-			atlas.AddTexture("Narrative", std::move(texture));
-			atlas.AddTexture("Panda", std::move(texture2));
-			atlas.AddTexture("Unicorn", std::move(texture3));
-			atlas.AddTexture("Katarin", std::move(texture4));
-			atlas.AddTexture("Monika", std::move(texture5));
-			atlas.AddTexture("UltraMarine", std::move(texture6));
-			atlas.AddTexture("Goku", std::move(texture7));
+		STexture atlastTex = atlas.MoveTexture();
 
-			atlas.CreateAtlas();
-
-			STexture atlastTex = atlas.MoveTexture();
-
-			const size_t textureIndex = m_renderer->AddTexture(std::move(atlastTex));
-			atlasBindingIndex         = m_renderer->BindTexture(textureIndex);
-		}
+		const size_t textureIndex = m_renderer->AddTexture(std::move(atlastTex));
+		atlasBindingIndex         = m_renderer->BindTexture(textureIndex);
 	}
 
 	if (m_engineType == RenderEngineType::MeshDraw)
