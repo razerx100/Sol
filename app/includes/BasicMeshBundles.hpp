@@ -5,7 +5,10 @@
 class TriangleMesh
 {
 public:
-	static void SetMesh(MeshBundleBase& meshBundle) noexcept;
+	static void SetMesh(Mesh& mesh) noexcept;
+
+	[[nodiscard]]
+	static std::string GetName() noexcept { return "Triangle"; }
 };
 
 enum class CubeUVMode
@@ -17,7 +20,10 @@ enum class CubeUVMode
 class CubeMesh
 {
 public:
-	static void SetMesh(MeshBundleBase& meshBundle, CubeUVMode uvMode) noexcept;
+	static void SetMesh(Mesh& mesh, CubeUVMode uvMode) noexcept;
+
+	[[nodiscard]]
+	static std::string GetName(CubeUVMode uvMode) noexcept;
 
 private:
 	static void SetSingleColourUV(std::vector<Vertex>& vertices) noexcept;
@@ -27,7 +33,7 @@ private:
 class QuadMesh
 {
 public:
-	static void SetMesh(MeshBundleBase& meshBundle) noexcept;
+	static void SetMesh(Mesh& mesh) noexcept;
 };
 
 class SphereMesh
@@ -37,7 +43,10 @@ public:
 		: m_latitudeDivision{ latDiv }, m_longitudeDivision{ longDiv }
 	{}
 
-	void SetMesh(MeshBundleBase& meshBundle) noexcept;
+	void SetMesh(Mesh& mesh) noexcept;
+
+	[[nodiscard]]
+	static std::string GetName(std::uint32_t latDiv, std::uint32_t longDiv) noexcept;
 
 private:
 	static void CalculateNormals(std::vector<Vertex>& vertices) noexcept;

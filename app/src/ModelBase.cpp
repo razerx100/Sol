@@ -53,26 +53,32 @@ ModelBase& ModelBundle::GetModel(size_t index) noexcept
 		return m_bundleVS->GetModel(index)->GetBase();
 }
 
-void ModelBundle::SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseVS& meshBundle) noexcept
+void ModelBundle::SetMeshModelDetails(size_t modelIndex, const MeshDetails& meshDetails) noexcept
 {
-	m_bundleVS->GetModel(modelIndex)->SetMeshDetailsVS(
-		MeshDetailsVS
-		{
-			.indexCount  = static_cast<std::uint32_t>(std::size(meshBundle.GetIndices())),
-			.indexOffset = 0u
-		}
-	);
+	if (!s_modelTypeVS)
+		m_bundleMS->GetModel(modelIndex)->SetMeshDetailsMS(
+			MeshDetailsMS
+			{
+				.meshletCount  = meshDetails.elementCount,
+				.meshletOffset = meshDetails.elementOffset
+			}
+		);
+	else
+		m_bundleVS->GetModel(modelIndex)->SetMeshDetailsVS(
+			MeshDetailsVS
+			{
+				.indexCount  = meshDetails.elementCount,
+				.indexOffset = meshDetails.elementOffset
+			}
+		);
 }
 
-void ModelBundle::SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseMS& meshBundle) noexcept
+void ModelBundle::SetMeshIndex(std::uint32_t index) noexcept
 {
-	m_bundleMS->GetModel(modelIndex)->SetMeshDetailsMS(
-		MeshDetailsMS
-		{
-			.meshletCount  = static_cast<std::uint32_t>(std::size(meshBundle.GetMeshlets())),
-			.meshletOffset = 0u
-		}
-	);
+	if (!s_modelTypeVS)
+		m_bundleMS->SetMeshIndex(index);
+	else
+		m_bundleVS->SetMeshIndex(index);
 }
 
 std::uint32_t ModelBundle::SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName)

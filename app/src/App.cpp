@@ -10,57 +10,80 @@
 #include <TextureAtlas.hpp>
 #include <MeshBounds.hpp>
 
-static std::shared_ptr<ModelBundleBaseVS> sCubeBundle{};
-static std::shared_ptr<ModelBundleBaseMS> sCubeBundleMS{};
-static std::uint32_t cubeBundleIndex1 = 0u;
-static std::shared_ptr<ModelBundleBaseVS> sCubeBundle2{};
-static std::shared_ptr<ModelBundleBaseMS> sCubeBundleMS2{};
-static std::uint32_t cubeBundleIndex2 = 0u;
-static std::shared_ptr<ModelBundleBaseVS> sCubeBundle3{};
-static std::shared_ptr<ModelBundleBaseMS> sCubeBundleMS3{};
-static std::uint32_t cubeBundleIndex3 = 0u;
-static std::shared_ptr<ModelBundleBaseVS> sCubeBundle4{};
-static std::shared_ptr<ModelBundleBaseMS> sCubeBundleMS4{};
-static std::uint32_t cubeBundleIndex4 = 0u;
+// These can't be global variables, as then they will
+// be in the Vertex mode always.
+static MeshBundleGeneral& GetCubeMesh() noexcept
+{
+	static MeshBundleGeneral cubeMesh{};
+
+	return cubeMesh;
+}
+static MeshBundleGeneral& GetSphereMesh() noexcept
+{
+	static MeshBundleGeneral sphereMesh{};
+
+	return sphereMesh;
+}
+
+static std::uint32_t cubeMeshIndex   = std::numeric_limits<std::uint32_t>::max();;
+static std::uint32_t sphereMeshIndex = std::numeric_limits<std::uint32_t>::max();;
+
+// These can't be global variables, as then they will
+// be in the Vertex mode always.
+static ModelBundle& GetModelBundle1() noexcept
+{
+	static ModelBundle cubeBundle1{};
+
+	return cubeBundle1;
+}
+
+static ModelBundle& GetModelBundle2() noexcept
+{
+	static ModelBundle cubeBundle2{};
+
+	return cubeBundle2;
+}
+
+static ModelBundle& GetModelBundle3() noexcept
+{
+	static ModelBundle cubeBundle3{};
+
+	return cubeBundle3;
+}
+
+static ModelBundle& GetModelBundle4() noexcept
+{
+	static ModelBundle cubeBundle4{};
+
+	return cubeBundle4;
+}
+
+static std::uint32_t cubeBundleIndex1 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex4 = std::numeric_limits<std::uint32_t>::max();
 
 static std::shared_ptr<MaterialBase> sTeal{};
-static std::uint32_t cubeIndexCount     = 0u;
-static std::uint32_t sphereIndexCount   = 0u;
-static std::uint32_t cubeMeshletCount   = 0u;
-static std::uint32_t sphereMeshletCount = 0u;
-static std::uint32_t sphereIndex        = 0u;
 static std::uint32_t whiteMatIndex      = 0u;
-static bool isSphereAdded               = false;
 static size_t secondTextureIndex        = std::numeric_limits<size_t>::max();
 static TextureAtlas atlas{};
 static std::uint32_t atlasBindingIndex  = 0u;
 
 void App::Init()
 {
-	if (m_engineType == RenderEngineType::MeshDraw)
 	{
-		auto cubeMesh = std::make_unique<MeshBundleBaseMS>();
+		Mesh mesh{};
 
-		CubeMesh{}.SetMesh(cubeMesh->GetBase(), CubeUVMode::IndependentFaceTexture);
-
-		cubeMesh->SetMeshlets();
-
-		cubeMeshletCount = static_cast<std::uint32_t>(std::size(cubeMesh->GetMeshlets()));
-
-		const std::uint32_t meshIndex = m_renderer->AddMeshBundle(std::move(cubeMesh));
-	}
-	else
-	{
-		auto cubeMesh = std::make_unique<MeshBundleBaseVS>();
-
-		CubeMesh{}.SetMesh(cubeMesh->GetBase(), CubeUVMode::IndependentFaceTexture);
-
-		cubeIndexCount = static_cast<std::uint32_t>(std::size(cubeMesh->GetIndices()));
+		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
 
 		if (m_engineType == RenderEngineType::IndirectDraw)
-			cubeMesh->GetBase().SetBounds(RectangleBounds{});
+			mesh.bounds = RectangleBounds{}.GetBounds(mesh.vertices);
 
-		const std::uint32_t meshIndex = m_renderer->AddMeshBundle(std::move(cubeMesh));
+		MeshBundleGeneral& cubeMesh = GetCubeMesh();
+
+		cubeMesh.AddMesh(std::move(mesh));
+
+		cubeMeshIndex = cubeMesh.SetMeshBundle(*m_renderer);
 	}
 
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
@@ -139,97 +162,37 @@ void App::Init()
 		atlasBindingIndex         = m_renderer->BindTexture(textureIndex);
 	}
 
-	if (m_engineType == RenderEngineType::MeshDraw)
 	{
-		auto cubeBundle = std::make_shared<ModelBundleBaseMS>();
+		ModelBundle& cubeBundle = GetModelBundle1();
 
-		{
-			auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
+		cubeBundle.AddModel(0.3f).AddModel(0.3f);
 
-			cubeBundle->AddModel(cube);
-
-			cube->SetMeshDetailsMS(
-				MeshDetailsMS{
-					.meshletCount  = cubeMeshletCount,
-					.meshletOffset = 0u
-				}
-			);
-
-			cube->GetBase().SetMaterialIndex(whiteMatIndex);
-			cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
-			cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-		}
-
-		{
-			auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
-
-			cubeBundle->AddModel(cube);
-
-			cube->SetMeshDetailsMS(
-				MeshDetailsMS{
-					.meshletCount  = cubeMeshletCount,
-					.meshletOffset = 0u
-				}
-			);
-
-			cube->GetBase().SetMaterialIndex(whiteMatIndex);
-			cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
-			cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-			cube->GetBase().GetTransform().MoveTowardsY(1.2f);
-		}
-
-		cubeBundleIndex1 = m_renderer->AddModelBundle(
-			cubeBundle->GetBundleImpl(), L"TestFragmentShader"
+		const MeshDetails cubeMeshDetails = GetCubeMesh().GetMeshDetails(
+			CubeMesh::GetName(CubeUVMode::IndependentFaceTexture)
 		);
 
-		sCubeBundleMS = cubeBundle;
-	}
-	else
-	{
-		auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
+		cubeBundle.SetMeshModelDetails(0u, cubeMeshDetails);
+		cubeBundle.SetMeshModelDetails(1u, cubeMeshDetails);
 
 		{
-			auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+			ModelBase& modelBase = cubeBundle.GetModel(0u);
 
-			cubeBundle->AddModel(cube);
-
-			cube->SetMeshDetailsVS(
-				MeshDetailsVS{
-					.indexCount  = cubeIndexCount,
-					.indexOffset = 0u
-				}
-			);
-
-			cube->GetBase().SetMaterialIndex(whiteMatIndex);
-			cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
-			cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
+			modelBase.SetMaterialIndex(whiteMatIndex);
+			modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
+			modelBase.SetDiffuseIndex(atlasBindingIndex);
 		}
 
 		{
-			auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+			ModelBase& modelBase = cubeBundle.GetModel(1u);
 
-			cubeBundle->AddModel(cube);
+			modelBase.SetMaterialIndex(whiteMatIndex);
+			modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
+			modelBase.SetDiffuseIndex(atlasBindingIndex);
 
-			cube->SetMeshDetailsVS(
-				MeshDetailsVS{
-					.indexCount  = cubeIndexCount,
-					.indexOffset = 0u
-				}
-			);
-
-			cube->GetBase().SetMaterialIndex(whiteMatIndex);
-			cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
-			cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-			cube->GetBase().GetTransform().MoveTowardsY(1.2f);
+			modelBase.GetTransform().MoveTowardsY(1.2f);
 		}
 
-		cubeBundleIndex1 = m_renderer->AddModelBundle(
-			cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-		);
-
-		sCubeBundle = cubeBundle;
+		cubeBundleIndex1 = cubeBundle.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
 }
 
@@ -241,413 +204,164 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
-		{
-			auto& cube = sCubeBundleMS->GetModel(0u);
-			cube->GetBase().GetTransform().MoveTowardsX(0.01f);
-		}
-		else
-		{
-			auto& cube = sCubeBundle->GetModel(0u);
-			cube->GetBase().GetTransform().MoveTowardsX(0.01f);
-		}
+		ModelBase& modelBase = GetModelBundle1().GetModel(0u);
+
+		modelBase.GetTransform().MoveTowardsX(0.01f);
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::A))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
-		{
-			auto& cube = sCubeBundleMS->GetModel(0u);
-			cube->GetBase().GetTransform().MoveTowardsX(-0.01f);
-		}
-		else
-		{
-			auto& cube = sCubeBundle->GetModel(0u);
-			cube->GetBase().GetTransform().MoveTowardsX(-0.01f);
-		}
+		ModelBase& modelBase = GetModelBundle1().GetModel(0u);
+
+		modelBase.GetTransform().MoveTowardsX(-0.01f);
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::C))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex2 == std::numeric_limits<std::uint32_t>::max())
 		{
-			if (!sCubeBundleMS2)
+			ModelBundle& cubeBundle2 = GetModelBundle2();
+
+			cubeBundle2.AddModel(0.3f).AddModel(0.3f);
+
+			const MeshDetails cubeMeshDetails = GetCubeMesh().GetMeshDetails(
+				CubeMesh::GetName(CubeUVMode::IndependentFaceTexture)
+			);
+
+			cubeBundle2.SetMeshModelDetails(0u, cubeMeshDetails);
+			cubeBundle2.SetMeshModelDetails(1u, cubeMeshDetails);
+
 			{
-				auto cubeBundle = std::make_shared<ModelBundleBaseMS>();
-				{
-					auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
+				ModelBase& modelBase = cubeBundle2.GetModel(0u);
 
-					cube->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = cubeMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-				{
-					auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
-
-					cube->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = cubeMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(-1.5f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-
-				cubeBundleIndex2 = m_renderer->AddModelBundle(
-					cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-				);
-
-				sCubeBundleMS2 = std::move(cubeBundle);
+				modelBase.SetMaterialIndex(1u);
 			}
-		}
-		else
-		{
-			if (!sCubeBundle2)
+
 			{
-				auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
-				{
-					auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+				ModelBase& modelBase = cubeBundle2.GetModel(1u);
 
-					cube->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = cubeIndexCount,
-							.indexOffset = 0u
-						}
-					);
+				modelBase.SetMaterialIndex(whiteMatIndex);
+				modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
+				modelBase.SetDiffuseIndex(atlasBindingIndex);
 
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-				{
-					auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
-
-					cube->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = cubeIndexCount,
-							.indexOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(-1.5f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-
-				cubeBundleIndex2 = m_renderer->AddModelBundle(
-					cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-				);
-
-				sCubeBundle2 = std::move(cubeBundle);
+				modelBase.GetTransform().MoveTowardsX(-1.5f);
 			}
+
+			cubeBundleIndex2 = cubeBundle2.SetModelBundle(*m_renderer, L"TestFragmentShader");
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::Z))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex2 != std::numeric_limits<std::uint32_t>::max())
 		{
-			if (sCubeBundleMS2)
-			{
-				m_renderer->RemoveModelBundle(cubeBundleIndex2);
+			m_renderer->RemoveModelBundle(cubeBundleIndex2);
 
-				sCubeBundleMS2.reset();
-			}
-		}
-		else
-		{
-			if (sCubeBundle2)
-			{
-				m_renderer->RemoveModelBundle(cubeBundleIndex2);
+			cubeBundleIndex2  = std::numeric_limits<std::uint32_t>::max();
 
-				sCubeBundle2.reset();
-			}
+			GetModelBundle2() = ModelBundle{};
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::V))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex3 == std::numeric_limits<std::uint32_t>::max())
 		{
-			if (!sCubeBundleMS3)
+			ModelBundle& cubeBundle3 = GetModelBundle3();
+
+			cubeBundle3.AddModel(0.3f).AddModel(0.3f);
+
+			const MeshDetails cubeMeshDetails = GetCubeMesh().GetMeshDetails(
+				CubeMesh::GetName(CubeUVMode::IndependentFaceTexture)
+			);
+
+			cubeBundle3.SetMeshModelDetails(0u, cubeMeshDetails);
+			cubeBundle3.SetMeshModelDetails(1u, cubeMeshDetails);
+
 			{
-				auto cubeBundle = std::make_shared<ModelBundleBaseMS>();
-				{
-					auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
+				ModelBase& modelBase = cubeBundle3.GetModel(0u);
 
-					cube->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = cubeMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
+				modelBase.SetMaterialIndex(whiteMatIndex);
+				modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
+				modelBase.SetDiffuseIndex(atlasBindingIndex);
 
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(-2.4f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-				{
-					auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
-
-					cube->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = cubeMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(-0.8f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-
-				cubeBundleIndex3 = m_renderer->AddModelBundle(
-					cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-				);
-
-				sCubeBundleMS3 = std::move(cubeBundle);
+				modelBase.GetTransform().MoveTowardsX(-2.4f).MoveTowardsY(-1.2f);
 			}
-		}
-		else
-		{
-			if (!sCubeBundle3)
+
 			{
-				auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
-				{
-					auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+				ModelBase& modelBase = cubeBundle3.GetModel(1u);
 
-					cube->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = cubeIndexCount,
-							.indexOffset = 0u
-						}
-					);
+				modelBase.SetMaterialIndex(whiteMatIndex);
+				modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
+				modelBase.SetDiffuseIndex(atlasBindingIndex);
 
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(-2.4f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-				{
-					auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
-
-					cube->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = cubeIndexCount,
-							.indexOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(-0.8f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-
-				cubeBundleIndex3 = m_renderer->AddModelBundle(
-					cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-				);
-
-				sCubeBundle3 = std::move(cubeBundle);
+				modelBase.GetTransform().MoveTowardsX(-0.8f).MoveTowardsY(-1.2f);
 			}
+
+			cubeBundleIndex3 = cubeBundle3.SetModelBundle(*m_renderer, L"TestFragmentShader");
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::B))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex3 != std::numeric_limits<std::uint32_t>::max())
 		{
-			if (sCubeBundleMS3)
-			{
-				m_renderer->RemoveModelBundle(cubeBundleIndex3);
+			m_renderer->RemoveModelBundle(cubeBundleIndex3);
 
-				sCubeBundleMS3.reset();
-			}
-		}
-		else
-		{
-			if (sCubeBundle3)
-			{
-				m_renderer->RemoveModelBundle(cubeBundleIndex3);
+			cubeBundleIndex3  = std::numeric_limits<std::uint32_t>::max();
 
-				sCubeBundle3.reset();
-			}
+			GetModelBundle3() = ModelBundle{};
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::N))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex4 == std::numeric_limits<std::uint32_t>::max())
 		{
-			if (!sCubeBundleMS4)
+			ModelBundle& cubeBundle4 = GetModelBundle4();
+
+			cubeBundle4.AddModel(0.3f).AddModel(0.3f);
+
+			const MeshDetails cubeMeshDetails = GetCubeMesh().GetMeshDetails(
+				CubeMesh::GetName(CubeUVMode::IndependentFaceTexture)
+			);
+
+			cubeBundle4.SetMeshModelDetails(0u, cubeMeshDetails);
+			cubeBundle4.SetMeshModelDetails(1u, cubeMeshDetails);
+
 			{
-				auto cubeBundle = std::make_shared<ModelBundleBaseMS>();
-				{
-					auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
+				ModelBase& modelBase = cubeBundle4.GetModel(0u);
 
-					cube->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = cubeMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
+				modelBase.SetMaterialIndex(whiteMatIndex);
+				modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
+				modelBase.SetDiffuseIndex(atlasBindingIndex);
 
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(2.4f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-				{
-					auto cube = std::make_shared<ModelBaseMS>(ModelBase{ 0.3f });
-
-					cube->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = cubeMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(0.8f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-
-				cubeBundleIndex4 = m_renderer->AddModelBundle(
-					cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-				);
-
-				sCubeBundleMS4 = std::move(cubeBundle);
+				modelBase.GetTransform().MoveTowardsX(2.4f).MoveTowardsY(-1.2f);
 			}
-		}
-		else
-		{
-			if (!sCubeBundle4)
+
 			{
-				auto cubeBundle = std::make_shared<ModelBundleBaseVS>();
-				{
-					auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
+				ModelBase& modelBase = cubeBundle4.GetModel(1u);
 
-					cube->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = cubeIndexCount,
-							.indexOffset = 0u
-						}
-					);
+				modelBase.SetMaterialIndex(whiteMatIndex);
+				modelBase.SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
+				modelBase.SetDiffuseIndex(atlasBindingIndex);
 
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(2.4f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-				{
-					auto cube = std::make_shared<ModelBaseVS>(ModelBase{ 0.3f });
-
-					cube->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = cubeIndexCount,
-							.indexOffset = 0u
-						}
-					);
-
-					cube->GetBase().SetMaterialIndex(1u);
-
-					cube->GetBase().SetMaterialIndex(whiteMatIndex);
-					cube->GetBase().SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
-					cube->GetBase().SetDiffuseIndex(atlasBindingIndex);
-
-					cube->GetBase().GetTransform().MoveTowardsX(0.8f).MoveTowardsY(-1.2f);
-
-					cubeBundle->AddModel(std::move(cube));
-				}
-
-				cubeBundleIndex4 = m_renderer->AddModelBundle(
-					cubeBundle->GetBundleImpl(), L"TestFragmentShader"
-				);
-
-				sCubeBundle4 = std::move(cubeBundle);
+				modelBase.GetTransform().MoveTowardsX(0.8f).MoveTowardsY(-1.2f);
 			}
+
+			cubeBundleIndex4 = cubeBundle4.SetModelBundle(*m_renderer, L"TestFragmentShader");
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::M))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex4 != std::numeric_limits<std::uint32_t>::max())
 		{
-			if (sCubeBundleMS4)
-			{
-				m_renderer->RemoveModelBundle(cubeBundleIndex4);
+			m_renderer->RemoveModelBundle(cubeBundleIndex4);
 
-				sCubeBundleMS4.reset();
-			}
-		}
-		else
-		{
-			if (sCubeBundle4)
-			{
-				m_renderer->RemoveModelBundle(cubeBundleIndex4);
+			cubeBundleIndex4  = std::numeric_limits<std::uint32_t>::max();
 
-				sCubeBundle4.reset();
-			}
+			GetModelBundle4() = ModelBundle{};
 		}
 	}
 
@@ -671,31 +385,16 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::Q))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		if (cubeBundleIndex2 != std::numeric_limits<std::uint32_t>::max())
 		{
-			if (sCubeBundleMS2)
-			{
-				std::uint32_t index = 2u;
-				if (sTeal)
-					index = 3u;
+			std::uint32_t index = 2u;
 
-				auto& cube = sCubeBundleMS2->GetModel(0u);
+			if (sTeal)
+				index = 3u;
 
-				cube->GetBase().SetMaterialIndex(index);
-			}
-		}
-		else
-		{
-			if (sCubeBundle2)
-			{
-				std::uint32_t index = 2u;
-				if (sTeal)
-					index = 3u;
+			ModelBase& modelBase = GetModelBundle2().GetModel(0u);
 
-				auto& cube = sCubeBundle2->GetModel(0u);
-
-				cube->GetBase().SetMaterialIndex(index);
-			}
+			modelBase.SetMaterialIndex(index);
 		}
 	}
 
@@ -706,71 +405,38 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::O))
 	{
-		if (!isSphereAdded)
+		if (sphereMeshIndex == std::numeric_limits<std::uint32_t>::max())
 		{
-			if (m_engineType == RenderEngineType::MeshDraw)
-			{
-				auto sphereMesh = std::make_unique<MeshBundleBaseMS>();
-				SphereMesh{ 64u, 64u }.SetMesh(sphereMesh->GetBase());
+			Mesh mesh{};
 
-				sphereMesh->SetMeshlets();
+			SphereMesh{ 64u, 64u }.SetMesh(mesh);
 
-				sphereMeshletCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetMeshlets()));
+			if (m_engineType == RenderEngineType::IndirectDraw)
+				mesh.bounds = RectangleBounds{}.GetBounds(mesh.vertices);
 
-				sphereIndex = m_renderer->AddMeshBundle(std::move(sphereMesh));
-			}
-			else
-			{
-				auto sphereMesh = std::make_unique<MeshBundleBaseVS>();
-				SphereMesh{ 64u, 64u }.SetMesh(sphereMesh->GetBase());
+			MeshBundleGeneral& sphereMesh = GetSphereMesh();
 
-				sphereIndexCount = static_cast<std::uint32_t>(std::size(sphereMesh->GetIndices()));
+			sphereMesh.AddMesh(std::move(mesh));
 
-				if (m_engineType == RenderEngineType::IndirectDraw)
-					sphereMesh->GetBase().SetBounds(RectangleBounds{});
-
-				sphereIndex = m_renderer->AddMeshBundle(std::move(sphereMesh));
-			}
-
-			isSphereAdded = true;
+			sphereMeshIndex = sphereMesh.SetMeshBundle(*m_renderer);
 		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::P))
 	{
-		if (m_engineType == RenderEngineType::MeshDraw)
+		const bool bundle1Exists = cubeBundleIndex1 != std::numeric_limits<std::uint32_t>::max();
+		const bool sphereExists  = sphereMeshIndex != std::numeric_limits<std::uint32_t>::max();
+
+		if (bundle1Exists && sphereExists)
 		{
-			if (sCubeBundleMS && isSphereAdded)
-			{
-				auto& models = sCubeBundleMS->GetModels();
+			const MeshDetails sphereMeshDetails = GetSphereMesh().GetMeshDetails(
+				SphereMesh::GetName(64u, 64u)
+			);
 
-				for (auto& model : models)
-					model->SetMeshDetailsMS(
-						MeshDetailsMS{
-							.meshletCount  = sphereMeshletCount,
-							.meshletOffset = 0u
-						}
-					);
+			for (size_t index = 0u; index < 2u; ++index)
+				GetModelBundle1().SetMeshModelDetails(index, sphereMeshDetails);
 
-				sCubeBundleMS->SetMeshIndex(sphereIndex);
-			}
-		}
-		else
-		{
-			if (sCubeBundle && isSphereAdded)
-			{
-				auto& models = sCubeBundle->GetModels();
-
-				for (auto& model : models)
-					model->SetMeshDetailsVS(
-						MeshDetailsVS{
-							.indexCount  = sphereIndexCount,
-							.indexOffset = 0u
-						}
-					);
-
-				sCubeBundle->SetMeshIndex(sphereIndex);
-			}
+			GetModelBundle1().SetMeshIndex(sphereMeshIndex);
 		}
 	}
 
@@ -794,18 +460,10 @@ void App::PhysicsUpdate()
 	{
 		if (secondTextureIndex != std::numeric_limits<size_t>::max())
 		{
-			if (m_engineType == RenderEngineType::MeshDraw)
-			{
-				auto& cube = sCubeBundleMS->GetModel(0u);
-				cube->GetBase().SetDiffuseUVInfo(UVInfo{});
-				cube->GetBase().SetDiffuseIndex(secondTextureIndex);
-			}
-			else
-			{
-				auto& cube = sCubeBundle->GetModel(0u);
-				cube->GetBase().SetDiffuseUVInfo(UVInfo{});
-				cube->GetBase().SetDiffuseIndex(secondTextureIndex);
-			}
+			ModelBase& modelBase = GetModelBundle1().GetModel(0u);
+
+			modelBase.SetDiffuseUVInfo(UVInfo{});
+			modelBase.SetDiffuseIndex(secondTextureIndex);
 		}
 	}
 

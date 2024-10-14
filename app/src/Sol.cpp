@@ -41,7 +41,12 @@ Sol::Sol(const std::string& appName)
 	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
 	// Other stuff.
-	ModelBundle::SetModelType(m_configManager.GetRenderEngineType() == RenderEngineType::MeshDraw);
+	{
+		const bool meshPipeline = m_configManager.GetRenderEngineType() == RenderEngineType::MeshDraw;
+
+		ModelBundle::SetModelType(meshPipeline);
+		MeshBundleGeneral::SetMeshType(meshPipeline);
+	}
 
 	// App
 	m_app->Init();

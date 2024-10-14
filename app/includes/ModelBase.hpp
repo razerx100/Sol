@@ -514,10 +514,8 @@ public:
 
 	ModelBundle& AddModel(float scale = 1.f) noexcept;
 
-	// These two functions aren't going to work, since the mesh bundle is a unique_ptr
-	// and it's not going to be stored.
-	void SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseVS& meshBundle) noexcept;
-	void SetMeshModelDetails(size_t modelIndex, const MeshBundleBaseMS& meshBundle) noexcept;
+	void SetMeshModelDetails(size_t modelIndex, const MeshDetails& meshDetails) noexcept;
+	void SetMeshIndex(std::uint32_t index) noexcept;
 
 	[[nodiscard]]
 	ModelBase& GetModel(size_t index) noexcept;
