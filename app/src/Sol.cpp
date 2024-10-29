@@ -44,7 +44,6 @@ Sol::Sol(const std::string& appName)
 	{
 		const bool meshPipeline = m_configManager.GetRenderEngineType() == RenderEngineType::MeshDraw;
 
-		ModelBundle::SetModelType(meshPipeline);
 		MeshBundleGeneral::SetMeshType(meshPipeline);
 	}
 

@@ -7,7 +7,6 @@
 
 struct Mesh
 {
-	std::string                name;
 	std::vector<Vertex>        vertices;
 	std::vector<std::uint32_t> indices;
 	std::vector<MeshBound>     bounds;
@@ -19,17 +18,10 @@ struct MeshExtraForMesh
 	std::vector<Meshlet>       meshlets;
 };
 
-struct MeshDetails
-{
-	std::string   name;
-	std::uint32_t elementCount;
-	std::uint32_t elementOffset;
-};
-
 class MeshBundleBase
 {
 public:
-	MeshBundleBase() : m_vertices{}, m_indices{}, m_bounds{} {}
+	MeshBundleBase() : m_vertices{}, m_indices{}, m_bounds{}, m_bundleDetails{} {}
 
 	[[nodiscard]]
 	const std::vector<MeshBound>& GetBounds() const noexcept { return m_bounds; }
@@ -38,7 +30,7 @@ public:
 	[[nodiscard]]
 	const std::vector<std::uint32_t>& GetIndices() const noexcept { return m_indices; }
 
-	void AddMesh(Mesh&& mesh) noexcept;
+	void AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexcept;
 
 	void CleanUpVertices() noexcept { m_vertices = std::vector<Vertex>{}; }
 
@@ -49,6 +41,12 @@ public:
 	static void SetUVToVertices(
 		std::vector<Vertex>& vertices, const std::vector<DirectX::XMFLOAT2>& uvs
 	) noexcept;
+
+	[[nodiscard]]
+	MeshBundleDetails&& GetBundleDetails() noexcept
+	{
+		return std::move(m_bundleDetails);
+	}
 
 private:
 	[[nodiscard]]
@@ -61,29 +59,33 @@ private:
 	std::vector<Vertex>        m_vertices;
 	std::vector<std::uint32_t> m_indices;
 	std::vector<MeshBound>     m_bounds;
+	MeshBundleDetails          m_bundleDetails;
 
 public:
 	MeshBundleBase(const MeshBundleBase& other) noexcept
-		: m_vertices{ other.m_vertices }, m_indices{ other.m_indices }, m_bounds{ other.m_bounds }
+		: m_vertices{ other.m_vertices }, m_indices{ other.m_indices }, m_bounds{ other.m_bounds },
+		m_bundleDetails{ other.m_bundleDetails }
 	{}
 	MeshBundleBase& operator=(const MeshBundleBase& other) noexcept
 	{
-		m_vertices = other.m_vertices;
-		m_indices  = other.m_indices;
-		m_bounds   = other.m_bounds;
+		m_vertices      = other.m_vertices;
+		m_indices       = other.m_indices;
+		m_bounds        = other.m_bounds;
+		m_bundleDetails = other.m_bundleDetails;
 
 		return *this;
 	}
 
 	MeshBundleBase(MeshBundleBase&& other) noexcept
 		: m_vertices{ std::move(other.m_vertices) }, m_indices{ std::move(other.m_indices) },
-		m_bounds{ std::move(other.m_bounds) }
+		m_bounds{ std::move(other.m_bounds) }, m_bundleDetails{ std::move(other.m_bundleDetails) }
 	{}
 	MeshBundleBase& operator=(MeshBundleBase&& other) noexcept
 	{
-		m_vertices = std::move(other.m_vertices);
-		m_indices  = std::move(other.m_indices);
-		m_bounds   = std::move(other.m_bounds);
+		m_vertices      = std::move(other.m_vertices);
+		m_indices       = std::move(other.m_indices);
+		m_bounds        = std::move(other.m_bounds);
+		m_bundleDetails = std::move(other.m_bundleDetails);
 
 		return *this;
 	}
@@ -110,7 +112,16 @@ public:
 		return m_meshBase.GetVertices();
 	}
 
-	void AddMesh(Mesh&& mesh) noexcept { m_meshBase.AddMesh(std::move(mesh)); }
+	[[nodiscard]]
+	MeshBundleDetails&& GetBundleDetails() noexcept override
+	{
+		return m_meshBase.GetBundleDetails();
+	}
+
+	void AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexcept
+	{
+		m_meshBase.AddMesh(std::move(mesh), meshDetails);
+	}
 
 private:
 	MeshBundleBase m_meshBase;
@@ -168,7 +179,15 @@ public:
 		return m_meshBase.GetVertices();
 	}
 
-	void AddMesh(Mesh&& mesh, MeshExtraForMesh&& extraMeshData) noexcept;
+	[[nodiscard]]
+	MeshBundleDetails&& GetBundleDetails() noexcept override
+	{
+		return m_meshBase.GetBundleDetails();
+	}
+
+	void AddMesh(
+		Mesh&& mesh, MeshExtraForMesh&& extraMeshData, const MeshDetails& meshDetails
+	) noexcept;
 
 private:
 	MeshBundleBase             m_meshBase;
@@ -206,11 +225,7 @@ public:
 class MeshBundleGeneral
 {
 public:
-	MeshBundleGeneral()
-		: m_meshDetails{},
-		m_bundleVS{ s_modelTypeVS ? std::make_unique<MeshBundleBaseVS>() : nullptr },
-		m_bundleMS{ s_modelTypeVS ? nullptr : std::make_unique<MeshBundleBaseMS>() }
-	{}
+	MeshBundleGeneral() : m_bundleVS{}, m_bundleMS{} {}
 
 	static void SetMeshType(bool meshShader) noexcept { s_modelTypeVS = !meshShader; }
 
@@ -218,11 +233,8 @@ public:
 
 	[[nodiscard]]
 	std::uint32_t SetMeshBundle(Renderer& renderer);
-	[[nodiscard]]
-	MeshDetails GetMeshDetails(const std::string& meshName) const noexcept;
 
 private:
-	std::vector<MeshDetails>          m_meshDetails;
 	std::unique_ptr<MeshBundleBaseVS> m_bundleVS;
 	std::unique_ptr<MeshBundleBaseMS> m_bundleMS;
 
@@ -233,13 +245,10 @@ public:
 	MeshBundleGeneral& operator=(const MeshBundleGeneral&) = delete;
 
 	MeshBundleGeneral(MeshBundleGeneral&& other) noexcept
-		: m_meshDetails{ std::move(other.m_meshDetails) },
-		m_bundleVS{ std::move(other.m_bundleVS) },
-		m_bundleMS{ std::move(other.m_bundleMS) }
+		: m_bundleVS{ std::move(other.m_bundleVS) }, m_bundleMS{ std::move(other.m_bundleMS) }
 	{}
 	MeshBundleGeneral& operator=(MeshBundleGeneral&& other) noexcept
 	{
-		m_meshDetails = std::move(other.m_meshDetails);
 		m_bundleVS    = std::move(other.m_bundleVS);
 		m_bundleMS    = std::move(other.m_bundleMS);
 

@@ -6,18 +6,6 @@
 
 #include <DirectXMath.h>
 
-struct MeshDetailsVS
-{
-	std::uint32_t indexCount;
-	std::uint32_t indexOffset;
-};
-
-struct MeshDetailsMS
-{
-	std::uint32_t meshletCount;
-	std::uint32_t meshletOffset;
-};
-
 struct UVInfo
 {
 	float uOffset = 0.f;
@@ -37,6 +25,8 @@ public:
 	virtual DirectX::XMFLOAT3 GetModelOffset() const noexcept = 0;
 	[[nodiscard]]
 	virtual std::uint32_t GetMaterialIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
 
 	[[nodiscard]]
 	virtual std::uint32_t GetDiffuseIndex() const noexcept = 0;
@@ -48,39 +38,14 @@ public:
 	virtual UVInfo GetSpecularUVInfo() const noexcept = 0;
 };
 
-class ModelVS : public Model
+class ModelBundle
 {
 public:
-	[[nodiscard]]
-	virtual MeshDetailsVS GetMeshDetailsVS() const noexcept = 0;
-};
-
-class ModelMS : public Model
-{
-public:
-	[[nodiscard]]
-	virtual MeshDetailsMS GetMeshDetailsMS() const noexcept = 0;
-};
-
-class ModelBundleVS
-{
-public:
-	virtual ~ModelBundleVS() = default;
+	virtual ~ModelBundle() = default;
 
 	[[nodiscard]]
-	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
+	virtual std::uint32_t GetMeshBundleIndex() const noexcept = 0;
 	[[nodiscard]]
-	virtual const std::vector<std::shared_ptr<ModelVS>>& GetModels() const noexcept = 0;
-};
-
-class ModelBundleMS
-{
-public:
-	virtual ~ModelBundleMS() = default;
-
-	[[nodiscard]]
-	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
-	[[nodiscard]]
-	virtual const std::vector<std::shared_ptr<ModelMS>>& GetModels() const noexcept = 0;
+	virtual const std::vector<std::shared_ptr<Model>>& GetModels() const noexcept = 0;
 };
 #endif

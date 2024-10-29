@@ -4,8 +4,6 @@
 // Triangle
 void TriangleMesh::SetMesh(Mesh& mesh) noexcept
 {
-	mesh.name = GetName();
-
 	std::vector<Vertex>& vertices = mesh.vertices;
 
 	vertices.resize(6);
@@ -60,8 +58,6 @@ void CubeMesh::SetMesh(Mesh& mesh, CubeUVMode uvMode) noexcept
 	vertices[21].position = { side,side,-side };// 21
 	vertices[22].position = { -side,side,side };// 22
 	vertices[23].position = { side,side,side };// 23
-
-	mesh.name = GetName(uvMode);
 
 	if (uvMode == CubeUVMode::SingleColour)
 		SetSingleColourUV(vertices);
@@ -140,8 +136,6 @@ void QuadMesh::SetMesh(Mesh& mesh) noexcept
 {
 	std::vector<Vertex>& vertices = mesh.vertices;
 
-	mesh.name = "Quad";
-
 	constexpr float side = 1.0f / 2.0f;
 
 	vertices.resize(8u);
@@ -184,8 +178,6 @@ void SphereMesh::SetMesh(Mesh& mesh) noexcept
 {
 	assert(m_latitudeDivision > 2);
 	assert(m_longitudeDivision > 2);
-
-	mesh.name = GetName(m_latitudeDivision, m_longitudeDivision);
 
 	std::vector<Vertex>& vertices = mesh.vertices;
 

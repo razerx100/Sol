@@ -1,12 +1,15 @@
 #include <MeshBundleBase.hpp>
 #include <ranges>
 #include <algorithm>
+#include <MeshBoundImpl.hpp>
 
-void MeshBundleBase::AddMesh(Mesh&& mesh) noexcept
+void MeshBundleBase::AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexcept
 {
 	std::ranges::move(mesh.bounds, std::back_inserter(m_bounds));
 	std::ranges::move(mesh.indices, std::back_inserter(m_indices));
 	std::ranges::move(mesh.vertices, std::back_inserter(m_vertices));
+
+	m_bundleDetails.meshDetails.emplace_back(meshDetails);
 }
 
 void MeshBundleBase::CalculateNormalsIndependentFaces(
@@ -58,21 +61,25 @@ void MeshBundleBase::SetUVToVertices(
 }
 
 // Mesh Bundle MS
-void MeshBundleBaseMS::AddMesh(Mesh&& mesh, MeshExtraForMesh&& extraMeshData) noexcept
-{
+void MeshBundleBaseMS::AddMesh(
+	Mesh&& mesh, MeshExtraForMesh&& extraMeshData, const MeshDetails& meshDetails
+) noexcept {
 	std::ranges::move(extraMeshData.meshlets, std::back_inserter(m_meshlets));
 	std::ranges::move(extraMeshData.primIndices, std::back_inserter(m_primIndices));
 
-	m_meshBase.AddMesh(std::move(mesh));
+	m_meshBase.AddMesh(std::move(mesh), meshDetails);
 }
 
 // Mesh Bundle General
 MeshBundleGeneral& MeshBundleGeneral::AddMesh(Mesh&& mesh) noexcept
 {
-	MeshDetails meshDetails{ .name = std::move(mesh.name) };
+	MeshDetails meshDetails{ .sphereBV = GenerateSphereBV(mesh.vertices) };
 
 	if (!s_modelTypeVS)
 	{
+		if (!m_bundleMS)
+			m_bundleMS = std::make_unique<MeshBundleBaseMS>();
+
 		MeshletMaker meshletMaker{};
 		meshletMaker.GenerateMeshlets(mesh);
 
@@ -83,17 +90,18 @@ MeshBundleGeneral& MeshBundleGeneral::AddMesh(Mesh&& mesh) noexcept
 		meshDetails.elementCount       = static_cast<std::uint32_t>(std::size(extraMeshData.meshlets));
 		meshDetails.elementOffset      = static_cast<std::uint32_t>(std::size(m_bundleMS->GetMeshlets()));
 
-		m_bundleMS->AddMesh(std::move(mesh), std::move(extraMeshData));
+		m_bundleMS->AddMesh(std::move(mesh), std::move(extraMeshData), meshDetails);
 	}
 	else
 	{
+		if (!m_bundleVS)
+			m_bundleVS = std::make_unique<MeshBundleBaseVS>();
+
 		meshDetails.elementCount  = static_cast<std::uint32_t>(std::size(mesh.indices));
 		meshDetails.elementOffset = static_cast<std::uint32_t>(std::size(m_bundleVS->GetIndices()));
 
-		m_bundleVS->AddMesh(std::move(mesh));
+		m_bundleVS->AddMesh(std::move(mesh), meshDetails);
 	}
-
-	m_meshDetails.emplace_back(meshDetails);
 
 	return *this;
 }
@@ -104,23 +112,6 @@ std::uint32_t MeshBundleGeneral::SetMeshBundle(Renderer& renderer)
 		return renderer.AddMeshBundle(std::move(m_bundleMS));
 	else
 		return renderer.AddMeshBundle(std::move(m_bundleVS));
-}
-
-MeshDetails MeshBundleGeneral::GetMeshDetails(const std::string& meshName) const noexcept
-{
-	MeshDetails meshDetails{};
-
-	auto result = std::ranges::find(
-		m_meshDetails, meshName, [](const MeshDetails& meshDetails)
-		{
-			return meshDetails.name;
-		}
-	);
-
-	if (result != std::end(m_meshDetails))
-		return *result;
-
-	return meshDetails;
 }
 
 // Meshlet Maker

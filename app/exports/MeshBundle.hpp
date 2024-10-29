@@ -2,6 +2,7 @@
 #define MESH_BUNDLE_SOL_HPP_
 #include <cstdint>
 #include <vector>
+#include <BoundingVolumes.hpp>
 
 #include <DirectXMath.h>
 
@@ -25,6 +26,20 @@ struct Meshlet
 	std::uint32_t primitiveOffset;
 };
 
+struct MeshDetails
+{
+	std::uint32_t        elementCount;
+	std::uint32_t        elementOffset;
+	// We can only bind a SphereBV with a mesh, as it isn't affected by the rotation.
+	// And so doesn't need to be updated.
+	SphereBoundingVolume sphereBV;
+};
+
+struct MeshBundleDetails
+{
+	std::vector<MeshDetails> meshDetails;
+};
+
 class MeshBundle
 {
 public:
@@ -34,6 +49,8 @@ public:
 	virtual const std::vector<MeshBound>& GetBounds() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
+	[[nodiscard]]
+	virtual MeshBundleDetails&& GetBundleDetails() noexcept = 0;
 };
 
 class MeshBundleVS : public MeshBundle
