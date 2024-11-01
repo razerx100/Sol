@@ -2,14 +2,16 @@
 #include <ranges>
 #include <algorithm>
 #include <MeshBoundImpl.hpp>
+#include <BoundingVolumes.hpp>
 
 void MeshBundleBase::AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexcept
 {
+	MeshDetails& meshDetailsN = m_bundleDetails.meshDetails.emplace_back(meshDetails);
+	meshDetailsN.sphereBV     = GenerateSphereBV(mesh.vertices);
+
 	std::ranges::move(mesh.bounds, std::back_inserter(m_bounds));
 	std::ranges::move(mesh.indices, std::back_inserter(m_indices));
 	std::ranges::move(mesh.vertices, std::back_inserter(m_vertices));
-
-	m_bundleDetails.meshDetails.emplace_back(meshDetails);
 }
 
 void MeshBundleBase::CalculateNormalsIndependentFaces(
