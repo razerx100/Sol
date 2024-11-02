@@ -42,6 +42,8 @@ public:
 	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
 	[[nodiscard]]
 	virtual MeshBundleDetails&& GetBundleDetails() noexcept = 0;
+	[[nodiscard]]
+	virtual const MeshBundleDetails& GetBundleDetails() const noexcept = 0;
 };
 
 class MeshBundleVS : public MeshBundle

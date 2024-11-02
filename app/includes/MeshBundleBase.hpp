@@ -118,11 +118,15 @@ public:
 	{
 		return m_vertices;
 	}
-
 	[[nodiscard]]
 	MeshBundleDetails&& GetBundleDetails() noexcept override
 	{
 		return std::move(m_bundleDetails);
+	}
+	[[nodiscard]]
+	const MeshBundleDetails& GetBundleDetails() const noexcept override
+	{
+		return m_bundleDetails;
 	}
 
 private:
@@ -189,11 +193,15 @@ public:
 	{
 		return m_vertices;
 	}
-
 	[[nodiscard]]
 	MeshBundleDetails&& GetBundleDetails() noexcept override
 	{
 		return std::move(m_bundleDetails);
+	}
+	[[nodiscard]]
+	const MeshBundleDetails& GetBundleDetails() const noexcept override
+	{
+		return m_bundleDetails;
 	}
 
 private:
