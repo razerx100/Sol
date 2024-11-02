@@ -4,14 +4,54 @@
 #include <MeshBoundImpl.hpp>
 #include <BoundingVolumes.hpp>
 
+// Mesh Bundle Base
+bool MeshBundleBase::s_meshTypeVS = true;
+
 void MeshBundleBase::AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexcept
 {
-	MeshDetails& meshDetailsN = m_bundleDetails.meshDetails.emplace_back(meshDetails);
-	meshDetailsN.sphereBV     = GenerateSphereBV(mesh.vertices);
-
 	std::ranges::move(mesh.bounds, std::back_inserter(m_bounds));
 	std::ranges::move(mesh.indices, std::back_inserter(m_indices));
 	std::ranges::move(mesh.vertices, std::back_inserter(m_vertices));
+
+	m_bundleDetails.meshDetails.emplace_back(meshDetails);
+}
+
+void MeshBundleBase::AddMesh(
+	Mesh&& mesh, MeshExtraForMesh&& extraMeshData, const MeshDetails& meshDetails
+) noexcept {
+	std::ranges::move(extraMeshData.meshlets, std::back_inserter(m_meshlets));
+	std::ranges::move(extraMeshData.primIndices, std::back_inserter(m_primIndices));
+
+	AddMesh(std::move(mesh), meshDetails);
+}
+
+MeshBundleBase& MeshBundleBase::AddMesh(Mesh&& mesh) noexcept
+{
+	MeshDetails meshDetails{ .sphereBV = GenerateSphereBV(mesh.vertices) };
+
+	if (!s_meshTypeVS)
+	{
+		MeshletMaker meshletMaker{};
+		meshletMaker.GenerateMeshlets(mesh);
+
+		meshletMaker.LoadVertexIndices(mesh.indices);
+
+		MeshExtraForMesh extraMeshData = meshletMaker.GenerateExtraMeshData();
+
+		meshDetails.elementCount       = static_cast<std::uint32_t>(std::size(extraMeshData.meshlets));
+		meshDetails.elementOffset      = static_cast<std::uint32_t>(std::size(m_meshlets));
+
+		AddMesh(std::move(mesh), std::move(extraMeshData), meshDetails);
+	}
+	else
+	{
+		meshDetails.elementCount  = static_cast<std::uint32_t>(std::size(mesh.indices));
+		meshDetails.elementOffset = static_cast<std::uint32_t>(std::size(m_indices));
+
+		AddMesh(std::move(mesh), meshDetails);
+	}
+
+	return *this;
 }
 
 void MeshBundleBase::CalculateNormalsIndependentFaces(
@@ -62,58 +102,32 @@ void MeshBundleBase::SetUVToVertices(
 		vertices[index].uv = uvs[index];
 }
 
-// Mesh Bundle MS
-void MeshBundleBaseMS::AddMesh(
-	Mesh&& mesh, MeshExtraForMesh&& extraMeshData, const MeshDetails& meshDetails
-) noexcept {
-	std::ranges::move(extraMeshData.meshlets, std::back_inserter(m_meshlets));
-	std::ranges::move(extraMeshData.primIndices, std::back_inserter(m_primIndices));
-
-	m_meshBase.AddMesh(std::move(mesh), meshDetails);
-}
-
-// Mesh Bundle General
-MeshBundleGeneral& MeshBundleGeneral::AddMesh(Mesh&& mesh) noexcept
+std::uint32_t MeshBundleBase::SetMeshBundle(Renderer& renderer, MeshBundleBase&& meshBundle)
 {
-	MeshDetails meshDetails{ .sphereBV = GenerateSphereBV(mesh.vertices) };
-
-	if (!s_modelTypeVS)
+	if (!s_meshTypeVS)
 	{
-		if (!m_bundleMS)
-			m_bundleMS = std::make_unique<MeshBundleBaseMS>();
+		auto bundleMS             = std::make_unique<MeshBundleBaseMS>();
 
-		MeshletMaker meshletMaker{};
-		meshletMaker.GenerateMeshlets(mesh);
+		bundleMS->m_vertices      = std::move(meshBundle.m_vertices);
+		bundleMS->m_indices       = std::move(meshBundle.m_indices);
+		bundleMS->m_primIndices   = std::move(meshBundle.m_primIndices);
+		bundleMS->m_meshlets      = std::move(meshBundle.m_meshlets);
+		bundleMS->m_bounds        = std::move(meshBundle.m_bounds);
+		bundleMS->m_bundleDetails = std::move(meshBundle.m_bundleDetails);
 
-		meshletMaker.LoadVertexIndices(mesh.indices);
-
-		MeshExtraForMesh extraMeshData = meshletMaker.GenerateExtraMeshData();
-
-		meshDetails.elementCount       = static_cast<std::uint32_t>(std::size(extraMeshData.meshlets));
-		meshDetails.elementOffset      = static_cast<std::uint32_t>(std::size(m_bundleMS->GetMeshlets()));
-
-		m_bundleMS->AddMesh(std::move(mesh), std::move(extraMeshData), meshDetails);
+		return renderer.AddMeshBundle(std::move(bundleMS));
 	}
 	else
 	{
-		if (!m_bundleVS)
-			m_bundleVS = std::make_unique<MeshBundleBaseVS>();
+		auto bundleVS = std::make_unique<MeshBundleBaseVS>();
 
-		meshDetails.elementCount  = static_cast<std::uint32_t>(std::size(mesh.indices));
-		meshDetails.elementOffset = static_cast<std::uint32_t>(std::size(m_bundleVS->GetIndices()));
+		bundleVS->m_vertices      = std::move(meshBundle.m_vertices);
+		bundleVS->m_indices       = std::move(meshBundle.m_indices);
+		bundleVS->m_bounds        = std::move(meshBundle.m_bounds);
+		bundleVS->m_bundleDetails = std::move(meshBundle.m_bundleDetails);
 
-		m_bundleVS->AddMesh(std::move(mesh), meshDetails);
+		return renderer.AddMeshBundle(std::move(bundleVS));
 	}
-
-	return *this;
-}
-
-std::uint32_t MeshBundleGeneral::SetMeshBundle(Renderer& renderer)
-{
-	if (!s_modelTypeVS)
-		return renderer.AddMeshBundle(std::move(m_bundleMS));
-	else
-		return renderer.AddMeshBundle(std::move(m_bundleVS));
 }
 
 // Meshlet Maker
@@ -125,7 +139,7 @@ MeshletMaker::MeshletMaker()
 	m_tempPrimitiveIndices.reserve(s_meshletPrimitiveLimit);
 }
 
-void MeshletMaker::GenerateMeshlets(const Mesh& mesh)
+void MeshletMaker::GenerateMeshlets(const Mesh& mesh) noexcept
 {
 	const std::vector<std::uint32_t>& indices = mesh.indices;
 
@@ -133,7 +147,7 @@ void MeshletMaker::GenerateMeshlets(const Mesh& mesh)
 		start = MakeMeshlet(indices, start);
 }
 
-void MeshletMaker::LoadVertexIndices(std::vector<std::uint32_t>& vertexIndices)
+void MeshletMaker::LoadVertexIndices(std::vector<std::uint32_t>& vertexIndices) noexcept
 {
 	vertexIndices = std::move(m_vertexIndices);
 }

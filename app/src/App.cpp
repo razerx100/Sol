@@ -10,8 +10,6 @@
 #include <TextureAtlas.hpp>
 #include <MeshBounds.hpp>
 
-static MeshBundleGeneral cubeMesh{};
-static MeshBundleGeneral sphereMesh{};
 static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();;
 static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();;
 
@@ -33,6 +31,8 @@ static std::uint32_t atlasBindingIndex  = 0u;
 void App::Init()
 {
 	{
+		MeshBundleBase cubeMesh{};
+
 		Mesh mesh{};
 
 		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
@@ -42,7 +42,7 @@ void App::Init()
 
 		cubeMesh.AddMesh(std::move(mesh));
 
-		cubeMeshBundleIndex = cubeMesh.SetMeshBundle(*m_renderer);
+		cubeMeshBundleIndex = MeshBundleBase::SetMeshBundle(*m_renderer, std::move(cubeMesh));
 	}
 
 	auto camera   = std::make_shared<PerspectiveCameraEuler>();
@@ -343,6 +343,8 @@ void App::PhysicsUpdate()
 	{
 		if (sphereMeshBundleIndex == std::numeric_limits<std::uint32_t>::max())
 		{
+			MeshBundleBase sphereMesh{};
+
 			Mesh mesh{};
 
 			SphereMesh{ 64u, 64u }.SetMesh(mesh);
@@ -352,7 +354,7 @@ void App::PhysicsUpdate()
 
 			sphereMesh.AddMesh(std::move(mesh));
 
-			sphereMeshBundleIndex = sphereMesh.SetMeshBundle(*m_renderer);
+			sphereMeshBundleIndex = MeshBundleBase::SetMeshBundle(*m_renderer, std::move(sphereMesh));
 		}
 	}
 
