@@ -10,7 +10,7 @@ struct SphereBoundingVolume
 
 struct AxisAlignedBoundingBox
 {
-	DirectX::XMFLOAT3 maxAxes;
-	DirectX::XMFLOAT3 minAxes;
+	DirectX::XMFLOAT4 maxAxes;
+	DirectX::XMFLOAT4 minAxes;
 };
 #endif

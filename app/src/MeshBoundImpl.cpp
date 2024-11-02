@@ -7,8 +7,8 @@ AxisAlignedBoundingBox GenerateAABB(const std::vector<Vertex>& vertices) noexcep
 {
 	AxisAlignedBoundingBox aabb{};
 
-	DirectX::XMFLOAT3& pAxes = aabb.maxAxes;
-	DirectX::XMFLOAT3& nAxes = aabb.minAxes;
+	DirectX::XMFLOAT4& pAxes = aabb.maxAxes;
+	DirectX::XMFLOAT4& nAxes = aabb.minAxes;
 
 	for (const auto& vertex : vertices)
 	{
