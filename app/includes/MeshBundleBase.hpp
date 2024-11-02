@@ -9,7 +9,6 @@ struct Mesh
 {
 	std::vector<Vertex>        vertices;
 	std::vector<std::uint32_t> indices;
-	std::vector<MeshBound>     bounds;
 };
 
 struct MeshExtraForMesh
@@ -22,14 +21,11 @@ class MeshBundleBase
 {
 public:
 	MeshBundleBase()
-		: m_vertices{}, m_indices{}, m_primIndices{}, m_meshlets{}, m_bounds{},
-		m_bundleDetails{}
+		: m_vertices{}, m_indices{}, m_primIndices{}, m_meshlets{}, m_bundleDetails{}
 	{}
 
 	MeshBundleBase& AddMesh(Mesh&& mesh) noexcept;
 
-	[[nodiscard]]
-	const std::vector<MeshBound>& GetBounds() const noexcept { return m_bounds; }
 	[[nodiscard]]
 	const std::vector<Vertex>& GetVertices() const noexcept { return m_vertices; }
 	[[nodiscard]]
@@ -65,7 +61,6 @@ private:
 	std::vector<std::uint32_t> m_indices;
 	std::vector<std::uint32_t> m_primIndices;
 	std::vector<Meshlet>       m_meshlets;
-	std::vector<MeshBound>     m_bounds;
 	MeshBundleDetails          m_bundleDetails;
 
 	static bool                s_meshTypeVS;
@@ -74,7 +69,7 @@ public:
 	MeshBundleBase(const MeshBundleBase& other) noexcept
 		: m_vertices{ other.m_vertices }, m_indices{ other.m_indices },
 		m_primIndices{ other.m_primIndices }, m_meshlets{ other.m_meshlets },
-		m_bounds{ other.m_bounds }, m_bundleDetails{ other.m_bundleDetails }
+		m_bundleDetails{ other.m_bundleDetails }
 	{}
 	MeshBundleBase& operator=(const MeshBundleBase& other) noexcept
 	{
@@ -82,7 +77,6 @@ public:
 		m_indices       = other.m_indices;
 		m_primIndices   = other.m_primIndices;
 		m_meshlets      = other.m_meshlets;
-		m_bounds        = other.m_bounds;
 		m_bundleDetails = other.m_bundleDetails;
 
 		return *this;
@@ -91,7 +85,7 @@ public:
 	MeshBundleBase(MeshBundleBase&& other) noexcept
 		: m_vertices{ std::move(other.m_vertices) }, m_indices{ std::move(other.m_indices) },
 		m_primIndices{ std::move(other.m_primIndices) }, m_meshlets{ std::move(other.m_meshlets) },
-		m_bounds{ std::move(other.m_bounds) }, m_bundleDetails{ std::move(other.m_bundleDetails) }
+		m_bundleDetails{ std::move(other.m_bundleDetails) }
 	{}
 	MeshBundleBase& operator=(MeshBundleBase&& other) noexcept
 	{
@@ -99,7 +93,6 @@ public:
 		m_indices       = std::move(other.m_indices);
 		m_primIndices   = std::move(other.m_primIndices);
 		m_meshlets      = std::move(other.m_meshlets);
-		m_bounds        = std::move(other.m_bounds);
 		m_bundleDetails = std::move(other.m_bundleDetails);
 
 		return *this;
@@ -112,7 +105,7 @@ class MeshBundleBaseVS : public MeshBundleVS
 
 public:
 	MeshBundleBaseVS()
-		: MeshBundleVS{}, m_vertices{}, m_indices{}, m_bounds{}, m_bundleDetails{}
+		: MeshBundleVS{}, m_vertices{}, m_indices{}, m_bundleDetails{}
 	{}
 
 	[[nodiscard]]
@@ -120,11 +113,6 @@ public:
 	{
 		return m_indices;
 	}
-	[[nodiscard]]
-	const std::vector<MeshBound>& GetBounds() const noexcept override
-	{
-		return m_bounds;
-	};
 	[[nodiscard]]
 	const std::vector<Vertex>& GetVertices() const noexcept override
 	{
@@ -140,20 +128,18 @@ public:
 private:
 	std::vector<Vertex>        m_vertices;
 	std::vector<std::uint32_t> m_indices;
-	std::vector<MeshBound>     m_bounds;
 	MeshBundleDetails          m_bundleDetails;
 
 public:
 	MeshBundleBaseVS(const MeshBundleBaseVS& other) noexcept
 		: MeshBundleVS{ other }, m_vertices{ other.m_vertices }, m_indices{ other.m_indices },
-		m_bounds{ other.m_bounds }, m_bundleDetails{ other.m_bundleDetails }
+		m_bundleDetails{ other.m_bundleDetails }
 	{}
 	MeshBundleBaseVS& operator=(const MeshBundleBaseVS& other) noexcept
 	{
 		MeshBundleVS::operator=(other);
 		m_vertices            = other.m_vertices;
 		m_indices             = other.m_indices;
-		m_bounds              = other.m_bounds;
 		m_bundleDetails       = other.m_bundleDetails;
 
 		return *this;
@@ -161,15 +147,13 @@ public:
 
 	MeshBundleBaseVS(MeshBundleBaseVS&& other) noexcept
 		: MeshBundleVS{ std::move(other) }, m_vertices{ std::move(other.m_vertices) },
-		m_indices{ std::move(other.m_indices) }, m_bounds{ std::move(other.m_bounds) },
-		m_bundleDetails{ std::move(other.m_bundleDetails) }
+		m_indices{ std::move(other.m_indices) }, m_bundleDetails{ std::move(other.m_bundleDetails) }
 	{}
 	MeshBundleBaseVS& operator=(MeshBundleBaseVS&& other) noexcept
 	{
 		MeshBundleVS::operator=(std::move(other));
 		m_vertices            = std::move(other.m_vertices);
 		m_indices             = std::move(other.m_indices);
-		m_bounds              = std::move(other.m_bounds);
 		m_bundleDetails       = std::move(other.m_bundleDetails);
 
 		return *this;
@@ -182,8 +166,7 @@ class MeshBundleBaseMS : public MeshBundleMS
 
 public:
 	MeshBundleBaseMS()
-		: MeshBundleMS{}, m_vertices{}, m_indices{}, m_primIndices{}, m_meshlets{}, m_bounds{},
-		m_bundleDetails{}
+		: MeshBundleMS{}, m_vertices{}, m_indices{}, m_primIndices{}, m_meshlets{}, m_bundleDetails{}
 	{}
 
 	[[nodiscard]]
@@ -202,11 +185,6 @@ public:
 		return m_meshlets;
 	}
 	[[nodiscard]]
-	const std::vector<MeshBound>& GetBounds() const noexcept override
-	{
-		return m_bounds;
-	};
-	[[nodiscard]]
 	const std::vector<Vertex>& GetVertices() const noexcept override
 	{
 		return m_vertices;
@@ -223,14 +201,13 @@ private:
 	std::vector<std::uint32_t> m_indices;
 	std::vector<std::uint32_t> m_primIndices;
 	std::vector<Meshlet>       m_meshlets;
-	std::vector<MeshBound>     m_bounds;
 	MeshBundleDetails          m_bundleDetails;
 
 public:
 	MeshBundleBaseMS(const MeshBundleBaseMS& other) noexcept
 		: MeshBundleMS{ other }, m_vertices{ other.m_vertices }, m_indices{ other.m_indices },
 		m_primIndices{ other.m_primIndices }, m_meshlets{ other.m_meshlets },
-		m_bounds{ other.m_bounds }, m_bundleDetails{ other.m_bundleDetails }
+		m_bundleDetails{ other.m_bundleDetails }
 	{}
 	MeshBundleBaseMS& operator=(const MeshBundleBaseMS& other) noexcept
 	{
@@ -239,7 +216,6 @@ public:
 		m_indices             = other.m_indices;
 		m_primIndices         = other.m_primIndices;
 		m_meshlets            = other.m_meshlets;
-		m_bounds              = other.m_bounds;
 		m_bundleDetails       = other.m_bundleDetails;
 
 		return *this;
@@ -248,7 +224,7 @@ public:
 	MeshBundleBaseMS(MeshBundleBaseMS&& other) noexcept
 		: MeshBundleMS{ std::move(other) }, m_vertices{ std::move(other.m_vertices) },
 		m_indices{ std::move(other.m_indices) }, m_primIndices{ std::move(other.m_primIndices) },
-		m_meshlets{ std::move(other.m_meshlets) }, m_bounds{ std::move(other.m_bounds) },
+		m_meshlets{ std::move(other.m_meshlets) },
 		m_bundleDetails{ std::move(other.m_bundleDetails) }
 	{}
 	MeshBundleBaseMS& operator=(MeshBundleBaseMS&& other) noexcept
@@ -258,7 +234,6 @@ public:
 		m_indices             = std::move(other.m_indices);
 		m_primIndices         = std::move(other.m_primIndices);
 		m_meshlets            = std::move(other.m_meshlets);
-		m_bounds              = std::move(other.m_bounds);
 		m_bundleDetails       = std::move(other.m_bundleDetails);
 
 		return *this;

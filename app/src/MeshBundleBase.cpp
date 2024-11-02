@@ -9,7 +9,6 @@ bool MeshBundleBase::s_meshTypeVS = true;
 
 void MeshBundleBase::AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexcept
 {
-	std::ranges::move(mesh.bounds, std::back_inserter(m_bounds));
 	std::ranges::move(mesh.indices, std::back_inserter(m_indices));
 	std::ranges::move(mesh.vertices, std::back_inserter(m_vertices));
 
@@ -27,7 +26,7 @@ void MeshBundleBase::AddMesh(
 
 MeshBundleBase& MeshBundleBase::AddMesh(Mesh&& mesh) noexcept
 {
-	MeshDetails meshDetails{ .sphereBV = GenerateSphereBV(mesh.vertices) };
+	MeshDetails meshDetails{ .aabb = GenerateAABB(mesh.vertices) };
 
 	if (!s_meshTypeVS)
 	{
@@ -112,7 +111,6 @@ std::uint32_t MeshBundleBase::SetMeshBundle(Renderer& renderer, MeshBundleBase&&
 		bundleMS->m_indices       = std::move(meshBundle.m_indices);
 		bundleMS->m_primIndices   = std::move(meshBundle.m_primIndices);
 		bundleMS->m_meshlets      = std::move(meshBundle.m_meshlets);
-		bundleMS->m_bounds        = std::move(meshBundle.m_bounds);
 		bundleMS->m_bundleDetails = std::move(meshBundle.m_bundleDetails);
 
 		return renderer.AddMeshBundle(std::move(bundleMS));
@@ -123,7 +121,6 @@ std::uint32_t MeshBundleBase::SetMeshBundle(Renderer& renderer, MeshBundleBase&&
 
 		bundleVS->m_vertices      = std::move(meshBundle.m_vertices);
 		bundleVS->m_indices       = std::move(meshBundle.m_indices);
-		bundleVS->m_bounds        = std::move(meshBundle.m_bounds);
 		bundleVS->m_bundleDetails = std::move(meshBundle.m_bundleDetails);
 
 		return renderer.AddMeshBundle(std::move(bundleVS));

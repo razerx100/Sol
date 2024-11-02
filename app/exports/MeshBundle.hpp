@@ -13,11 +13,6 @@ struct Vertex
 	DirectX::XMFLOAT2 uv;
 };
 
-struct MeshBound
-{
-	DirectX::XMFLOAT3 position;
-};
-
 struct Meshlet
 {
 	std::uint32_t vertexCount;
@@ -28,11 +23,9 @@ struct Meshlet
 
 struct MeshDetails
 {
-	std::uint32_t        elementCount;
-	std::uint32_t        elementOffset;
-	// We can only bind a SphereBV with a mesh, as it isn't affected by the rotation.
-	// And so doesn't need to be updated.
-	SphereBoundingVolume sphereBV;
+	std::uint32_t          elementCount;
+	std::uint32_t          elementOffset;
+	AxisAlignedBoundingBox aabb;
 };
 
 struct MeshBundleDetails
@@ -45,8 +38,6 @@ class MeshBundle
 public:
 	virtual ~MeshBundle() = default;
 
-	[[nodiscard]]
-	virtual const std::vector<MeshBound>& GetBounds() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
 	[[nodiscard]]

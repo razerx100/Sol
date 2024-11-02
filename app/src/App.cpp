@@ -8,7 +8,6 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 #include <TextureAtlas.hpp>
-#include <MeshBounds.hpp>
 
 static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();;
 static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();;
@@ -36,10 +35,6 @@ void App::Init()
 		Mesh mesh{};
 
 		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
-
-		if (m_engineType == RenderEngineType::IndirectDraw)
-			mesh.bounds = RectangleBounds{}.GetBounds(mesh.vertices);
-
 		cubeMesh.AddMesh(std::move(mesh));
 
 		cubeMeshBundleIndex = MeshBundleBase::SetMeshBundle(*m_renderer, std::move(cubeMesh));
@@ -348,10 +343,6 @@ void App::PhysicsUpdate()
 			Mesh mesh{};
 
 			SphereMesh{ 64u, 64u }.SetMesh(mesh);
-
-			if (m_engineType == RenderEngineType::IndirectDraw)
-				mesh.bounds = RectangleBounds{}.GetBounds(mesh.vertices);
-
 			sphereMesh.AddMesh(std::move(mesh));
 
 			sphereMeshBundleIndex = MeshBundleBase::SetMeshBundle(*m_renderer, std::move(sphereMesh));

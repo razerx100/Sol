@@ -231,10 +231,11 @@ public:
 	std::uint32_t GetMeshBundleIndex() const noexcept { return *m_meshBundleIndex; }
 
 	[[nodiscard]]
-	std::shared_ptr<ModelBundleImpl> GetBundleImpl() const noexcept;
-
-	[[nodiscard]]
 	std::uint32_t SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName) const;
+
+private:
+	[[nodiscard]]
+	std::shared_ptr<ModelBundleImpl> GetBundleImpl() const noexcept;
 
 private:
 	std::vector<std::shared_ptr<ModelBase>> m_models;
