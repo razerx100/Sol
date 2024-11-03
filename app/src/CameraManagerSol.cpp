@@ -29,6 +29,41 @@ void _BaseCamera::GetProjectionMatrix(void* address) const noexcept
 	memcpy(address, &m_projectionMatrix, sizeof(XMMATRIX));
 }
 
+DirectX::XMFLOAT4 _BaseCamera::GetFloat4(const DirectX::XMVECTOR& vector) noexcept
+{
+	DirectX::XMFLOAT4 float4{};
+
+	DirectX::XMStoreFloat4(&float4, vector);
+
+	return float4;
+}
+
+Frustum _BaseCamera::GetViewFrustum() const noexcept
+{
+	return GetViewFrustum(GetViewMatrix());
+}
+
+Frustum _BaseCamera::GetViewFrustum(const DirectX::XMMATRIX& viewMatrix) const noexcept
+{
+	using namespace DirectX;
+
+	// Need to transpose it so we can access the planes as rows. As the rows
+	// are accessible as a single VECTOR.
+	const XMMATRIX viewPMatrix = XMMatrixTranspose(viewMatrix * m_projectionMatrix);
+
+	Frustum viewFrustm
+	{
+		.left   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[0])),
+		.right  = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[0])),
+		.bottom = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[1])),
+		.top    = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[1])),
+		.near   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[2])),
+		.far    = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[2]))
+	};
+
+	return viewFrustm;
+}
+
 // Perspective Camera
 PerspectiveCamera::PerspectiveCamera()
 	: m_worldForwardDirection{ XMVectorSet(0.f, 0.f, 1.f, 0.f) },

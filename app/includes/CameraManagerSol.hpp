@@ -38,8 +38,16 @@ public:
 	DirectX::XMFLOAT3 GetCameraPosition() const noexcept;
 	[[nodiscard]]
 	virtual DirectX::XMMATRIX GetViewMatrix() const noexcept = 0;
+	[[nodiscard]]
+	Frustum GetViewFrustum() const noexcept override;
+	[[nodiscard]]
+	Frustum GetViewFrustum(const DirectX::XMMATRIX& viewMatrix) const noexcept override;
 
 	void GetProjectionMatrix(void* address) const noexcept override;
+
+private:
+	[[nodiscard]]
+	static DirectX::XMFLOAT4 GetFloat4(const DirectX::XMVECTOR& vector) noexcept;
 
 protected:
 	float             m_fovRadian;
