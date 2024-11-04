@@ -6,14 +6,16 @@
 
 typedef DirectX::XMFLOAT4 Plane;
 
+// Thanks to the relic that is Windows.h, there are two macros near and far and
+// so we can't use those names. And they are used in the ComPtr header.
 struct Frustum
 {
-	Plane left;
-	Plane right;
-	Plane bottom;
-	Plane top;
-	Plane near;
-	Plane far;
+	Plane leftP;
+	Plane rightP;
+	Plane bottomP;
+	Plane topP;
+	Plane nearP;
+	Plane farP;
 };
 
 class Camera
