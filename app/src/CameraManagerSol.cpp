@@ -47,10 +47,16 @@ Frustum _BaseCamera::GetViewFrustum(const DirectX::XMMATRIX& viewMatrix) const n
 {
 	using namespace DirectX;
 
-	// Need to transpose it so we can access the planes as rows. As the rows
-	// are accessible as a single VECTOR.
+	// The projection matrix projects vertices onto the clip space. And multipling the view
+	// matrix change into a matrix which projects vertices from their local space to the clip space.
+	// So, in these two transforms the x, y, z, w planes are in their columns, as then they would
+	// be correctly multipled with a vector. And we can't really access a column from an XMMATRIX,
+	// so we are transposing it.
+
 	const XMMATRIX viewPMatrix = XMMatrixTranspose(viewMatrix * m_projectionMatrix);
 
+	// In D3D/Vulkan, the clip space extents to -w, -w, 0 to w, w, w. So, the near
+	// plane is on the z plane not w + z.
 	Frustum viewFrustm
 	{
 		.left   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[0])),
