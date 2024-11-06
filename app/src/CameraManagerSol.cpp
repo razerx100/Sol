@@ -59,12 +59,12 @@ Frustum _BaseCamera::GetViewFrustum(const DirectX::XMMATRIX& viewMatrix) const n
 	// plane is on the z plane not w + z.
 	Frustum viewFrustm
 	{
-		.left   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[0])),
-		.right  = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[0])),
-		.bottom = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[1])),
-		.top    = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[1])),
-		.near   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[2])),
-		.far    = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[2]))
+		.leftP   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[0])),
+		.rightP  = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[0])),
+		.bottomP = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] + viewPMatrix.r[1])),
+		.topP    = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[1])),
+		.nearP   = GetFloat4(XMPlaneNormalize(viewPMatrix.r[2])),
+		.farP    = GetFloat4(XMPlaneNormalize(viewPMatrix.r[3] - viewPMatrix.r[2]))
 	};
 
 	return viewFrustm;
