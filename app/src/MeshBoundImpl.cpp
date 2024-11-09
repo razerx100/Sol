@@ -21,6 +21,9 @@ AxisAlignedBoundingBox GenerateAABB(const std::vector<Vertex>& vertices) noexcep
 		nAxes.z = std::min(vertex.position.z, nAxes.z);
 	}
 
+	pAxes.w = 1.f;
+	nAxes.w = 1.f;
+
 	return aabb;
 }
 
