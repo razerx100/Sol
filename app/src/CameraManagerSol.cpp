@@ -47,12 +47,15 @@ Frustum _BaseCamera::GetViewFrustum(const DirectX::XMMATRIX& viewMatrix) const n
 {
 	using namespace DirectX;
 
-	// The projection matrix projects vertices onto the clip space. And multipling the view
-	// matrix change into a matrix which projects vertices from their local space to the clip space.
-	// So, in these two transforms the x, y, z, w planes are in their columns, as then they would
-	// be correctly multipled with a vector. And we can't really access a column from an XMMATRIX,
-	// so we are transposing it.
-
+	// When the view matrix is transformed by the projection matrix, we can derive
+	// the planes from the resulting matrix. A view matrix represents the x, y, z
+	// normals of the camera in the first, second and the third column and the
+	// camera location on the 4th column. The projection matrix adds the frustum limit
+	// anything outside which gets clipped. And we can derive the planes from the
+	// - w <= x <= w, -w <= y <= w, 0 <= z <= w equations. And the planes would be
+	// in the world space.
+	// Since we can't access the columns as a single vector here, we are transposing
+	// it first to access them as a row.
 	const XMMATRIX viewPMatrix = XMMatrixTranspose(viewMatrix * m_projectionMatrix);
 
 	// In D3D/Vulkan, the clip space extents to -w, -w, 0 to w, w, w. So, the near
