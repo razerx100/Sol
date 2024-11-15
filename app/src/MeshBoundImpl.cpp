@@ -53,3 +53,36 @@ SphereBoundingVolume GenerateSphereBV(const std::vector<Vertex>& vertices) noexc
 
 	return sphereVolume;
 }
+
+SphereBoundingVolume GenerateSphereBV(
+	const std::vector<Vertex>& vertices, const std::vector<std::uint32_t>& vertexIndices,
+	const Meshlet& meshlet
+) noexcept {
+	using namespace DirectX;
+
+	// The first three components should be the centre. In the object space, it should be 0, 0.
+	SphereBoundingVolume sphereVolume{ { 0.f, 0.f, 0.f, 0.f } };
+
+	const XMVECTOR centre = XMLoadFloat4(&sphereVolume.sphere);
+
+	float radius = 0.f;
+
+	const auto vertexEnd = static_cast<size_t>(meshlet.vertexOffset + meshlet.vertexCount);
+
+	for (size_t index = meshlet.vertexOffset; index < vertexEnd; ++index)
+	{
+		const Vertex& vertex = vertices[vertexIndices[index]];
+
+		XMVECTOR vertexV  = XMLoadFloat3(&vertex.position);
+		XMVECTOR distance = XMVector3Length(centre - vertexV);
+
+		float currentDistance = 0.f;
+		XMStoreFloat(&currentDistance, distance);
+
+		radius = std::max(radius, currentDistance);
+	}
+
+	sphereVolume.sphere.w = radius;
+
+	return sphereVolume;
+}

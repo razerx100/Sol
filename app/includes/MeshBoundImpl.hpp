@@ -7,4 +7,9 @@
 AxisAlignedBoundingBox GenerateAABB(const std::vector<Vertex>& vertices) noexcept;
 [[nodiscard]]
 SphereBoundingVolume GenerateSphereBV(const std::vector<Vertex>& vertices) noexcept;
+[[nodiscard]]
+SphereBoundingVolume GenerateSphereBV(
+	const std::vector<Vertex>& vertices, const std::vector<std::uint32_t>& vertexIndices,
+	const Meshlet& meshlet
+) noexcept;
 #endif
