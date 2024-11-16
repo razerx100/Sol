@@ -18,7 +18,7 @@ void MeshBundleBase::AddMesh(Mesh&& mesh, const MeshDetails& meshDetails) noexce
 void MeshBundleBase::AddMesh(
 	Mesh&& mesh, MeshExtraForMesh&& extraMeshData, const MeshDetails& meshDetails
 ) noexcept {
-	std::ranges::move(extraMeshData.meshlets, std::back_inserter(m_meshlets));
+	std::ranges::move(extraMeshData.meshletDetails, std::back_inserter(m_meshletDetails));
 	std::ranges::move(extraMeshData.primIndices, std::back_inserter(m_primIndices));
 
 	AddMesh(std::move(mesh), meshDetails);
@@ -37,8 +37,24 @@ MeshBundleBase& MeshBundleBase::AddMesh(Mesh&& mesh) noexcept
 
 		MeshExtraForMesh extraMeshData = meshletMaker.GenerateExtraMeshData();
 
-		meshDetails.elementCount       = static_cast<std::uint32_t>(std::size(extraMeshData.meshlets));
-		meshDetails.elementOffset      = static_cast<std::uint32_t>(std::size(m_meshlets));
+		meshDetails.elementCount  = static_cast<std::uint32_t>(std::size(extraMeshData.meshletDetails));
+		meshDetails.elementOffset = static_cast<std::uint32_t>(std::size(m_meshletDetails));
+
+		{
+			// Per meshlet Bounding Sphere
+			std::vector<MeshletDetails>& meshletDetails = extraMeshData.meshletDetails;
+
+			const size_t meshletCount = std::size(meshletDetails);
+
+			for (size_t index = 0u; index < meshletCount; ++index)
+			{
+				MeshletDetails& meshletDetail = meshletDetails[index];
+
+				meshletDetail.sphereB = GenerateSphereBV(
+					mesh.vertices, mesh.indices, meshletDetail.meshlet
+				);
+			}
+		}
 
 		AddMesh(std::move(mesh), std::move(extraMeshData), meshDetails);
 	}
@@ -105,13 +121,13 @@ std::uint32_t MeshBundleBase::SetMeshBundle(Renderer& renderer, MeshBundleBase&&
 {
 	if (!s_meshTypeVS)
 	{
-		auto bundleMS             = std::make_unique<MeshBundleBaseMS>();
+		auto bundleMS              = std::make_unique<MeshBundleBaseMS>();
 
-		bundleMS->m_vertices      = std::move(meshBundle.m_vertices);
-		bundleMS->m_indices       = std::move(meshBundle.m_indices);
-		bundleMS->m_primIndices   = std::move(meshBundle.m_primIndices);
-		bundleMS->m_meshlets      = std::move(meshBundle.m_meshlets);
-		bundleMS->m_bundleDetails = std::move(meshBundle.m_bundleDetails);
+		bundleMS->m_vertices       = std::move(meshBundle.m_vertices);
+		bundleMS->m_indices        = std::move(meshBundle.m_indices);
+		bundleMS->m_primIndices    = std::move(meshBundle.m_primIndices);
+		bundleMS->m_meshletDetails = std::move(meshBundle.m_meshletDetails);
+		bundleMS->m_bundleDetails  = std::move(meshBundle.m_bundleDetails);
 
 		return renderer.AddMeshBundle(std::move(bundleMS));
 	}
@@ -130,7 +146,7 @@ std::uint32_t MeshBundleBase::SetMeshBundle(Renderer& renderer, MeshBundleBase&&
 // Meshlet Maker
 MeshletMaker::MeshletMaker()
 	: m_tempVertexIndices{}, m_tempPrimitiveIndices{}, m_vertexIndices{}, m_primitiveIndices{},
-	m_meshlets{}
+	m_meshletDetails{}
 {
 	m_tempVertexIndices.reserve(s_meshletVertexLimit);
 	m_tempPrimitiveIndices.reserve(s_meshletPrimitiveLimit);
@@ -153,8 +169,8 @@ MeshExtraForMesh MeshletMaker::GenerateExtraMeshData() noexcept
 {
 	return MeshExtraForMesh
 	{
-		.primIndices = std::move(m_primitiveIndices),
-		.meshlets    = std::move(m_meshlets)
+		.primIndices    = std::move(m_primitiveIndices),
+		.meshletDetails = std::move(m_meshletDetails)
 	};
 }
 
@@ -252,12 +268,18 @@ size_t MeshletMaker::MakeMeshlet(const std::vector<std::uint32_t>& indices, size
 	const auto vertexOffset    = static_cast<std::uint32_t>(std::size(m_vertexIndices));
 	const auto primitiveOffset = static_cast<std::uint32_t>(std::size(m_primitiveIndices));
 
-	m_meshlets.emplace_back(Meshlet{
-		.vertexCount     = static_cast<std::uint32_t>(std::size(m_tempVertexIndices)),
-		.vertexOffset    = static_cast<std::uint32_t>(vertexOffset),
-		.primitiveCount  = static_cast<std::uint32_t>(std::size(m_tempPrimitiveIndices)),
-		.primitiveOffset = static_cast<std::uint32_t>(primitiveOffset)
-	});
+	m_meshletDetails.emplace_back(
+		MeshletDetails
+		{
+			.meshlet = Meshlet
+			{
+				.vertexCount     = static_cast<std::uint32_t>(std::size(m_tempVertexIndices)),
+				.vertexOffset    = static_cast<std::uint32_t>(vertexOffset),
+				.primitiveCount  = static_cast<std::uint32_t>(std::size(m_tempPrimitiveIndices)),
+				.primitiveOffset = static_cast<std::uint32_t>(primitiveOffset)
+			}
+		}
+	);
 
 	std::ranges::move(m_tempVertexIndices, std::back_inserter(m_vertexIndices));
 	std::ranges::move(m_tempPrimitiveIndices, std::back_inserter(m_primitiveIndices));

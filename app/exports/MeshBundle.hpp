@@ -33,6 +33,12 @@ struct MeshBundleDetails
 	std::vector<MeshDetails> meshDetails;
 };
 
+struct MeshletDetails
+{
+	Meshlet              meshlet;
+	SphereBoundingVolume sphereB;
+};
+
 class MeshBundle
 {
 public:
@@ -65,6 +71,6 @@ public:
 	[[nodiscard]]
 	virtual const std::vector<std::uint32_t>& GetPrimIndices() const noexcept = 0;
 	[[nodiscard]]
-	virtual const std::vector<Meshlet>& GetMeshlets() const noexcept = 0;
+	virtual const std::vector<MeshletDetails>& GetMeshletDetails() const noexcept = 0;
 };
 #endif

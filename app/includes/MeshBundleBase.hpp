@@ -13,15 +13,15 @@ struct Mesh
 
 struct MeshExtraForMesh
 {
-	std::vector<std::uint32_t> primIndices;
-	std::vector<Meshlet>       meshlets;
+	std::vector<std::uint32_t>  primIndices;
+	std::vector<MeshletDetails> meshletDetails;
 };
 
 class MeshBundleBase
 {
 public:
 	MeshBundleBase()
-		: m_vertices{}, m_indices{}, m_primIndices{}, m_meshlets{}, m_bundleDetails{}
+		: m_vertices{}, m_indices{}, m_primIndices{}, m_meshletDetails{}, m_bundleDetails{}
 	{}
 
 	MeshBundleBase& AddMesh(Mesh&& mesh) noexcept;
@@ -57,43 +57,44 @@ private:
 	) noexcept;
 
 private:
-	std::vector<Vertex>        m_vertices;
-	std::vector<std::uint32_t> m_indices;
-	std::vector<std::uint32_t> m_primIndices;
-	std::vector<Meshlet>       m_meshlets;
-	MeshBundleDetails          m_bundleDetails;
+	std::vector<Vertex>         m_vertices;
+	std::vector<std::uint32_t>  m_indices;
+	std::vector<std::uint32_t>  m_primIndices;
+	std::vector<MeshletDetails> m_meshletDetails;
+	MeshBundleDetails           m_bundleDetails;
 
-	static bool                s_meshTypeVS;
+	static bool                 s_meshTypeVS;
 
 public:
 	MeshBundleBase(const MeshBundleBase& other) noexcept
 		: m_vertices{ other.m_vertices }, m_indices{ other.m_indices },
-		m_primIndices{ other.m_primIndices }, m_meshlets{ other.m_meshlets },
+		m_primIndices{ other.m_primIndices }, m_meshletDetails{ other.m_meshletDetails },
 		m_bundleDetails{ other.m_bundleDetails }
 	{}
 	MeshBundleBase& operator=(const MeshBundleBase& other) noexcept
 	{
-		m_vertices      = other.m_vertices;
-		m_indices       = other.m_indices;
-		m_primIndices   = other.m_primIndices;
-		m_meshlets      = other.m_meshlets;
-		m_bundleDetails = other.m_bundleDetails;
+		m_vertices       = other.m_vertices;
+		m_indices        = other.m_indices;
+		m_primIndices    = other.m_primIndices;
+		m_meshletDetails = other.m_meshletDetails;
+		m_bundleDetails  = other.m_bundleDetails;
 
 		return *this;
 	}
 
 	MeshBundleBase(MeshBundleBase&& other) noexcept
 		: m_vertices{ std::move(other.m_vertices) }, m_indices{ std::move(other.m_indices) },
-		m_primIndices{ std::move(other.m_primIndices) }, m_meshlets{ std::move(other.m_meshlets) },
+		m_primIndices{ std::move(other.m_primIndices) },
+		m_meshletDetails{ std::move(other.m_meshletDetails) },
 		m_bundleDetails{ std::move(other.m_bundleDetails) }
 	{}
 	MeshBundleBase& operator=(MeshBundleBase&& other) noexcept
 	{
-		m_vertices      = std::move(other.m_vertices);
-		m_indices       = std::move(other.m_indices);
-		m_primIndices   = std::move(other.m_primIndices);
-		m_meshlets      = std::move(other.m_meshlets);
-		m_bundleDetails = std::move(other.m_bundleDetails);
+		m_vertices       = std::move(other.m_vertices);
+		m_indices        = std::move(other.m_indices);
+		m_primIndices    = std::move(other.m_primIndices);
+		m_meshletDetails = std::move(other.m_meshletDetails);
+		m_bundleDetails  = std::move(other.m_bundleDetails);
 
 		return *this;
 	}
@@ -170,7 +171,8 @@ class MeshBundleBaseMS : public MeshBundleMS
 
 public:
 	MeshBundleBaseMS()
-		: MeshBundleMS{}, m_vertices{}, m_indices{}, m_primIndices{}, m_meshlets{}, m_bundleDetails{}
+		: MeshBundleMS{}, m_vertices{}, m_indices{}, m_primIndices{}, m_meshletDetails{},
+		m_bundleDetails{}
 	{}
 
 	[[nodiscard]]
@@ -184,9 +186,9 @@ public:
 		return m_primIndices;
 	}
 	[[nodiscard]]
-	const std::vector<Meshlet>& GetMeshlets() const noexcept override
+	const std::vector<MeshletDetails>& GetMeshletDetails() const noexcept override
 	{
-		return m_meshlets;
+		return m_meshletDetails;
 	}
 	[[nodiscard]]
 	const std::vector<Vertex>& GetVertices() const noexcept override
@@ -205,16 +207,16 @@ public:
 	}
 
 private:
-	std::vector<Vertex>        m_vertices;
-	std::vector<std::uint32_t> m_indices;
-	std::vector<std::uint32_t> m_primIndices;
-	std::vector<Meshlet>       m_meshlets;
-	MeshBundleDetails          m_bundleDetails;
+	std::vector<Vertex>         m_vertices;
+	std::vector<std::uint32_t>  m_indices;
+	std::vector<std::uint32_t>  m_primIndices;
+	std::vector<MeshletDetails> m_meshletDetails;
+	MeshBundleDetails           m_bundleDetails;
 
 public:
 	MeshBundleBaseMS(const MeshBundleBaseMS& other) noexcept
 		: MeshBundleMS{ other }, m_vertices{ other.m_vertices }, m_indices{ other.m_indices },
-		m_primIndices{ other.m_primIndices }, m_meshlets{ other.m_meshlets },
+		m_primIndices{ other.m_primIndices }, m_meshletDetails{ other.m_meshletDetails },
 		m_bundleDetails{ other.m_bundleDetails }
 	{}
 	MeshBundleBaseMS& operator=(const MeshBundleBaseMS& other) noexcept
@@ -223,7 +225,7 @@ public:
 		m_vertices            = other.m_vertices;
 		m_indices             = other.m_indices;
 		m_primIndices         = other.m_primIndices;
-		m_meshlets            = other.m_meshlets;
+		m_meshletDetails      = other.m_meshletDetails;
 		m_bundleDetails       = other.m_bundleDetails;
 
 		return *this;
@@ -232,7 +234,7 @@ public:
 	MeshBundleBaseMS(MeshBundleBaseMS&& other) noexcept
 		: MeshBundleMS{ std::move(other) }, m_vertices{ std::move(other.m_vertices) },
 		m_indices{ std::move(other.m_indices) }, m_primIndices{ std::move(other.m_primIndices) },
-		m_meshlets{ std::move(other.m_meshlets) },
+		m_meshletDetails{ std::move(other.m_meshletDetails) },
 		m_bundleDetails{ std::move(other.m_bundleDetails) }
 	{}
 	MeshBundleBaseMS& operator=(MeshBundleBaseMS&& other) noexcept
@@ -241,7 +243,7 @@ public:
 		m_vertices            = std::move(other.m_vertices);
 		m_indices             = std::move(other.m_indices);
 		m_primIndices         = std::move(other.m_primIndices);
-		m_meshlets            = std::move(other.m_meshlets);
+		m_meshletDetails      = std::move(other.m_meshletDetails);
 		m_bundleDetails       = std::move(other.m_bundleDetails);
 
 		return *this;
@@ -297,10 +299,10 @@ private:
 	static constexpr size_t s_meshletPrimitiveLimit = 126u;
 
 private:
-	std::vector<std::uint32_t> m_tempVertexIndices;
-	std::vector<std::uint32_t> m_tempPrimitiveIndices;
-	std::vector<std::uint32_t> m_vertexIndices;
-	std::vector<std::uint32_t> m_primitiveIndices;
-	std::vector<Meshlet>       m_meshlets;
+	std::vector<std::uint32_t>  m_tempVertexIndices;
+	std::vector<std::uint32_t>  m_tempPrimitiveIndices;
+	std::vector<std::uint32_t>  m_vertexIndices;
+	std::vector<std::uint32_t>  m_primitiveIndices;
+	std::vector<MeshletDetails> m_meshletDetails;
 };
 #endif
