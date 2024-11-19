@@ -12,7 +12,8 @@ class ModelTransform
 {
 public:
 	ModelTransform()
-		: m_modelMatrix{ DirectX::XMMatrixIdentity() }, m_modelOffset{ 0.f, 0.f, 0.f }
+		: m_modelMatrix{ DirectX::XMMatrixIdentity() }, m_modelOffset{ 0.f, 0.f, 0.f },
+		m_modelScale{ 1.f }
 	{}
 
 	ModelTransform& RotatePitchDegree(float angle) noexcept
@@ -72,7 +73,18 @@ public:
 	{
 		m_modelMatrix *= DirectX::XMMatrixRotationAxis(rotationAxis, angleRadian);
 	}
-	void MultiplyModelMatrix(const DirectX::XMMATRIX& matrix) noexcept { m_modelMatrix *= matrix; }
+	void Scale(float scale) noexcept
+	{
+		m_modelMatrix *= DirectX::XMMatrixScaling(scale, scale, scale);
+
+		RecalculateScale();
+	}
+	void MultiplyModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
+	{
+		m_modelMatrix *= matrix;
+
+		RecalculateScale();
+	}
 	void AddToModelOffset(const DirectX::XMFLOAT3& offset) noexcept
 	{
 		m_modelOffset.x += offset.x;
@@ -85,10 +97,16 @@ public:
 	DirectX::XMMATRIX GetModelMatrix() const noexcept { return m_modelMatrix; }
 	[[nodiscard]]
 	DirectX::XMFLOAT3 GetModelOffset() const noexcept { return m_modelOffset; }
+	[[nodiscard]]
+	float GetModelScale() const noexcept { return m_modelScale; }
+
+private:
+	void RecalculateScale() noexcept;
 
 private:
 	DirectX::XMMATRIX m_modelMatrix;
 	DirectX::XMFLOAT3 m_modelOffset;
+	float             m_modelScale;
 };
 
 class ModelBase : public Model
@@ -100,11 +118,16 @@ public:
 	{}
 	ModelBase(float scale) : ModelBase{}
 	{
-		GetTransform().MultiplyModelMatrix(DirectX::XMMatrixScaling(scale, scale, scale));
+		Scale(scale);
 	}
 
 	void SetMaterialIndex(std::uint32_t index) noexcept { m_materialIndex = index; }
 	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
+
+	void Scale(float scale) noexcept
+	{
+		GetTransform().Scale(scale);
+	}
 
 	void SetDiffuseIndex(size_t index) noexcept
 	{
@@ -138,6 +161,8 @@ public:
 	std::uint32_t GetMaterialIndex() const noexcept override { return m_materialIndex; }
 	[[nodiscard]]
 	std::uint32_t GetMeshIndex() const noexcept override { return m_meshIndex; }
+	[[nodiscard]]
+	float GetModelScale() const noexcept override { return m_transform.GetModelScale(); };
 
 	[[nodiscard]]
 	ModelTransform& GetTransform() noexcept { return m_transform; }

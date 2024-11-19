@@ -1,6 +1,18 @@
 #include <ModelBase.hpp>
 #include <concepts>
 
+void ModelTransform::RecalculateScale() noexcept
+{
+	DirectX::XMVECTOR scale{};
+	DirectX::XMVECTOR rotationQuat{};
+	DirectX::XMVECTOR translation{};
+
+	DirectX::XMMatrixDecompose(&scale, &rotationQuat, &translation, m_modelMatrix);
+
+	// We are scaling all of the components by the same amount.
+	m_modelScale = DirectX::XMVectorGetX(scale);
+}
+
 template<typename To, std::derived_from<To> From>
 static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shared_ptr<From>>& from) noexcept
 {
