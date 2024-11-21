@@ -260,9 +260,18 @@ size_t MeshletMaker::MakeMeshlet(const std::vector<std::uint32_t>& indices, size
 		const std::uint32_t primIndexTwo   = GetPrimIndex(vIndex2, vertexIndicesMap, m_tempVertexIndices);
 		const std::uint32_t primIndexThree = GetPrimIndex(vIndex3, vertexIndicesMap, m_tempVertexIndices);
 
-		m_tempPrimitiveIndices.emplace_back(
-			PrimitiveIndices{ .unpacked = { primIndexOne, primIndexTwo, primIndexThree } }.packed
-		);
+		PrimitiveIndicesUnpacked unpackedPrim
+		{
+			.firstIndex  = primIndexOne,
+			.secondIndex = primIndexTwo,
+			.thirdIndex  = primIndexThree
+		};
+
+		std::uint32_t packedPrim = 0u;
+
+		memcpy(&packedPrim, &unpackedPrim, sizeof(std::uint32_t));
+
+		m_tempPrimitiveIndices.emplace_back(packedPrim);
 	}
 
 	const auto vertexOffset    = static_cast<std::uint32_t>(std::size(m_vertexIndices));

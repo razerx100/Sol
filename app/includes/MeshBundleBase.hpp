@@ -284,15 +284,11 @@ private:
 	size_t MakeMeshlet(const std::vector<std::uint32_t>& indices, size_t startingIndex) noexcept;
 
 private:
-	union PrimitiveIndices
+	struct PrimitiveIndicesUnpacked
 	{
-		struct
-		{
-			std::uint32_t firstIndex  : 10u;
-			std::uint32_t secondIndex : 10u;
-			std::uint32_t thirdIndex  : 10u;
-		} unpacked;
-		std::uint32_t packed;
+		std::uint32_t firstIndex  : 10u;
+		std::uint32_t secondIndex : 10u;
+		std::uint32_t thirdIndex  : 10u;
 	};
 
 	static constexpr size_t s_meshletVertexLimit    = 64u;
