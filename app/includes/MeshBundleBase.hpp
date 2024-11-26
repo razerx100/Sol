@@ -253,6 +253,14 @@ public:
 class MeshletMaker
 {
 public:
+	struct PrimitiveIndicesUnpacked
+	{
+		std::uint32_t firstIndex  : 10u;
+		std::uint32_t secondIndex : 10u;
+		std::uint32_t thirdIndex  : 10u;
+	};
+
+public:
 	MeshletMaker();
 
 	void GenerateMeshlets(const Mesh& mesh) noexcept;
@@ -262,6 +270,9 @@ public:
 	[[nodiscard]]
 	// It is not const, because it will move the data.
 	MeshExtraForMesh GenerateExtraMeshData() noexcept;
+
+	[[nodiscard]]
+	static PrimitiveIndicesUnpacked UnpackPrim(std::uint32_t packedIndices) noexcept;
 
 private:
 	[[nodiscard]]
@@ -284,13 +295,6 @@ private:
 	size_t MakeMeshlet(const std::vector<std::uint32_t>& indices, size_t startingIndex) noexcept;
 
 private:
-	struct PrimitiveIndicesUnpacked
-	{
-		std::uint32_t firstIndex  : 10u;
-		std::uint32_t secondIndex : 10u;
-		std::uint32_t thirdIndex  : 10u;
-	};
-
 	static constexpr size_t s_meshletVertexLimit    = 64u;
 	static constexpr size_t s_meshletPrimitiveLimit = 126u;
 

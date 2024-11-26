@@ -37,6 +37,7 @@ struct MeshletDetails
 {
 	Meshlet              meshlet;
 	SphereBoundingVolume sphereB;
+	ClusterNormalCone    coneNormal;
 };
 
 class MeshBundle

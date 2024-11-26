@@ -53,6 +53,10 @@ MeshBundleBase& MeshBundleBase::AddMesh(Mesh&& mesh) noexcept
 				meshletDetail.sphereB = GenerateSphereBV(
 					mesh.vertices, mesh.indices, meshletDetail.meshlet
 				);
+
+				meshletDetail.coneNormal = GenerateNormalCone(
+					mesh.vertices, mesh.indices, extraMeshData.primIndices, meshletDetail
+				);
 			}
 		}
 
@@ -294,4 +298,13 @@ size_t MeshletMaker::MakeMeshlet(const std::vector<std::uint32_t>& indices, size
 	std::ranges::move(m_tempPrimitiveIndices, std::back_inserter(m_primitiveIndices));
 
 	return indexOffset;
+}
+
+MeshletMaker::PrimitiveIndicesUnpacked MeshletMaker::UnpackPrim(std::uint32_t packedIndices) noexcept
+{
+	PrimitiveIndicesUnpacked unpackedIndices{ 0u, 0u, 0u };
+
+	memcpy(&unpackedIndices, &packedIndices, sizeof(std::uint32_t));
+
+	return unpackedIndices;
 }
