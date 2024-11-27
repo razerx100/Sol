@@ -22,9 +22,9 @@ Currently supported changeable modules/systems:\
 [Modules] Renderer = Gaia  - DirectX12 based.\
 [Modules] Renderer = Terra - Vulkan based.
 
-[Systems] RenderEngine = IndirectDraw   - Compute Shader based Frustum Culling with Indirect Draw calls.\
-[Systems] RenderEngine = IndividualDraw - Legacy draw calls.\
-[Systems] RenderEngine = MeshDraw       - Mesh Shader based. No culling for now.
+[Systems] RenderEngine = IndirectDraw   - Compute Shader based Frustum Culling with Indirect Draw calls to Vertex shaders.\
+[Systems] RenderEngine = IndividualDraw - Legacy draw calls to Vertex shaders.\
+[Systems] RenderEngine = MeshDraw       - Amplification/Task shader based Frustum and Cluster culling with calls to Mesh shaders.
 
 ## Resources
 ### Default Window Icon
