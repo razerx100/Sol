@@ -19,12 +19,12 @@ Use the ADD_TEST_SOL cmake flag to add unit testing.
 Use the ***config.ini*** file from the executable directory to change the modules during the app launch. The file will be automatically generated with default values, if it doesn't exist.
 
 Currently supported changeable modules/systems:\
-**Modules** Renderer = Gaia  - DirectX12 based.\
-**Modules** Renderer = Terra - Vulkan based.
+**Modules 1:** Renderer = Gaia  - DirectX12 based.\
+**Modules 2:** Renderer = Terra - Vulkan based.
 
-**Systems** RenderEngine = IndirectDraw   - Compute Shader based Frustum Culling with Indirect Draw calls to Vertex shaders (AABB based).\
-**Systems** RenderEngine = IndividualDraw - Legacy draw calls to Vertex shaders.\
-**Systems** RenderEngine = MeshDraw       - Amplification/Task shader based Frustum (Sphere based) and Cluster culling with calls to Mesh shaders.
+**Systems 1:** RenderEngine = IndirectDraw   - Compute Shader based Frustum Culling with Indirect Draw calls to Vertex shaders (AABB based).\
+**Systems 2:** RenderEngine = IndividualDraw - Legacy draw calls to Vertex shaders.\
+**Systems 3:** RenderEngine = MeshDraw       - Amplification/Task shader based Frustum (Sphere based) and Cluster culling with calls to Mesh shaders.
 
 ## Resources
 ### Default Window Icon
