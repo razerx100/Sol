@@ -35,7 +35,7 @@ public:
 	float GetFovDegrees() const noexcept { return DirectX::XMConvertToDegrees(m_fovRadian); }
 
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetCameraPosition() const noexcept;
+	DirectX::XMFLOAT3 GetCameraPosition() const noexcept override;
 	[[nodiscard]]
 	virtual DirectX::XMMATRIX GetViewMatrix() const noexcept = 0;
 	[[nodiscard]]

@@ -9,7 +9,7 @@ using namespace DirectX;
 // Base Camera
 XMFLOAT3 _BaseCamera::GetCameraPosition() const noexcept
 {
-	XMFLOAT3 value = {};
+	XMFLOAT3 value{};
 	XMStoreFloat3(&value, m_cameraPosition);
 
 	return value;
