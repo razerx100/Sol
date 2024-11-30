@@ -2,6 +2,7 @@
 #define MESH_BUNDLE_SOL_HPP_
 #include <cstdint>
 #include <vector>
+#include <memory>
 #include <BoundingVolumes.hpp>
 
 #include <DirectXMath.h>
@@ -40,38 +41,43 @@ struct MeshletDetails
 	ClusterNormalCone    coneNormal;
 };
 
+struct MeshPermanentDetails
+{
+	DirectX::XMMATRIX worldMatrix;
+};
+
+class MeshBundleTemporary
+{
+public:
+	virtual ~MeshBundleTemporary() = default;
+
+	virtual void GenerateTemporaryData(bool meshShader) = 0;
+
+	// Vertex and Mesh
+	[[nodiscard]]
+	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
+	[[nodiscard]]
+	virtual const std::vector<std::uint32_t>& GetVertexIndices() const noexcept = 0;
+	[[nodiscard]]
+	virtual const MeshBundleDetails& GetBundleDetails() const noexcept = 0;
+	[[nodiscard]]
+	virtual MeshBundleDetails&& GetBundleDetails() noexcept = 0;
+
+	// Mesh only
+	[[nodiscard]]
+	virtual const std::vector<std::uint32_t>& GetPrimIndices() const noexcept = 0;
+	[[nodiscard]]
+	virtual const std::vector<MeshletDetails>& GetMeshletDetails() const noexcept = 0;
+};
+
 class MeshBundle
 {
 public:
 	virtual ~MeshBundle() = default;
 
 	[[nodiscard]]
-	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
+	virtual std::unique_ptr<MeshBundleTemporary> MoveTemporaryData() = 0;
 	[[nodiscard]]
-	virtual MeshBundleDetails&& GetBundleDetails() noexcept = 0;
-	[[nodiscard]]
-	virtual const MeshBundleDetails& GetBundleDetails() const noexcept = 0;
-};
-
-class MeshBundleVS : public MeshBundle
-{
-public:
-	virtual ~MeshBundleVS() = default;
-
-	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetIndices() const noexcept = 0;
-};
-
-class MeshBundleMS : public MeshBundle
-{
-public:
-	virtual ~MeshBundleMS() = default;
-
-	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetVertexIndices() const noexcept = 0;
-	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetPrimIndices() const noexcept = 0;
-	[[nodiscard]]
-	virtual const std::vector<MeshletDetails>& GetMeshletDetails() const noexcept = 0;
+	virtual const MeshPermanentDetails& GetPermanentDetails(size_t index) const noexcept = 0;
 };
 #endif

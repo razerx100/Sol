@@ -40,13 +40,6 @@ Sol::Sol(const std::string& appName)
 	m_renderer->SetShaderPath(L"resources/shaders/");
 	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
-	// Other stuff.
-	{
-		const bool meshPipeline = m_configManager.GetRenderEngineType() == RenderEngineType::MeshDraw;
-
-		MeshBundleBase::SetMeshTypeVS(!meshPipeline);
-	}
-
 	// App
 	m_app->Init();
 }

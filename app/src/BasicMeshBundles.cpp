@@ -17,13 +17,13 @@ void TriangleMesh::SetMesh(Mesh& mesh) noexcept
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { 3u, singleColourUV };
 
-	MeshBundleBase::SetUVToVertices(vertices, uvs);
+	MeshBundleImpl::SetUVToVertices(vertices, uvs);
 
 	std::vector<std::uint32_t>& indices = mesh.indices;
 
 	indices = { 0u, 1u, 2u, 5u, 4u, 3u };
 
-	MeshBundleBase::CalculateNormalsIndependentFaces(vertices, indices);
+	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 // Cube
@@ -75,7 +75,7 @@ void CubeMesh::SetMesh(Mesh& mesh, CubeUVMode uvMode) noexcept
 			20u, 23u, 21u,  20u, 22u, 23u
 	};
 
-	MeshBundleBase::CalculateNormalsIndependentFaces(vertices, indices);
+	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 std::string CubeMesh::GetName(CubeUVMode uvMode) noexcept
@@ -96,7 +96,7 @@ void CubeMesh::SetSingleColourUV(std::vector<Vertex>& vertices) noexcept
 
 	std::vector<DirectX::XMFLOAT2> uvs{ 24u, singleColourUV };
 
-	MeshBundleBase::SetUVToVertices(vertices, uvs);
+	MeshBundleImpl::SetUVToVertices(vertices, uvs);
 }
 
 void CubeMesh::SetIndependentFaceTexUV(std::vector<Vertex>& vertices) noexcept
@@ -128,7 +128,7 @@ void CubeMesh::SetIndependentFaceTexUV(std::vector<Vertex>& vertices) noexcept
 	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
 	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
 
-	MeshBundleBase::SetUVToVertices(vertices, uvs);
+	MeshBundleImpl::SetUVToVertices(vertices, uvs);
 }
 
 // Quad
@@ -156,7 +156,7 @@ void QuadMesh::SetMesh(Mesh& mesh) noexcept
 		{ 1.f, 1.f }, { 0.f, 1.f }
 	};
 
-	MeshBundleBase::SetUVToVertices(vertices, uvs);
+	MeshBundleImpl::SetUVToVertices(vertices, uvs);
 
 	std::vector<std::uint32_t>& indices = mesh.indices;
 
@@ -165,7 +165,7 @@ void QuadMesh::SetMesh(Mesh& mesh) noexcept
 		6u, 7u, 5u, 5u, 4u, 6u
 	};
 
-	MeshBundleBase::CalculateNormalsIndependentFaces(vertices, indices);
+	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 // Sphere
@@ -219,7 +219,7 @@ void SphereMesh::SetMesh(Mesh& mesh) noexcept
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { std::size(vertices), singleColourUV};
 
-	MeshBundleBase::SetUVToVertices(vertices, uvs);
+	MeshBundleImpl::SetUVToVertices(vertices, uvs);
 
 	// Normals
 	CalculateNormals(vertices);
