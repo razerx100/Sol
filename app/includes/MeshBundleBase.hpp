@@ -26,6 +26,17 @@ struct MeshData
 	MeshBundleDetails           bundleDetails;
 };
 
+struct ModelChildren
+{
+	std::uint32_t count;
+	std::uint32_t startingIndex;
+};
+
+struct MeshPermanentDetails
+{
+	DirectX::XMMATRIX worldMatrix;
+};
+
 class MeshBundleTempIntermediate
 {
 public:
@@ -120,7 +131,8 @@ public:
 class MeshBundleImpl : public MeshBundle
 {
 public:
-	MeshBundleImpl(bool customTemp) : m_permanentDetails{},
+	MeshBundleImpl(bool customTemp)
+		: m_childrenData{}, m_permanentDetails{},
 		m_temporaryData{ std::make_unique<MeshBundleTemporaryImpl>(customTemp) }
 	{}
 
@@ -132,9 +144,15 @@ public:
 		return std::move(m_temporaryData);
 	}
 	[[nodiscard]]
-	const MeshPermanentDetails& GetPermanentDetails(size_t index) const noexcept override
+	const MeshPermanentDetails& GetPermanentDetails(size_t index) const noexcept
 	{
 		return m_permanentDetails[index];
+	}
+	[[nodiscard]]
+	// The first one will be the root, if the models are hierarchical.
+	const std::vector<ModelChildren>& GetModelChildrenData() const noexcept
+	{
+		return m_childrenData;
 	}
 
 public:
@@ -151,6 +169,7 @@ public:
 	) noexcept;
 
 private:
+	std::vector<ModelChildren>               m_childrenData;
 	std::vector<MeshPermanentDetails>        m_permanentDetails;
 	std::unique_ptr<MeshBundleTemporaryImpl> m_temporaryData;
 
@@ -159,11 +178,13 @@ public:
 	MeshBundleImpl& operator=(const MeshBundleImpl&) = delete;
 
 	MeshBundleImpl(MeshBundleImpl&& other) noexcept
-		: m_permanentDetails{ std::move(other.m_permanentDetails) },
+		: m_childrenData{ std::move(other.m_childrenData) },
+		m_permanentDetails{std::move(other.m_permanentDetails)},
 		m_temporaryData{ std::move(other.m_temporaryData) }
 	{}
 	MeshBundleImpl& operator=(MeshBundleImpl&& other) noexcept
 	{
+		m_childrenData     = std::move(other.m_childrenData);
 		m_permanentDetails = std::move(other.m_permanentDetails);
 		m_temporaryData    = std::move(other.m_temporaryData);
 

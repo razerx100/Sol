@@ -41,11 +41,6 @@ struct MeshletDetails
 	ClusterNormalCone    coneNormal;
 };
 
-struct MeshPermanentDetails
-{
-	DirectX::XMMATRIX worldMatrix;
-};
-
 class MeshBundleTemporary
 {
 public:
@@ -77,7 +72,5 @@ public:
 
 	[[nodiscard]]
 	virtual std::unique_ptr<MeshBundleTemporary> MoveTemporaryData() = 0;
-	[[nodiscard]]
-	virtual const MeshPermanentDetails& GetPermanentDetails(size_t index) const noexcept = 0;
 };
 #endif

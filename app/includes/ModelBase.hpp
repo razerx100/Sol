@@ -230,10 +230,13 @@ public:
 class ModelBundleBase
 {
 public:
-	ModelBundleBase() : m_models{}, m_meshBundleIndex{ std::make_shared<std::uint32_t>(0u) } {}
+	ModelBundleBase()
+		: m_childrenData{}, m_models{}, m_meshBundleIndex{ std::make_shared<std::uint32_t>(0u) }
+	{}
 
 	ModelBundleBase& AddModel(float scale) noexcept
 	{
+		m_childrenData.emplace_back(ModelChildren{ .count = 0u, .startingIndex = 0u });
 		m_models.emplace_back(std::make_shared<ModelBase>(scale));
 
 		return *this;
@@ -242,6 +245,8 @@ public:
 	{
 		*m_meshBundleIndex = index;
 	}
+
+	void SetMeshBundle(std::uint32_t index, const MeshBundleImpl& meshBundle) noexcept;
 
 	[[nodiscard]]
 	std::vector<std::shared_ptr<ModelBase>>& GetModels() noexcept { return m_models; }
@@ -263,25 +268,30 @@ private:
 	std::shared_ptr<ModelBundleImpl> GetBundleImpl() const noexcept;
 
 private:
+	std::vector<ModelChildren>              m_childrenData;
 	std::vector<std::shared_ptr<ModelBase>> m_models;
 	std::shared_ptr<std::uint32_t>          m_meshBundleIndex;
 
 public:
 	ModelBundleBase(const ModelBundleBase& other) noexcept
-		: m_models{ other.m_models }, m_meshBundleIndex{ other.m_meshBundleIndex }
+		: m_childrenData{ other.m_childrenData }, m_models { other.m_models },
+		m_meshBundleIndex{ other.m_meshBundleIndex }
 	{}
 	ModelBundleBase& operator=(const ModelBundleBase& other) noexcept
 	{
+		m_childrenData    = other.m_childrenData;
 		m_models          = other.m_models;
 		m_meshBundleIndex = other.m_meshBundleIndex;
 
 		return *this;
 	}
 	ModelBundleBase(ModelBundleBase&& other) noexcept
-		: m_models{ std::move(other.m_models) }, m_meshBundleIndex{ std::move(other.m_meshBundleIndex) }
+		: m_childrenData{ std::move(other.m_childrenData) }, m_models{ std::move(other.m_models) },
+		m_meshBundleIndex{ std::move(other.m_meshBundleIndex) }
 	{}
 	ModelBundleBase& operator=(ModelBundleBase&& other) noexcept
 	{
+		m_childrenData    = std::move(other.m_childrenData);
 		m_models          = std::move(other.m_models);
 		m_meshBundleIndex = std::move(other.m_meshBundleIndex);
 

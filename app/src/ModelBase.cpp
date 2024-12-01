@@ -42,3 +42,9 @@ std::uint32_t ModelBundleBase::SetModelBundle(Renderer& renderer, const ShaderNa
 {
 	return renderer.AddModelBundle(std::move(GetBundleImpl()), pixelShaderName);
 }
+
+void ModelBundleBase::SetMeshBundle(std::uint32_t index, const MeshBundleImpl& meshBundle) noexcept
+{
+	*m_meshBundleIndex = index;
+	m_childrenData     = meshBundle.GetModelChildrenData();
+}

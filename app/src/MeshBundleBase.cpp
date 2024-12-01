@@ -106,6 +106,7 @@ void MeshBundleImpl::AddMesh(Mesh&& mesh)
 {
 	m_temporaryData->AddMesh(std::move(mesh));
 
+	m_childrenData.emplace_back(ModelChildren{ .count = 0u, .startingIndex = 0u });
 	m_permanentDetails.emplace_back(MeshPermanentDetails{ DirectX::XMMatrixIdentity() });
 }
 
