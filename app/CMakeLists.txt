@@ -131,8 +131,30 @@ FetchContent_MakeAvailable(STB)
 
 message(STATUS "Fetched STB")
 
+set(BUILD_SHARED_LIBS OFF)
+set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_INSTALL_PDB OFF)
+
+message(STATUS "Fetching Assimp....")
+
+FetchContent_Declare(
+    Assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(Assimp)
+
+unset(BUILD_SHARED_LIBS)
+unset(ASSIMP_BUILD_ZLIB)
+unset(ASSIMP_BUILD_TESTS)
+unset(ASSIMP_INSTALL_PDB)
+
+message(STATUS "Fetched Assimp")
+
 target_link_libraries(SolApp PRIVATE
-    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
+    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb assimp
 )
 
 add_dependencies(SolApp GLSL HLSL)
