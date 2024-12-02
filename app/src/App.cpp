@@ -137,7 +137,7 @@ void App::Init()
 			model2.SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
 			model2.SetDiffuseIndex(atlasBindingIndex);
 
-			model2.GetTransform().MoveTowardsY(1.2f);
+			cubeBundle1.MoveTowardsY(1u, 1.2f);
 		}
 
 		cubeBundle1.SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -152,18 +152,10 @@ void App::PhysicsUpdate()
 	const Keyboard& keyboard = m_inputManager->GetKeyboard();
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
-	{
-		ModelBase& model1 = *cubeBundle1.GetModel(0u);
-
-		model1.GetTransform().MoveTowardsX(0.01f);
-	}
+		cubeBundle1.MoveTowardsX(0u, 0.01f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::A))
-	{
-		ModelBase& model1 = *cubeBundle1.GetModel(0u);
-
-		model1.GetTransform().MoveTowardsX(-0.01f);
-	}
+		cubeBundle1.MoveTowardsX(0u, -0.01f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::C))
 	{
@@ -187,7 +179,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
 
-				model2.GetTransform().MoveTowardsX(-1.5f);
+				cubeBundle2.MoveTowardsX(1u, -1.5f);
 			}
 
 			cubeBundle2.SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -221,7 +213,7 @@ void App::PhysicsUpdate()
 				model1.SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
 				model1.SetDiffuseIndex(atlasBindingIndex);
 
-				model1.GetTransform().MoveTowardsX(-2.4f).MoveTowardsY(-1.2f);
+				cubeBundle3.MoveModel(0u, DirectX::XMFLOAT3{ -2.4f, -1.2f, 0.f });
 			}
 
 			{
@@ -232,7 +224,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
 
-				model2.GetTransform().MoveTowardsX(-0.8f).MoveTowardsY(-1.2f);
+				cubeBundle3.MoveModel(1u, DirectX::XMFLOAT3{ -0.8f, -1.2f, 0.f });
 			}
 
 			cubeBundle3.SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -266,7 +258,7 @@ void App::PhysicsUpdate()
 				model1.SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
 				model1.SetDiffuseIndex(atlasBindingIndex);
 
-				model1.GetTransform().MoveTowardsX(2.4f).MoveTowardsY(-1.2f);
+				cubeBundle4.MoveModel(0u, DirectX::XMFLOAT3{ 2.4f, -1.2f, 0.f });
 			}
 
 			{
@@ -277,7 +269,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
 
-				model2.GetTransform().MoveTowardsX(0.8f).MoveTowardsY(-1.2f);
+				cubeBundle4.MoveModel(1u, DirectX::XMFLOAT3{ 0.8f, -1.2f, 0.f });
 			}
 
 			cubeBundle4.SetMeshBundleIndex(cubeMeshBundleIndex);

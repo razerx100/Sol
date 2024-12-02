@@ -30,21 +30,21 @@ public:
 	}
 	ModelTransform& RotatePitchRadian(float angle) noexcept
 	{
-		static const DirectX::XMVECTOR pitchAxis{ DirectX::XMVectorSet(1.f, 0.f, 0.f, 0.f) };
+		const DirectX::XMVECTOR pitchAxis{ DirectX::XMVectorSet(1.f, 0.f, 0.f, 0.f) };
 		Rotate(pitchAxis, angle);
 
 		return *this;
 	}
 	ModelTransform& RotateYawRadian(float angle) noexcept
 	{
-		static const DirectX::XMVECTOR yawAxis{ DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f) };
+		const DirectX::XMVECTOR yawAxis{ DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f) };
 		Rotate(yawAxis, angle);
 
 		return *this;
 	}
 	ModelTransform& RotateRollRadian(float angle) noexcept
 	{
-		static const DirectX::XMVECTOR rollAxis{ DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f) };
+		const DirectX::XMVECTOR rollAxis{ DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f) };
 		Rotate(rollAxis, angle);
 
 		return *this;
@@ -85,7 +85,7 @@ public:
 
 		RecalculateScale();
 	}
-	void AddToModelOffset(const DirectX::XMFLOAT3& offset) noexcept
+	void MoveModel(const DirectX::XMFLOAT3& offset) noexcept
 	{
 		m_modelOffset.x += offset.x;
 		m_modelOffset.y += offset.y;
@@ -111,6 +111,8 @@ private:
 
 class ModelBase : public Model
 {
+	friend class ModelBundleBase;
+
 public:
 	ModelBase()
 		: m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u }, m_meshIndex{ 0u },
@@ -165,8 +167,6 @@ public:
 	float GetModelScale() const noexcept override { return m_transform.GetModelScale(); };
 
 	[[nodiscard]]
-	ModelTransform& GetTransform() noexcept { return m_transform; }
-	[[nodiscard]]
 	const ModelTransform& GetTransform() const noexcept { return m_transform; }
 
 	[[nodiscard]]
@@ -177,6 +177,10 @@ public:
 	std::uint32_t GetSpecularIndex() const noexcept override { return m_specularIndex; }
 	[[nodiscard]]
 	UVInfo GetSpecularUVInfo() const noexcept override { return m_specularUVInfo; }
+
+private:
+	[[nodiscard]]
+	ModelTransform& GetTransform() noexcept { return m_transform; }
 
 private:
 	std::uint32_t  m_materialIndex;
@@ -247,6 +251,66 @@ public:
 	}
 
 	void SetMeshBundle(std::uint32_t index, const MeshBundleImpl& meshBundle) noexcept;
+
+	// Transform
+	ModelBundleBase& MoveTowardsX(size_t modelIndex, float delta) noexcept
+	{
+		MoveModel(modelIndex, DirectX::XMFLOAT3{ delta, 0.f, 0.f });
+
+		return *this;
+	}
+	ModelBundleBase& MoveTowardsY(size_t modelIndex, float delta) noexcept
+	{
+		MoveModel(modelIndex, DirectX::XMFLOAT3{ 0.f, delta, 0.f });
+
+		return *this;
+	}
+	ModelBundleBase& MoveTowardsZ(size_t modelIndex, float delta) noexcept
+	{
+		MoveModel(modelIndex, DirectX::XMFLOAT3{ 0.f, 0.f, delta });
+
+		return *this;
+	}
+
+	ModelBundleBase& RotatePitchDegree(size_t modelIndex, float angle) noexcept
+	{
+		return RotatePitchRadian(modelIndex, DirectX::XMConvertToRadians(angle));
+	}
+	ModelBundleBase& RotateYawDegree(size_t modelIndex, float angle) noexcept
+	{
+		return RotateYawRadian(modelIndex, DirectX::XMConvertToRadians(angle));
+	}
+	ModelBundleBase& RotateRollDegree(size_t modelIndex, float angle) noexcept
+	{
+		return RotateRollRadian(modelIndex, DirectX::XMConvertToRadians(angle));
+	}
+	ModelBundleBase& RotatePitchRadian(size_t modelIndex, float angle) noexcept
+	{
+		const DirectX::XMVECTOR pitchAxis{ DirectX::XMVectorSet(1.f, 0.f, 0.f, 0.f) };
+		Rotate(modelIndex, pitchAxis, angle);
+
+		return *this;
+	}
+	ModelBundleBase& RotateYawRadian(size_t modelIndex, float angle) noexcept
+	{
+		const DirectX::XMVECTOR yawAxis{ DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f) };
+		Rotate(modelIndex, yawAxis, angle);
+
+		return *this;
+	}
+	ModelBundleBase& RotateRollRadian(size_t modelIndex, float angle) noexcept
+	{
+		const DirectX::XMVECTOR rollAxis{ DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f) };
+		Rotate(modelIndex, rollAxis, angle);
+
+		return *this;
+	}
+
+	void Scale(size_t modelIndex, float scale) noexcept;
+	void Rotate(
+		size_t modelIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
+	) noexcept;
+	void MoveModel(size_t modelIndex, const DirectX::XMFLOAT3& offset) noexcept;
 
 	[[nodiscard]]
 	std::vector<std::shared_ptr<ModelBase>>& GetModels() noexcept { return m_models; }

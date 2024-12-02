@@ -28,6 +28,7 @@ static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shar
 	return to;
 }
 
+// Model Bundle Base
 std::shared_ptr<ModelBundleImpl> ModelBundleBase::GetBundleImpl() const noexcept
 {
 	auto bundleImpl               = std::make_shared<ModelBundleImpl>();
@@ -37,7 +38,6 @@ std::shared_ptr<ModelBundleImpl> ModelBundleBase::GetBundleImpl() const noexcept
 	return bundleImpl;
 }
 
-// Model Bundle Base
 std::uint32_t ModelBundleBase::SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName) const
 {
 	return renderer.AddModelBundle(std::move(GetBundleImpl()), pixelShaderName);
@@ -47,4 +47,56 @@ void ModelBundleBase::SetMeshBundle(std::uint32_t index, const MeshBundleImpl& m
 {
 	*m_meshBundleIndex = index;
 	m_childrenData     = meshBundle.GetModelChildrenData();
+}
+
+void ModelBundleBase::Rotate(
+	size_t modelIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
+) noexcept {
+	std::shared_ptr<ModelBase>& model = m_models[modelIndex];
+	ModelChildren childrenData        = m_childrenData[modelIndex];
+
+	model->GetTransform().Rotate(rotationAxis, angleRadian);
+
+	if (childrenData.count)
+	{
+		size_t childrenStart = childrenData.startingIndex;
+		auto childrenEnd     = childrenStart + childrenData.count;
+
+		for (size_t childrenIndex = childrenStart; childrenIndex < childrenEnd; ++childrenIndex)
+			Rotate(childrenIndex, rotationAxis, angleRadian);
+	}
+}
+
+void ModelBundleBase::Scale(size_t modelIndex, float scale) noexcept
+{
+	std::shared_ptr<ModelBase>& model = m_models[modelIndex];
+	ModelChildren childrenData        = m_childrenData[modelIndex];
+
+	model->GetTransform().Scale(scale);
+
+	if (childrenData.count)
+	{
+		size_t childrenStart = childrenData.startingIndex;
+		auto childrenEnd     = childrenStart + childrenData.count;
+
+		for (size_t childrenIndex = childrenStart; childrenIndex < childrenEnd; ++childrenIndex)
+			Scale(childrenIndex, scale);
+	}
+}
+
+void ModelBundleBase::MoveModel(size_t modelIndex, const DirectX::XMFLOAT3& offset) noexcept
+{
+	std::shared_ptr<ModelBase>& model = m_models[modelIndex];
+	ModelChildren childrenData        = m_childrenData[modelIndex];
+
+	model->GetTransform().MoveModel(offset);
+
+	if (childrenData.count)
+	{
+		size_t childrenStart = childrenData.startingIndex;
+		auto childrenEnd     = childrenStart + childrenData.count;
+
+		for (size_t childrenIndex = childrenStart; childrenIndex < childrenEnd; ++childrenIndex)
+			MoveModel(childrenIndex, offset);
+	}
 }
