@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <MeshBundle.hpp>
 #include <Renderer.hpp>
+#include <assimp/scene.h>
 
 struct Mesh
 {
@@ -17,7 +18,7 @@ struct MeshExtraForMesh
 	std::vector<MeshletDetails> meshletDetails;
 };
 
-struct MeshData
+struct MeshBundleData
 {
 	std::vector<Vertex>         vertices;
 	std::vector<std::uint32_t>  indices;
@@ -45,23 +46,81 @@ public:
 	virtual void AddMesh(Mesh&&) noexcept {}
 
 	[[nodiscard]]
-	virtual MeshData GenerateTemporaryData(bool meshShader) = 0;
+	virtual MeshBundleData GenerateTemporaryData(bool meshShader) = 0;
 };
 
 class MeshBundleTempCustom : public MeshBundleTempIntermediate
 {
 public:
 	[[nodiscard]]
-	MeshData GenerateTemporaryData(bool meshShader) override;
+	MeshBundleData GenerateTemporaryData(bool meshShader) override;
 
 	void AddMesh(Mesh&& mesh) noexcept;
 
 private:
-	static void GenerateMeshShaderData(Mesh& mesh, MeshData& meshData);
-	static void GenerateVertexShaderData(Mesh& mesh, MeshData& meshData);
+	static void GenerateMeshShaderData(Mesh& mesh, MeshBundleData& meshBundleData);
+	static void GenerateVertexShaderData(Mesh& mesh, MeshBundleData& meshBundleData);
 
 private:
 	std::vector<Mesh> m_tempMeshes;
+};
+
+class MeshBundleTempAssimp : public MeshBundleTempIntermediate
+{
+public:
+	MeshBundleTempAssimp() : m_tempScene{ nullptr } {}
+	~MeshBundleTempAssimp() noexcept;
+
+	// Use the assimp mesh indices to load the meshes in a BFS order.
+	[[nodiscard]]
+	MeshBundleData GenerateTemporaryData(bool meshShader) override;
+
+	void SetMeshBundle(const std::string& fileName);
+
+	void FillMeshHierarchyDetails(
+		std::vector<MeshPermanentDetails>& permananeDetails, std::vector<ModelChildren>& childrenData
+	);
+
+private:
+	[[nodiscard]]
+	static MeshBundleData GenerateMeshShaderData(aiScene const* scene);
+	[[nodiscard]]
+	static MeshBundleData GenerateVertexShaderData(aiScene const* scene);
+
+	static void ProcessMeshVertices(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
+
+	static void ProcessMeshNodeVS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
+	static void TraverseMeshByLevelVS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
+
+	static void ProcessMeshNodeMS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
+	static void TraverseMeshByLevelMS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
+
+	static void ProcessMeshChildrenDetails(
+		aiNode const* node, std::vector<ModelChildren>& childrenData, std::uint32_t& childrenOffset
+	);
+	static void TraverseMeshHierarchyDetails(
+		aiNode const* node,
+		DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
+		std::vector<ModelChildren>& childrenData, std::uint32_t& childrenOffset
+	);
+
+private:
+	aiScene const* m_tempScene;
+
+public:
+	MeshBundleTempAssimp(const MeshBundleTempAssimp&) = delete;
+	MeshBundleTempAssimp& operator=(const MeshBundleTempAssimp&) = delete;
+
+	MeshBundleTempAssimp(MeshBundleTempAssimp&& other) noexcept
+		: m_tempScene{ std::exchange(other.m_tempScene, nullptr) }
+	{}
+	MeshBundleTempAssimp& operator=(MeshBundleTempAssimp&& other) noexcept
+	{
+		m_tempScene = std::exchange(other.m_tempScene, nullptr);
+
+		return *this;
+	}
 };
 
 class MeshBundleTemporaryImpl : public MeshBundleTemporary
@@ -72,6 +131,11 @@ public:
 	void GenerateTemporaryData(bool meshShader) override;
 
 	void AddMesh(Mesh&& mesh);
+
+	void SetMeshBundle(
+		const std::string& fileName,
+		std::vector<MeshPermanentDetails>& permanentDetails, std::vector<ModelChildren>& childrenData
+	);
 
 	// Vertex and Mesh
 	[[nodiscard]]
@@ -108,7 +172,7 @@ public:
 	}
 
 private:
-	MeshData                                    m_tempData;
+	MeshBundleData                              m_tempData;
 	std::unique_ptr<MeshBundleTempIntermediate> m_tempIntermediate;
 
 public:
@@ -138,13 +202,15 @@ public:
 
 	void AddMesh(Mesh&& mesh);
 
+	void SetMeshBundle(const std::string& fileName);
+
 	[[nodiscard]]
 	std::unique_ptr<MeshBundleTemporary> MoveTemporaryData() override
 	{
 		return std::move(m_temporaryData);
 	}
 	[[nodiscard]]
-	const MeshPermanentDetails& GetPermanentDetails(size_t index) const noexcept
+	const MeshPermanentDetails& GetPermanentDetail(size_t index) const noexcept
 	{
 		return m_permanentDetails[index];
 	}
@@ -153,6 +219,11 @@ public:
 	const std::vector<ModelChildren>& GetModelChildrenData() const noexcept
 	{
 		return m_childrenData;
+	}
+	[[nodiscard]]
+	const std::vector<MeshPermanentDetails>& GetPermanentDetails() const noexcept
+	{
+		return m_permanentDetails;
 	}
 
 public:
@@ -206,6 +277,7 @@ public:
 	MeshletMaker();
 
 	void GenerateMeshlets(const Mesh& mesh) noexcept;
+	void GenerateMeshlets(aiMesh const* mesh) noexcept;
 
 	void LoadVertexIndices(std::vector<std::uint32_t>& vertexIndices) noexcept;
 
@@ -235,6 +307,8 @@ private:
 
 	[[nodiscard]]
 	size_t MakeMeshlet(const std::vector<std::uint32_t>& indices, size_t startingIndex) noexcept;
+	[[nodiscard]]
+	size_t MakeMeshlet(aiFace* faces, size_t faceCount, size_t startingIndex) noexcept;
 
 private:
 	static constexpr size_t s_meshletVertexLimit    = 64u;

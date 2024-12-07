@@ -85,6 +85,10 @@ public:
 
 		RecalculateScale();
 	}
+	void SetModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
+	{
+		m_modelMatrix = matrix;
+	}
 	void MoveModel(const DirectX::XMFLOAT3& offset) noexcept
 	{
 		m_modelOffset.x += offset.x;

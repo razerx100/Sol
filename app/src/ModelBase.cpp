@@ -47,6 +47,15 @@ void ModelBundleBase::SetMeshBundle(std::uint32_t index, const MeshBundleImpl& m
 {
 	*m_meshBundleIndex = index;
 	m_childrenData     = meshBundle.GetModelChildrenData();
+
+	const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
+
+	for (size_t index1 = 0u; index1 < std::size(permanentDetails); ++index1)
+	{
+		ModelTransform& transform = m_models[index1]->GetTransform();
+
+		transform.SetModelMatrix(permanentDetails[index1].worldMatrix);
+	}
 }
 
 void ModelBundleBase::Rotate(
