@@ -119,16 +119,33 @@ void MeshBundleTempAssimp::ProcessMeshVertices(aiMesh* mesh, MeshBundleData& mes
 
 	meshBundleData.vertices.reserve(vertexCount);
 
-	for (size_t index = 0u; index < vertexCount; ++index)
+	if (mesh->HasTextureCoords(0))
 	{
-		Vertex vertex
+		for (size_t index = 0u; index < vertexCount; ++index)
 		{
-			.position = GetXMFloat3(vertices[index]),
-			.normal   = GetXMFloat3(normals[index]),
-			.uv       = DirectX::XMFLOAT2{ uvs[index].x, uvs[index].y }
-		};
+			Vertex vertex
+			{
+				.position = GetXMFloat3(vertices[index]),
+				.normal   = GetXMFloat3(normals[index]),
+				.uv       = DirectX::XMFLOAT2{ uvs[index].x, uvs[index].y }
+			};
 
-		meshBundleData.vertices.emplace_back(vertex);
+			meshBundleData.vertices.emplace_back(vertex);
+		}
+	}
+	else
+	{
+		for (size_t index = 0u; index < vertexCount; ++index)
+		{
+			Vertex vertex
+			{
+				.position = GetXMFloat3(vertices[index]),
+				.normal   = GetXMFloat3(normals[index]),
+				.uv       = DirectX::XMFLOAT2{ 0.f, 0.f }
+			};
+
+			meshBundleData.vertices.emplace_back(vertex);
+		}
 	}
 }
 
