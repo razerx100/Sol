@@ -254,7 +254,12 @@ public:
 		*m_meshBundleIndex = index;
 	}
 
-	void SetMeshBundle(std::uint32_t index, const MeshBundleImpl& meshBundle) noexcept;
+	void SetMeshBundle(
+		std::uint32_t meshBundleIndex, float modelScale, const MeshBundleImpl& meshBundle
+	);
+
+	// Can only be changed if the new mesh count is the same as before.
+	void ChangeMeshBundle(std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle);
 
 	// Transform
 	ModelBundleBase& MoveTowardsX(size_t modelIndex, float delta) noexcept
@@ -330,6 +335,9 @@ public:
 
 	[[nodiscard]]
 	std::uint32_t SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName) const;
+
+private:
+	void SetModels(float modelScale, const MeshBundleImpl& meshBundle);
 
 private:
 	[[nodiscard]]
