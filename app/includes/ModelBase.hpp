@@ -239,12 +239,18 @@ class ModelBundleBase
 {
 public:
 	ModelBundleBase()
-		: m_childrenData{}, m_models{}, m_meshBundleIndex{ std::make_shared<std::uint32_t>(0u) }
+		: m_modelNodeData{}, m_models{}, m_meshBundleIndex{ std::make_shared<std::uint32_t>(0u) }
 	{}
 
 	ModelBundleBase& AddModel(float scale) noexcept
 	{
-		m_childrenData.emplace_back(ModelChildren{ .count = 0u, .startingIndex = 0u });
+		m_modelNodeData.emplace_back(
+			MeshNodeData
+			{
+				.meshIndex    = static_cast<std::uint32_t>(std::size(m_models)),
+				.childrenData = MeshChildrenData{.count = 0u, .startingIndex = 0u }
+			}
+		);
 		m_models.emplace_back(std::make_shared<ModelBase>(scale));
 
 		return *this;
@@ -262,64 +268,64 @@ public:
 	void ChangeMeshBundle(std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle);
 
 	// Transform
-	ModelBundleBase& MoveTowardsX(size_t modelIndex, float delta) noexcept
+	ModelBundleBase& MoveTowardsX(size_t nodeIndex, float delta) noexcept
 	{
-		MoveModel(modelIndex, DirectX::XMFLOAT3{ delta, 0.f, 0.f });
+		MoveModel(nodeIndex, DirectX::XMFLOAT3{ delta, 0.f, 0.f });
 
 		return *this;
 	}
-	ModelBundleBase& MoveTowardsY(size_t modelIndex, float delta) noexcept
+	ModelBundleBase& MoveTowardsY(size_t nodeIndex, float delta) noexcept
 	{
-		MoveModel(modelIndex, DirectX::XMFLOAT3{ 0.f, delta, 0.f });
+		MoveModel(nodeIndex, DirectX::XMFLOAT3{ 0.f, delta, 0.f });
 
 		return *this;
 	}
-	ModelBundleBase& MoveTowardsZ(size_t modelIndex, float delta) noexcept
+	ModelBundleBase& MoveTowardsZ(size_t nodeIndex, float delta) noexcept
 	{
-		MoveModel(modelIndex, DirectX::XMFLOAT3{ 0.f, 0.f, delta });
+		MoveModel(nodeIndex, DirectX::XMFLOAT3{ 0.f, 0.f, delta });
 
 		return *this;
 	}
 
-	ModelBundleBase& RotatePitchDegree(size_t modelIndex, float angle) noexcept
+	ModelBundleBase& RotatePitchDegree(size_t nodeIndex, float angle) noexcept
 	{
-		return RotatePitchRadian(modelIndex, DirectX::XMConvertToRadians(angle));
+		return RotatePitchRadian(nodeIndex, DirectX::XMConvertToRadians(angle));
 	}
-	ModelBundleBase& RotateYawDegree(size_t modelIndex, float angle) noexcept
+	ModelBundleBase& RotateYawDegree(size_t nodeIndex, float angle) noexcept
 	{
-		return RotateYawRadian(modelIndex, DirectX::XMConvertToRadians(angle));
+		return RotateYawRadian(nodeIndex, DirectX::XMConvertToRadians(angle));
 	}
-	ModelBundleBase& RotateRollDegree(size_t modelIndex, float angle) noexcept
+	ModelBundleBase& RotateRollDegree(size_t nodeIndex, float angle) noexcept
 	{
-		return RotateRollRadian(modelIndex, DirectX::XMConvertToRadians(angle));
+		return RotateRollRadian(nodeIndex, DirectX::XMConvertToRadians(angle));
 	}
-	ModelBundleBase& RotatePitchRadian(size_t modelIndex, float angle) noexcept
+	ModelBundleBase& RotatePitchRadian(size_t nodeIndex, float angle) noexcept
 	{
 		const DirectX::XMVECTOR pitchAxis{ DirectX::XMVectorSet(1.f, 0.f, 0.f, 0.f) };
-		Rotate(modelIndex, pitchAxis, angle);
+		Rotate(nodeIndex, pitchAxis, angle);
 
 		return *this;
 	}
-	ModelBundleBase& RotateYawRadian(size_t modelIndex, float angle) noexcept
+	ModelBundleBase& RotateYawRadian(size_t nodeIndex, float angle) noexcept
 	{
 		const DirectX::XMVECTOR yawAxis{ DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f) };
-		Rotate(modelIndex, yawAxis, angle);
+		Rotate(nodeIndex, yawAxis, angle);
 
 		return *this;
 	}
-	ModelBundleBase& RotateRollRadian(size_t modelIndex, float angle) noexcept
+	ModelBundleBase& RotateRollRadian(size_t nodeIndex, float angle) noexcept
 	{
 		const DirectX::XMVECTOR rollAxis{ DirectX::XMVectorSet(0.f, 0.f, 1.f, 0.f) };
-		Rotate(modelIndex, rollAxis, angle);
+		Rotate(nodeIndex, rollAxis, angle);
 
 		return *this;
 	}
 
-	void Scale(size_t modelIndex, float scale) noexcept;
+	void Scale(size_t nodeIndex, float scale) noexcept;
 	void Rotate(
-		size_t modelIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
+		size_t nodeIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
 	) noexcept;
-	void MoveModel(size_t modelIndex, const DirectX::XMFLOAT3& offset) noexcept;
+	void MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offset) noexcept;
 
 	[[nodiscard]]
 	std::vector<std::shared_ptr<ModelBase>>& GetModels() noexcept { return m_models; }
@@ -344,30 +350,30 @@ private:
 	std::shared_ptr<ModelBundleImpl> GetBundleImpl() const noexcept;
 
 private:
-	std::vector<ModelChildren>              m_childrenData;
+	std::vector<MeshNodeData>               m_modelNodeData;
 	std::vector<std::shared_ptr<ModelBase>> m_models;
 	std::shared_ptr<std::uint32_t>          m_meshBundleIndex;
 
 public:
 	ModelBundleBase(const ModelBundleBase& other) noexcept
-		: m_childrenData{ other.m_childrenData }, m_models { other.m_models },
+		: m_modelNodeData{ other.m_modelNodeData }, m_models { other.m_models },
 		m_meshBundleIndex{ other.m_meshBundleIndex }
 	{}
 	ModelBundleBase& operator=(const ModelBundleBase& other) noexcept
 	{
-		m_childrenData    = other.m_childrenData;
+		m_modelNodeData   = other.m_modelNodeData;
 		m_models          = other.m_models;
 		m_meshBundleIndex = other.m_meshBundleIndex;
 
 		return *this;
 	}
 	ModelBundleBase(ModelBundleBase&& other) noexcept
-		: m_childrenData{ std::move(other.m_childrenData) }, m_models{ std::move(other.m_models) },
+		: m_modelNodeData{ std::move(other.m_modelNodeData) }, m_models{ std::move(other.m_models) },
 		m_meshBundleIndex{ std::move(other.m_meshBundleIndex) }
 	{}
 	ModelBundleBase& operator=(ModelBundleBase&& other) noexcept
 	{
-		m_childrenData    = std::move(other.m_childrenData);
+		m_modelNodeData   = std::move(other.m_modelNodeData);
 		m_models          = std::move(other.m_models);
 		m_meshBundleIndex = std::move(other.m_meshBundleIndex);
 

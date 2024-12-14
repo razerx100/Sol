@@ -27,10 +27,19 @@ struct MeshBundleData
 	MeshBundleDetails           bundleDetails;
 };
 
-struct ModelChildren
+struct MeshChildrenData
 {
 	std::uint32_t count;
 	std::uint32_t startingIndex;
+};
+
+struct MeshNodeData
+{
+	std::uint32_t    meshIndex    = std::numeric_limits<std::uint32_t>::max();
+	MeshChildrenData childrenData;
+
+	[[nodiscard]]
+	bool HasMesh() const noexcept { return meshIndex != std::numeric_limits<std::uint32_t>::max(); }
 };
 
 struct MeshPermanentDetails
@@ -78,7 +87,7 @@ public:
 	void SetMeshBundle(const std::string& fileName);
 
 	void FillMeshHierarchyDetails(
-		std::vector<MeshPermanentDetails>& permananeDetails, std::vector<ModelChildren>& childrenData
+		std::vector<MeshPermanentDetails>& permananeDetails, std::vector<MeshNodeData>& meshNodeData
 	);
 
 private:
@@ -97,12 +106,14 @@ private:
 	static void TraverseMeshByLevelMS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
 
 	static void ProcessMeshChildrenDetails(
-		aiNode const* node, std::vector<ModelChildren>& childrenData, std::uint32_t& childrenOffset
+		aiNode const* node, std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset,
+		std::uint32_t& meshIndex
 	);
 	static void TraverseMeshHierarchyDetails(
 		aiNode const* node,
 		DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
-		std::vector<ModelChildren>& childrenData, std::uint32_t& childrenOffset
+		std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset,
+		std::uint32_t& meshIndex
 	);
 
 private:
@@ -134,7 +145,7 @@ public:
 
 	void SetMeshBundle(
 		const std::string& fileName,
-		std::vector<MeshPermanentDetails>& permanentDetails, std::vector<ModelChildren>& childrenData
+		std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
 	);
 
 	// Vertex and Mesh
@@ -196,7 +207,7 @@ class MeshBundleImpl : public MeshBundle
 {
 public:
 	MeshBundleImpl(bool customTemp)
-		: m_childrenData{}, m_permanentDetails{},
+		: m_meshNodeData{}, m_permanentDetails{},
 		m_temporaryData{ std::make_unique<MeshBundleTemporaryImpl>(customTemp) }
 	{}
 
@@ -215,10 +226,10 @@ public:
 		return m_permanentDetails[index];
 	}
 	[[nodiscard]]
-	// The first one will be the root, if the models are hierarchical.
-	const std::vector<ModelChildren>& GetModelChildrenData() const noexcept
+	// The first one will be the root node.
+	const std::vector<MeshNodeData>& GetMeshNodeData() const noexcept
 	{
-		return m_childrenData;
+		return m_meshNodeData;
 	}
 	[[nodiscard]]
 	const std::vector<MeshPermanentDetails>& GetPermanentDetails() const noexcept
@@ -240,7 +251,7 @@ public:
 	) noexcept;
 
 private:
-	std::vector<ModelChildren>               m_childrenData;
+	std::vector<MeshNodeData>                m_meshNodeData;
 	std::vector<MeshPermanentDetails>        m_permanentDetails;
 	std::unique_ptr<MeshBundleTemporaryImpl> m_temporaryData;
 
@@ -249,13 +260,13 @@ public:
 	MeshBundleImpl& operator=(const MeshBundleImpl&) = delete;
 
 	MeshBundleImpl(MeshBundleImpl&& other) noexcept
-		: m_childrenData{ std::move(other.m_childrenData) },
+		: m_meshNodeData{ std::move(other.m_meshNodeData) },
 		m_permanentDetails{std::move(other.m_permanentDetails)},
 		m_temporaryData{ std::move(other.m_temporaryData) }
 	{}
 	MeshBundleImpl& operator=(MeshBundleImpl&& other) noexcept
 	{
-		m_childrenData     = std::move(other.m_childrenData);
+		m_meshNodeData     = std::move(other.m_meshNodeData);
 		m_permanentDetails = std::move(other.m_permanentDetails);
 		m_temporaryData    = std::move(other.m_temporaryData);
 

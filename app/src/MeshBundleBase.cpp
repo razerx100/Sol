@@ -360,11 +360,26 @@ void MeshBundleTempAssimp::SetMeshBundle(const std::string& fileName)
 }
 
 void MeshBundleTempAssimp::ProcessMeshChildrenDetails(
-	aiNode const* node, std::vector<ModelChildren>& childrenData, std::uint32_t& childrenOffset
+	aiNode const* node, std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset,
+	std::uint32_t& meshIndex
 ) {
 	const std::uint32_t childCount = node->mNumChildren;
 
-	childrenData.emplace_back(ModelChildren{ .count = childCount, .startingIndex = childrenOffset });
+	auto currentMeshIndex = std::numeric_limits<std::uint32_t>::max();
+
+	if (node->mNumMeshes)
+	{
+		currentMeshIndex = meshIndex;
+		++meshIndex;
+	}
+
+	meshNodeData.emplace_back(
+		MeshNodeData
+		{
+			.meshIndex    = currentMeshIndex,
+			.childrenData = MeshChildrenData{ .count = childCount, .startingIndex = childrenOffset }
+		}
+	);
 
 	childrenOffset += childCount;
 }
@@ -372,7 +387,7 @@ void MeshBundleTempAssimp::ProcessMeshChildrenDetails(
 void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 	aiNode const* node,
 	DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
-	std::vector<ModelChildren>& childrenData, std::uint32_t& childrenOffset
+	std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset, std::uint32_t& meshIndex
 ) {
 	using namespace DirectX;
 
@@ -387,7 +402,7 @@ void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 
 		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = tempAccumulatedTransform });
 
-		ProcessMeshChildrenDetails(child, childrenData, childrenOffset);
+		ProcessMeshChildrenDetails(child, meshNodeData, childrenOffset, meshIndex);
 	}
 
 	for (size_t index = 0u; index < childCount; ++index)
@@ -397,13 +412,13 @@ void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 		XMMATRIX tempAccumulatedTransform = GetXMMatrix(child->mTransformation) * accumulatedTransform;
 
 		TraverseMeshHierarchyDetails(
-			child, tempAccumulatedTransform, permanentDetails, childrenData, childrenOffset
+			child, tempAccumulatedTransform, permanentDetails, meshNodeData, childrenOffset, meshIndex
 		);
 	}
 }
 
 void MeshBundleTempAssimp::FillMeshHierarchyDetails(
-	std::vector<MeshPermanentDetails>& permanentDetails, std::vector<ModelChildren>& childrenData
+	std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
 ) {
 	using namespace DirectX;
 
@@ -411,13 +426,15 @@ void MeshBundleTempAssimp::FillMeshHierarchyDetails(
 	XMMATRIX accumulatedTransform = XMMatrixIdentity();
 	std::uint32_t childrenOffset  = 1u;
 
-	const size_t meshCount = rootNode->mNumMeshes;
+	const size_t meshCount  = rootNode->mNumMeshes;
+
+	std::uint32_t meshIndex = 0u;
 
 	// There can be more nodes than the mesh count, but in most cases it won't be.
 	permanentDetails.reserve(meshCount);
-	childrenData.reserve(meshCount);
+	meshNodeData.reserve(meshCount);
 
-	ProcessMeshChildrenDetails(rootNode, childrenData, childrenOffset);
+	ProcessMeshChildrenDetails(rootNode, meshNodeData, childrenOffset, meshIndex);
 
 	{
 		// Calculate the transform for the root.
@@ -427,7 +444,8 @@ void MeshBundleTempAssimp::FillMeshHierarchyDetails(
 	}
 
 	TraverseMeshHierarchyDetails(
-		rootNode, accumulatedTransform, permanentDetails, childrenData, childrenOffset
+		rootNode, accumulatedTransform, permanentDetails, meshNodeData, childrenOffset,
+		meshIndex
 	);
 }
 
@@ -451,14 +469,14 @@ void MeshBundleTemporaryImpl::AddMesh(Mesh&& mesh)
 
 void MeshBundleTemporaryImpl::SetMeshBundle(
 	const std::string& fileName,
-	std::vector<MeshPermanentDetails>& permanentDetails, std::vector<ModelChildren>& childrenData
+	std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
 ) {
 	if (!m_tempIntermediate)
 	{
 		auto tempData = std::make_unique<MeshBundleTempAssimp>();
 
 		tempData->SetMeshBundle(fileName);
-		tempData->FillMeshHierarchyDetails(permanentDetails, childrenData);
+		tempData->FillMeshHierarchyDetails(permanentDetails, meshNodeData);
 
 		m_tempIntermediate = std::move(tempData);
 	}
@@ -469,13 +487,19 @@ void MeshBundleImpl::AddMesh(Mesh&& mesh)
 {
 	m_temporaryData->AddMesh(std::move(mesh));
 
-	m_childrenData.emplace_back(ModelChildren{ .count = 0u, .startingIndex = 0u });
+	m_meshNodeData.emplace_back(
+		MeshNodeData
+		{
+			.meshIndex    = 0u,
+			.childrenData = MeshChildrenData{ .count = 0u, .startingIndex = 0u }
+		}
+	);
 	m_permanentDetails.emplace_back(MeshPermanentDetails{ DirectX::XMMatrixIdentity() });
 }
 
 void MeshBundleImpl::SetMeshBundle(const std::string& fileName)
 {
-	m_temporaryData->SetMeshBundle(fileName, m_permanentDetails, m_childrenData);
+	m_temporaryData->SetMeshBundle(fileName, m_permanentDetails, m_meshNodeData);
 }
 
 void MeshBundleImpl::CalculateNormalsIndependentFaces(

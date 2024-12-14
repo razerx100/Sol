@@ -53,19 +53,26 @@ void ModelBundleBase::SetMeshBundle(
 
 void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBundle)
 {
-	const size_t meshCount = std::size(meshBundle.GetPermanentDetails());
+	const std::vector<MeshNodeData>& nodeData = meshBundle.GetMeshNodeData();
 
-	m_childrenData.resize(meshCount);
+	const size_t nodeCount = std::size(nodeData);
 
-	m_models.reserve(meshCount);
+	m_modelNodeData.resize(nodeCount);
 
-	for (size_t index = 0u; index < meshCount; ++index)
+	for (size_t index = 0u; index < nodeCount; ++index)
 	{
-		std::shared_ptr<ModelBase>& model = m_models.emplace_back(
-			std::make_shared<ModelBase>(modelScale)
-		);
+		const MeshNodeData& currentNodeData = nodeData[index];
 
-		model->SetMeshIndex(static_cast<std::uint32_t>(index));
+		// Since any adjacent nodes without mesh will be skipped, the mesh index should
+		// be the same ast the model index.
+		if (currentNodeData.HasMesh())
+		{
+			std::shared_ptr<ModelBase>& model = m_models.emplace_back(
+				std::make_shared<ModelBase>(modelScale)
+			);
+
+			model->SetMeshIndex(static_cast<std::uint32_t>(currentNodeData.meshIndex));
+		}
 	}
 }
 
@@ -73,35 +80,46 @@ void ModelBundleBase::ChangeMeshBundle(std::uint32_t meshBundleIndex, const Mesh
 {
 	*m_meshBundleIndex = meshBundleIndex;
 
+	const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
 	const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
+
+	const size_t newNodeCount = std::size(newNodeData);
 
 	assert(!std::empty(m_models) && "The models haven't been set yet.");
 
 	assert(
-		std::size(permanentDetails) == std::size(m_models)
+		newNodeCount == std::size(m_modelNodeData)
 		&& "The new mesh count isn't the same as before."
 	);
 
-	// This should be the same as the model count.
-	const std::vector<ModelChildren>& newModelChildrenData = meshBundle.GetModelChildrenData();
-
-	for (size_t index = 0u; index < std::size(permanentDetails); ++index)
+	for (size_t index = 0u; index < newNodeCount; ++index)
 	{
-		ModelTransform& transform = m_models[index]->GetTransform();
+		const MeshNodeData& currentNodeData = newNodeData[index];
 
-		transform.SetModelMatrix(permanentDetails[index].worldMatrix);
+		m_modelNodeData[index] = currentNodeData;
 
-		m_childrenData[index] = newModelChildrenData[index];
+		if (currentNodeData.HasMesh())
+		{
+			ModelTransform& transform = m_models[currentNodeData.meshIndex]->GetTransform();
+
+			transform.SetModelMatrix(permanentDetails[index].worldMatrix);
+		}
 	}
 }
 
 void ModelBundleBase::Rotate(
-	size_t modelIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
+	size_t nodeIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
 ) noexcept {
-	std::shared_ptr<ModelBase>& model = m_models[modelIndex];
-	ModelChildren childrenData        = m_childrenData[modelIndex];
+	MeshNodeData nodeData = m_modelNodeData[nodeIndex];
 
-	model->GetTransform().Rotate(rotationAxis, angleRadian);
+	if (nodeData.HasMesh())
+	{
+		std::shared_ptr<ModelBase>& model = m_models[nodeData.meshIndex];
+
+		model->GetTransform().Rotate(rotationAxis, angleRadian);
+	}
+
+	const MeshChildrenData& childrenData = nodeData.childrenData;
 
 	if (childrenData.count)
 	{
@@ -113,12 +131,18 @@ void ModelBundleBase::Rotate(
 	}
 }
 
-void ModelBundleBase::Scale(size_t modelIndex, float scale) noexcept
+void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 {
-	std::shared_ptr<ModelBase>& model = m_models[modelIndex];
-	ModelChildren childrenData        = m_childrenData[modelIndex];
+	MeshNodeData nodeData = m_modelNodeData[nodeIndex];
 
-	model->GetTransform().Scale(scale);
+	if (nodeData.HasMesh())
+	{
+		std::shared_ptr<ModelBase>& model = m_models[nodeData.meshIndex];
+
+		model->GetTransform().Scale(scale);
+	}
+
+	const MeshChildrenData& childrenData = nodeData.childrenData;
 
 	if (childrenData.count)
 	{
@@ -130,12 +154,18 @@ void ModelBundleBase::Scale(size_t modelIndex, float scale) noexcept
 	}
 }
 
-void ModelBundleBase::MoveModel(size_t modelIndex, const DirectX::XMFLOAT3& offset) noexcept
+void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offset) noexcept
 {
-	std::shared_ptr<ModelBase>& model = m_models[modelIndex];
-	ModelChildren childrenData        = m_childrenData[modelIndex];
+	MeshNodeData nodeData = m_modelNodeData[nodeIndex];
 
-	model->GetTransform().MoveModel(offset);
+	if (nodeData.HasMesh())
+	{
+		std::shared_ptr<ModelBase>& model = m_models[nodeData.meshIndex];
+
+		model->GetTransform().MoveModel(offset);
+	}
+
+	const MeshChildrenData& childrenData = nodeData.childrenData;
 
 	if (childrenData.count)
 	{
