@@ -48,7 +48,7 @@ void ModelBundleBase::SetMeshBundle(
 ) {
 	SetModels(modelScale, meshBundle);
 
-	ChangeMeshBundle(meshBundleIndex, meshBundle);
+	ChangeMeshBundle(meshBundleIndex, meshBundle, false);
 }
 
 void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBundle)
@@ -76,8 +76,9 @@ void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBund
 	}
 }
 
-void ModelBundleBase::ChangeMeshBundle(std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle)
-{
+void ModelBundleBase::ChangeMeshBundle(
+	std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle, bool discardExistingTransformation
+) {
 	*m_meshBundleIndex = meshBundleIndex;
 
 	const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
@@ -95,14 +96,16 @@ void ModelBundleBase::ChangeMeshBundle(std::uint32_t meshBundleIndex, const Mesh
 	for (size_t index = 0u; index < newNodeCount; ++index)
 	{
 		const MeshNodeData& currentNodeData = newNodeData[index];
-
-		m_modelNodeData[index] = currentNodeData;
+		m_modelNodeData[index]              = currentNodeData;
 
 		if (currentNodeData.HasMesh())
 		{
 			ModelTransform& transform = m_models[currentNodeData.meshIndex]->GetTransform();
 
-			transform.SetModelMatrix(permanentDetails[index].worldMatrix);
+			if (discardExistingTransformation)
+				transform.ResetTransform();
+
+			transform.MultiplyModelMatrix(permanentDetails[index].worldMatrix);
 		}
 	}
 }

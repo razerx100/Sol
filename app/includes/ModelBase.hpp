@@ -89,6 +89,12 @@ public:
 	{
 		m_modelMatrix = matrix;
 	}
+	void ResetTransform() noexcept
+	{
+		m_modelMatrix = DirectX::XMMatrixIdentity();
+		m_modelOffset = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f };
+		m_modelScale  = 1.f;
+	}
 	void MoveModel(const DirectX::XMFLOAT3& offset) noexcept
 	{
 		m_modelOffset.x += offset.x;
@@ -265,7 +271,10 @@ public:
 	);
 
 	// Can only be changed if the new mesh count is the same as before.
-	void ChangeMeshBundle(std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle);
+	void ChangeMeshBundle(
+		std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle,
+		bool discardExistingTransformation = true
+	);
 
 	// Transform
 	ModelBundleBase& MoveTowardsX(size_t nodeIndex, float delta) noexcept
