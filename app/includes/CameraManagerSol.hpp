@@ -83,42 +83,36 @@ public:
 		: m_translateVector{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f) }, m_pitch{ 0.f }, m_yaw{ 0.f }
 	{}
 
-	[[nodiscard]]
 	PerspectiveCameraEuler& MoveLeft(float offset) noexcept
 	{
 		MoveX(-offset);
 
 		return *this;
 	}
-	[[nodiscard]]
 	PerspectiveCameraEuler& MoveRight(float offset) noexcept
 	{
 		MoveX(offset);
 
 		return *this;
 	}
-	[[nodiscard]]
 	PerspectiveCameraEuler& MoveUp(float offset) noexcept
 	{
 		MoveY(offset);
 
 		return *this;
 	}
-	[[nodiscard]]
 	PerspectiveCameraEuler& MoveDown(float offset) noexcept
 	{
 		MoveY(-offset);
 
 		return *this;
 	}
-	[[nodiscard]]
 	PerspectiveCameraEuler& MoveForward(float offset) noexcept
 	{
 		MoveZ(offset);
 
 		return *this;
 	}
-	[[nodiscard]]
 	PerspectiveCameraEuler& MoveBackward(float offset) noexcept
 	{
 		MoveZ(-offset);

@@ -60,7 +60,13 @@ void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBund
 	m_models.reserve(meshCount);
 
 	for (size_t index = 0u; index < meshCount; ++index)
-		m_models.emplace_back(std::make_shared<ModelBase>(modelScale));
+	{
+		std::shared_ptr<ModelBase>& model = m_models.emplace_back(
+			std::make_shared<ModelBase>(modelScale)
+		);
+
+		model->SetMeshIndex(static_cast<std::uint32_t>(index));
+	}
 }
 
 void ModelBundleBase::ChangeMeshBundle(std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle)
