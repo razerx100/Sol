@@ -24,26 +24,73 @@ static void MemcpyIntoVector(std::vector<T>& dst, const std::vector<T>& src) noe
 	memcpy(std::data(dst) + dstDataStart, std::data(src), srcDataSize);
 }
 
+static void CopyAndOffsetIndices(
+	std::vector<std::uint32_t>& dst, const std::vector<std::uint32_t>& src, std::uint32_t offset
+) noexcept {
+	const size_t srcElementCount = std::size(src);
+	const size_t dstElementCount = std::size(dst);
+
+	const size_t dstDataStart    = dstElementCount;
+
+	dst.resize(srcElementCount + dstElementCount);
+
+	for (size_t index = 0u; index < srcElementCount; ++index)
+		dst[index + dstDataStart] = offset + src[index];
+}
+
 // Mesh Bundle Temp Custom
 MeshBundleData MeshBundleTempCustom::GenerateTemporaryData(bool meshShader)
 {
 	MeshBundleData meshBundleData{};
 
-	for (Mesh& mesh : m_tempMeshes)
-	{
-		if (meshShader)
-			GenerateMeshShaderData(mesh, meshBundleData);
-		else
-			GenerateVertexShaderData(mesh, meshBundleData);
-	}
+	if (meshShader)
+		GenerateMeshShaderData(m_tempMeshes, meshBundleData);
+	else
+		GenerateVertexShaderData(m_tempMeshes, meshBundleData);
 
 	m_tempMeshes = std::vector<Mesh>{};
 
 	return meshBundleData;
 }
 
-void MeshBundleTempCustom::GenerateMeshShaderData(Mesh& mesh, MeshBundleData& meshBundleData)
+void MeshBundleTempCustom::GenerateMeshShaderData(
+	std::vector<Mesh>& meshes, MeshBundleData& meshBundleData
+) {
+	meshBundleData.bundleDetails.meshDetails.reserve(std::size(meshes));
+
+	for (Mesh& mesh : meshes)
+		ProcessMeshMS(mesh, meshBundleData);
+}
+
+void MeshBundleTempCustom::GenerateVertexShaderData(
+	std::vector<Mesh>& meshes, MeshBundleData& meshBundleData
+) {
+	meshBundleData.bundleDetails.meshDetails.reserve(std::size(meshes));
+
+	for (Mesh& mesh : meshes)
+		ProcessMeshVS(mesh, meshBundleData);
+}
+
+void MeshBundleTempCustom::ProcessMeshVS(Mesh& mesh, MeshBundleData& meshBundleData) noexcept
 {
+	MeshDetails meshDetails{ .aabb = GenerateAABB(mesh.vertices) };
+
+	meshDetails.elementCount  = static_cast<std::uint32_t>(std::size(mesh.indices));
+	meshDetails.elementOffset = static_cast<std::uint32_t>(std::size(meshBundleData.indices));
+
+	const auto vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleData.vertices));
+
+	CopyAndOffsetIndices(meshBundleData.indices, mesh.indices, vertexOffset);
+	MemcpyIntoVector(meshBundleData.vertices, mesh.vertices);
+
+	meshBundleData.bundleDetails.meshDetails.emplace_back(meshDetails);
+}
+
+void MeshBundleTempCustom::ProcessMeshMS(
+	Mesh& mesh, MeshBundleData& meshBundleData
+) noexcept {
+	const auto vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleData.vertices));
+
 	MeshDetails meshDetails{ .aabb = GenerateAABB(mesh.vertices) };
 
 	MeshletMaker meshletMaker{};
@@ -78,20 +125,7 @@ void MeshBundleTempCustom::GenerateMeshShaderData(Mesh& mesh, MeshBundleData& me
 
 	MemcpyIntoVector(meshBundleData.meshletDetails, extraMeshData.meshletDetails);
 	MemcpyIntoVector(meshBundleData.primIndices, extraMeshData.primIndices);
-	MemcpyIntoVector(meshBundleData.indices, mesh.indices);
-	MemcpyIntoVector(meshBundleData.vertices, mesh.vertices);
-
-	meshBundleData.bundleDetails.meshDetails.emplace_back(meshDetails);
-}
-
-void MeshBundleTempCustom::GenerateVertexShaderData(Mesh& mesh, MeshBundleData& meshBundleData)
-{
-	MeshDetails meshDetails{ .aabb = GenerateAABB(mesh.vertices) };
-
-	meshDetails.elementCount  = static_cast<std::uint32_t>(std::size(mesh.indices));
-	meshDetails.elementOffset = static_cast<std::uint32_t>(std::size(meshBundleData.indices));
-
-	MemcpyIntoVector(meshBundleData.indices, mesh.indices);
+	CopyAndOffsetIndices(meshBundleData.indices, mesh.indices, vertexOffset);
 	MemcpyIntoVector(meshBundleData.vertices, mesh.vertices);
 
 	meshBundleData.bundleDetails.meshDetails.emplace_back(meshDetails);
@@ -149,8 +183,9 @@ void MeshBundleTempAssimp::ProcessMeshVertices(aiMesh* mesh, MeshBundleData& mes
 	}
 }
 
-void MeshBundleTempAssimp::ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept
-{
+void MeshBundleTempAssimp::ProcessMeshFaces(
+	aiMesh* mesh, std::uint32_t vertexOffset, MeshBundleData& meshBundleData
+) noexcept {
 	size_t faceCount           = mesh->mNumFaces;
 	const size_t newIndexCount = faceCount * 3u;
 	aiFace* faces              = mesh->mFaces;
@@ -162,9 +197,9 @@ void MeshBundleTempAssimp::ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBu
 		const aiFace& face = faces[index];
 
 		// Should be all triangles.
-		std::uint32_t vIndex0 = face.mIndices[0];
-		std::uint32_t vIndex1 = face.mIndices[1];
-		std::uint32_t vIndex2 = face.mIndices[2];
+		std::uint32_t vIndex0 = vertexOffset + face.mIndices[0];
+		std::uint32_t vIndex1 = vertexOffset + face.mIndices[1];
+		std::uint32_t vIndex2 = vertexOffset + face.mIndices[2];
 
 		meshBundleData.indices.emplace_back(vIndex0);
 		meshBundleData.indices.emplace_back(vIndex1);
@@ -184,13 +219,17 @@ void MeshBundleTempAssimp::ProcessMeshVS(aiMesh* mesh, MeshBundleData& meshBundl
 		}
 	);
 
+	const auto vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleData.vertices));
+
 	ProcessMeshVertices(mesh, meshBundleData);
 
-	ProcessMeshFaces(mesh, meshBundleData);
+	ProcessMeshFaces(mesh, vertexOffset, meshBundleData);
 }
 
 void MeshBundleTempAssimp::ProcessMeshMS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept
 {
+	const auto vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleData.vertices));
+
 	MeshletMaker meshletMaker{};
 
 	meshletMaker.GenerateMeshlets(mesh);
@@ -233,7 +272,7 @@ void MeshBundleTempAssimp::ProcessMeshMS(aiMesh* mesh, MeshBundleData& meshBundl
 
 	MemcpyIntoVector(meshBundleData.meshletDetails, extraMeshData.meshletDetails);
 	MemcpyIntoVector(meshBundleData.primIndices, extraMeshData.primIndices);
-	MemcpyIntoVector(meshBundleData.indices, vertexIndices);
+	CopyAndOffsetIndices(meshBundleData.indices, vertexIndices, vertexOffset);
 
 	ProcessMeshVertices(mesh, meshBundleData);
 }
@@ -747,8 +786,8 @@ size_t MeshletMaker::MakeMeshlet(aiFace* faces, size_t faceCount, size_t startin
 		m_tempPrimitiveIndices.emplace_back(packedPrim);
 	}
 
-	const auto vertexOffset    = static_cast<std::uint32_t>(std::size(m_vertexIndices));
-	const auto primitiveOffset = static_cast<std::uint32_t>(std::size(m_primitiveIndices));
+	const auto localVertexOffset = static_cast<std::uint32_t>(std::size(m_vertexIndices));
+	const auto primitiveOffset   = static_cast<std::uint32_t>(std::size(m_primitiveIndices));
 
 	m_meshletDetails.emplace_back(
 		MeshletDetails
@@ -756,7 +795,7 @@ size_t MeshletMaker::MakeMeshlet(aiFace* faces, size_t faceCount, size_t startin
 			.meshlet = Meshlet
 			{
 				.vertexCount     = static_cast<std::uint32_t>(std::size(m_tempVertexIndices)),
-				.vertexOffset    = static_cast<std::uint32_t>(vertexOffset),
+				.vertexOffset    = static_cast<std::uint32_t>(localVertexOffset),
 				.primitiveCount  = static_cast<std::uint32_t>(std::size(m_tempPrimitiveIndices)),
 				.primitiveOffset = static_cast<std::uint32_t>(primitiveOffset)
 			}

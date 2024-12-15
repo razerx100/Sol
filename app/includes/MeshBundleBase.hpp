@@ -68,8 +68,15 @@ public:
 	void AddMesh(Mesh&& mesh) noexcept;
 
 private:
-	static void GenerateMeshShaderData(Mesh& mesh, MeshBundleData& meshBundleData);
-	static void GenerateVertexShaderData(Mesh& mesh, MeshBundleData& meshBundleData);
+	static void GenerateMeshShaderData(
+		std::vector<Mesh>& meshes, MeshBundleData& meshBundleData
+	);
+	static void GenerateVertexShaderData(
+		std::vector<Mesh>& meshes, MeshBundleData& meshBundleData
+	);
+
+	static void ProcessMeshVS(Mesh& mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshMS(Mesh& mesh, MeshBundleData& meshBundleData) noexcept;
 
 private:
 	std::vector<Mesh> m_tempMeshes;
@@ -98,7 +105,9 @@ private:
 	static MeshBundleData GenerateVertexShaderData(aiScene const* scene);
 
 	static void ProcessMeshVertices(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
-	static void ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshFaces(
+		aiMesh* mesh, std::uint32_t vertexOffset, MeshBundleData& meshBundleData
+	) noexcept;
 
 	static void ProcessMeshVS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
 	static void ProcessMeshMS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;

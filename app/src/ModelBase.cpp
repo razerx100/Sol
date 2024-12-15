@@ -71,7 +71,7 @@ void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBund
 				std::make_shared<ModelBase>(modelScale)
 			);
 
-			model->SetMeshIndex(static_cast<std::uint32_t>(currentNodeData.meshIndex));
+			model->SetMeshIndex(currentNodeData.meshIndex);
 		}
 	}
 }
