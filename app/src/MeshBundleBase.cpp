@@ -400,7 +400,10 @@ void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 
 		XMMATRIX tempAccumulatedTransform = GetXMMatrix(child->mTransformation) * accumulatedTransform;
 
-		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = tempAccumulatedTransform });
+		// I pass row major matrices in the shaders, and assimp loads column major matrices.
+		permanentDetails.emplace_back(
+			MeshPermanentDetails{ .worldMatrix = XMMatrixTranspose(tempAccumulatedTransform) }
+		);
 
 		ProcessMeshChildrenDetails(child, meshNodeData, childrenOffset, meshIndex);
 	}
@@ -440,7 +443,10 @@ void MeshBundleTempAssimp::FillMeshHierarchyDetails(
 		// Calculate the transform for the root.
 		accumulatedTransform = GetXMMatrix(rootNode->mTransformation) * accumulatedTransform;
 
-		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = accumulatedTransform });
+		// I pass row major matrices in the shaders, and assimp loads column major matrices.
+		permanentDetails.emplace_back(
+			MeshPermanentDetails{ .worldMatrix = XMMatrixTranspose(accumulatedTransform) }
+		);
 	}
 
 	TraverseMeshHierarchyDetails(
