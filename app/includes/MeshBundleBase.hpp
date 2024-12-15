@@ -35,6 +35,7 @@ struct MeshChildrenData
 
 struct MeshNodeData
 {
+	std::uint32_t    modelIndex   = std::numeric_limits<std::uint32_t>::max();
 	std::uint32_t    meshIndex    = std::numeric_limits<std::uint32_t>::max();
 	MeshChildrenData childrenData;
 
@@ -99,21 +100,18 @@ private:
 	static void ProcessMeshVertices(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
 	static void ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
 
-	static void ProcessMeshNodeVS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
-	static void TraverseMeshByLevelVS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
+	static void ProcessMeshVS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshMS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
 
-	static void ProcessMeshNodeMS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
-	static void TraverseMeshByLevelMS(aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData);
-
-	static void ProcessMeshChildrenDetails(
-		aiNode const* node, std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset,
-		std::uint32_t& meshIndex
+	static void ProcessMeshNodeDetails(
+		aiNode const* node, std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes,
+		std::uint32_t& childrenOffset, std::uint32_t& modelIndex
 	);
 	static void TraverseMeshHierarchyDetails(
 		aiNode const* node,
 		DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
-		std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset,
-		std::uint32_t& meshIndex
+		std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes, std::uint32_t& childrenOffset,
+		std::uint32_t& modelIndex
 	);
 
 private:

@@ -100,7 +100,7 @@ void ModelBundleBase::ChangeMeshBundle(
 
 		if (currentNodeData.HasMesh())
 		{
-			ModelTransform& transform = m_models[currentNodeData.meshIndex]->GetTransform();
+			ModelTransform& transform = m_models[currentNodeData.modelIndex]->GetTransform();
 
 			if (discardExistingTransformation)
 				transform.ResetTransform();
@@ -117,7 +117,7 @@ void ModelBundleBase::Rotate(
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_models[nodeData.meshIndex];
+		std::shared_ptr<ModelBase>& model = m_models[nodeData.modelIndex];
 
 		model->GetTransform().Rotate(rotationAxis, angleRadian);
 	}
@@ -140,7 +140,7 @@ void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_models[nodeData.meshIndex];
+		std::shared_ptr<ModelBase>& model = m_models[nodeData.modelIndex];
 
 		model->GetTransform().Scale(scale);
 	}
@@ -163,7 +163,7 @@ void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offse
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_models[nodeData.meshIndex];
+		std::shared_ptr<ModelBase>& model = m_models[nodeData.modelIndex];
 
 		model->GetTransform().MoveModel(offset);
 	}

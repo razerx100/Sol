@@ -111,17 +111,17 @@ MeshBundleTempAssimp::~MeshBundleTempAssimp() noexcept
 
 void MeshBundleTempAssimp::ProcessMeshVertices(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept
 {
-	size_t vertexCount   = mesh->mNumVertices;
-	aiVector3D* vertices = mesh->mVertices;
+	size_t newVertexCount = mesh->mNumVertices;
+	aiVector3D* vertices  = mesh->mVertices;
 	// Only using the first coordinates.
-	aiVector3D* uvs      = mesh->mTextureCoords[0];
-	aiVector3D* normals  = mesh->mNormals;
+	aiVector3D* uvs       = mesh->mTextureCoords[0];
+	aiVector3D* normals   = mesh->mNormals;
 
-	meshBundleData.vertices.reserve(vertexCount);
+	meshBundleData.vertices.reserve(std::size(meshBundleData.vertices) + newVertexCount);
 
 	if (mesh->HasTextureCoords(0))
 	{
-		for (size_t index = 0u; index < vertexCount; ++index)
+		for (size_t index = 0u; index < newVertexCount; ++index)
 		{
 			Vertex vertex
 			{
@@ -135,7 +135,7 @@ void MeshBundleTempAssimp::ProcessMeshVertices(aiMesh* mesh, MeshBundleData& mes
 	}
 	else
 	{
-		for (size_t index = 0u; index < vertexCount; ++index)
+		for (size_t index = 0u; index < newVertexCount; ++index)
 		{
 			Vertex vertex
 			{
@@ -151,10 +151,11 @@ void MeshBundleTempAssimp::ProcessMeshVertices(aiMesh* mesh, MeshBundleData& mes
 
 void MeshBundleTempAssimp::ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept
 {
-	size_t faceCount = mesh->mNumFaces;
-	aiFace* faces    = mesh->mFaces;
+	size_t faceCount           = mesh->mNumFaces;
+	const size_t newIndexCount = faceCount * 3u;
+	aiFace* faces              = mesh->mFaces;
 
-	meshBundleData.indices.reserve(faceCount * 3u);
+	meshBundleData.indices.reserve(std::size(meshBundleData.indices) + newIndexCount);
 
 	for (size_t index = 0u; index < faceCount; ++index)
 	{
@@ -171,138 +172,83 @@ void MeshBundleTempAssimp::ProcessMeshFaces(aiMesh* mesh, MeshBundleData& meshBu
 	}
 }
 
-void MeshBundleTempAssimp::ProcessMeshNodeVS(
-	aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData
-) {
-	const size_t meshCount = node->mNumMeshes;
-
-	for (size_t index = 0u; index < meshCount; ++index)
-	{
-		size_t meshIndex = node->mMeshes[index];
-		aiMesh* mesh     = meshes[meshIndex];
-
-		const bool isTriangle = mesh->mPrimitiveTypes & aiPrimitiveType::aiPrimitiveType_TRIANGLE;
-
-		// Skipping non triangles.
-		if (!isTriangle)
-			continue;
-
-		meshBundleData.bundleDetails.meshDetails.emplace_back(
-			MeshDetails
-			{
-				// Should be all triangles.
-				.elementCount  = mesh->mNumFaces * 3u,
-				.elementOffset = static_cast<std::uint32_t>(std::size(meshBundleData.indices)),
-				.aabb          = GetAABB(mesh->mAABB)
-			}
-		);
-
-		ProcessMeshVertices(mesh, meshBundleData);
-
-		ProcessMeshFaces(mesh, meshBundleData);
-	}
-}
-
-void MeshBundleTempAssimp::TraverseMeshByLevelVS(
-	aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData
-) {
-	size_t childCount = node->mNumChildren;
-	aiNode** children = node->mChildren;
-
-	for (size_t index = 0u; index < childCount; ++index)
-		ProcessMeshNodeVS(children[index], meshes, meshBundleData);
-
-	for (size_t index = 0u; index < childCount; ++index)
-		TraverseMeshByLevelVS(children[index], meshes, meshBundleData);
-}
-
-void MeshBundleTempAssimp::ProcessMeshNodeMS(
-	aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData
-) {
-	const size_t meshCount = node->mNumMeshes;
-
-	for (size_t index = 0u; index < meshCount; ++index)
-	{
-		size_t meshIndex = node->mMeshes[index];
-		aiMesh* mesh     = meshes[meshIndex];
-
-		const bool isTriangle = mesh->mPrimitiveTypes & aiPrimitiveType::aiPrimitiveType_TRIANGLE;
-
-		// Skipping non triangles.
-		if (!isTriangle)
-			continue;
-
-		MeshletMaker meshletMaker{};
-
-		meshletMaker.GenerateMeshlets(mesh);
-
-		std::vector<std::uint32_t> vertexIndices{};
-
-		meshletMaker.LoadVertexIndices(vertexIndices);
-
-		MeshExtraForMesh extraMeshData = meshletMaker.GenerateExtraMeshData();
-
-		meshBundleData.bundleDetails.meshDetails.emplace_back(
-			MeshDetails
-			{
-				.elementCount  = static_cast<std::uint32_t>(std::size(extraMeshData.meshletDetails)),
-				.elementOffset = static_cast<std::uint32_t>(std::size(meshBundleData.meshletDetails)),
-				.aabb          = GetAABB(mesh->mAABB)
-			}
-		);
-
+void MeshBundleTempAssimp::ProcessMeshVS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept
+{
+	meshBundleData.bundleDetails.meshDetails.emplace_back(
+		MeshDetails
 		{
-			// Per meshlet Bounding Sphere
-			std::vector<MeshletDetails>& meshletDetails = extraMeshData.meshletDetails;
-
-			const size_t meshletCount = std::size(meshletDetails);
-
-			for (size_t index1 = 0u; index1 < meshletCount; ++index1)
-			{
-				MeshletDetails& meshletDetail = meshletDetails[index1];
-
-				meshletDetail.sphereB = GenerateSphereBV(
-					mesh->mVertices, vertexIndices, meshletDetail.meshlet
-				);
-
-				meshletDetail.coneNormal = GenerateNormalCone(
-					mesh->mVertices, mesh->mNormals, vertexIndices, extraMeshData.primIndices,
-					meshletDetail
-				);
-			}
+			// Should be all triangles.
+			.elementCount  = mesh->mNumFaces * 3u,
+			.elementOffset = static_cast<std::uint32_t>(std::size(meshBundleData.indices)),
+			.aabb          = GetAABB(mesh->mAABB)
 		}
+	);
 
-		MemcpyIntoVector(meshBundleData.meshletDetails, extraMeshData.meshletDetails);
-		MemcpyIntoVector(meshBundleData.primIndices, extraMeshData.primIndices);
-		MemcpyIntoVector(meshBundleData.indices, vertexIndices);
+	ProcessMeshVertices(mesh, meshBundleData);
 
-		ProcessMeshVertices(mesh, meshBundleData);
-	}
+	ProcessMeshFaces(mesh, meshBundleData);
 }
 
-void MeshBundleTempAssimp::TraverseMeshByLevelMS(
-	aiNode const* node, aiMesh** meshes, MeshBundleData& meshBundleData
-) {
-	size_t childCount = node->mNumChildren;
-	aiNode** children = node->mChildren;
+void MeshBundleTempAssimp::ProcessMeshMS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept
+{
+	MeshletMaker meshletMaker{};
 
-	for (size_t index = 0u; index < childCount; ++index)
-		ProcessMeshNodeMS(children[index], meshes, meshBundleData);
+	meshletMaker.GenerateMeshlets(mesh);
 
-	for (size_t index = 0u; index < childCount; ++index)
-		TraverseMeshByLevelMS(children[index], meshes, meshBundleData);
+	std::vector<std::uint32_t> vertexIndices{};
+
+	meshletMaker.LoadVertexIndices(vertexIndices);
+
+	MeshExtraForMesh extraMeshData = meshletMaker.GenerateExtraMeshData();
+
+	meshBundleData.bundleDetails.meshDetails.emplace_back(
+		MeshDetails
+		{
+			.elementCount  = static_cast<std::uint32_t>(std::size(extraMeshData.meshletDetails)),
+			.elementOffset = static_cast<std::uint32_t>(std::size(meshBundleData.meshletDetails)),
+			.aabb          = GetAABB(mesh->mAABB)
+		}
+	);
+
+	{
+		// Per meshlet Bounding Sphere
+		std::vector<MeshletDetails>& meshletDetails = extraMeshData.meshletDetails;
+
+		const size_t meshletCount = std::size(meshletDetails);
+
+		for (size_t index1 = 0u; index1 < meshletCount; ++index1)
+		{
+			MeshletDetails& meshletDetail = meshletDetails[index1];
+
+			meshletDetail.sphereB = GenerateSphereBV(
+				mesh->mVertices, vertexIndices, meshletDetail.meshlet
+			);
+
+			meshletDetail.coneNormal = GenerateNormalCone(
+				mesh->mVertices, mesh->mNormals, vertexIndices, extraMeshData.primIndices,
+				meshletDetail
+			);
+		}
+	}
+
+	MemcpyIntoVector(meshBundleData.meshletDetails, extraMeshData.meshletDetails);
+	MemcpyIntoVector(meshBundleData.primIndices, extraMeshData.primIndices);
+	MemcpyIntoVector(meshBundleData.indices, vertexIndices);
+
+	ProcessMeshVertices(mesh, meshBundleData);
 }
 
 MeshBundleData MeshBundleTempAssimp::GenerateMeshShaderData(aiScene const* scene)
 {
 	MeshBundleData meshBundleData{};
 
-	aiNode* rootNode = scene->mRootNode;
-	aiMesh** meshes  = scene->mMeshes;
+	aiMesh** meshes        = scene->mMeshes;
+	const size_t meshCount = scene->mNumMeshes;
 
-	ProcessMeshNodeMS(rootNode, meshes, meshBundleData);
+	meshBundleData.bundleDetails.meshDetails.reserve(meshCount);
 
-	TraverseMeshByLevelMS(rootNode, meshes, meshBundleData);
+	for (size_t index = 0u; index < meshCount; ++index)
+		ProcessMeshMS(meshes[index], meshBundleData);
 
 	return meshBundleData;
 }
@@ -311,12 +257,13 @@ MeshBundleData MeshBundleTempAssimp::GenerateVertexShaderData(aiScene const* sce
 {
 	MeshBundleData meshBundleData{};
 
-	aiNode* rootNode = scene->mRootNode;
-	aiMesh** meshes  = scene->mMeshes;
+	aiMesh** meshes        = scene->mMeshes;
+	const size_t meshCount = scene->mNumMeshes;
 
-	ProcessMeshNodeVS(rootNode, meshes, meshBundleData);
+	meshBundleData.bundleDetails.meshDetails.reserve(meshCount);
 
-	TraverseMeshByLevelVS(rootNode, meshes, meshBundleData);
+	for (size_t index = 0u; index < meshCount; ++index)
+		ProcessMeshVS(meshes[index], meshBundleData);
 
 	return meshBundleData;
 }
@@ -359,24 +306,44 @@ void MeshBundleTempAssimp::SetMeshBundle(const std::string& fileName)
 		throw Exception{ "MeshFileMissing", "The mesh file couldn't be found." };
 }
 
-void MeshBundleTempAssimp::ProcessMeshChildrenDetails(
-	aiNode const* node, std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset,
-	std::uint32_t& meshIndex
+void MeshBundleTempAssimp::ProcessMeshNodeDetails(
+	aiNode const* node, std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes,
+	std::uint32_t& childrenOffset, std::uint32_t& modelIndex
 ) {
 	const std::uint32_t childCount = node->mNumChildren;
 
-	auto currentMeshIndex = std::numeric_limits<std::uint32_t>::max();
+	auto currentModelIndex = std::numeric_limits<std::uint32_t>::max();
+	auto meshIndex         = std::numeric_limits<std::uint32_t>::max();
 
 	if (node->mNumMeshes)
 	{
-		currentMeshIndex = meshIndex;
-		++meshIndex;
+		const size_t meshCount = node->mNumMeshes;
+
+		for (size_t index = 0u; index < meshCount; ++index)
+		{
+			size_t currentMeshIndex = node->mMeshes[index];
+			aiMesh* mesh            = meshes[currentMeshIndex];
+
+			const bool isTriangle = mesh->mPrimitiveTypes & aiPrimitiveType::aiPrimitiveType_TRIANGLE;
+
+			// Skipping non triangles.
+			if (!isTriangle)
+				continue;
+
+			// Multiple meshes per node isn't supported yet.
+			meshIndex = static_cast<std::uint32_t>(currentMeshIndex);
+			break;
+		}
+
+		currentModelIndex = modelIndex;
+		++modelIndex;
 	}
 
 	meshNodeData.emplace_back(
 		MeshNodeData
 		{
-			.meshIndex    = currentMeshIndex,
+			.modelIndex   = currentModelIndex,
+			.meshIndex    = meshIndex,
 			.childrenData = MeshChildrenData{ .count = childCount, .startingIndex = childrenOffset }
 		}
 	);
@@ -387,7 +354,8 @@ void MeshBundleTempAssimp::ProcessMeshChildrenDetails(
 void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 	aiNode const* node,
 	DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
-	std::vector<MeshNodeData>& meshNodeData, std::uint32_t& childrenOffset, std::uint32_t& meshIndex
+	std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes, std::uint32_t& childrenOffset,
+	std::uint32_t& modelIndex
 ) {
 	using namespace DirectX;
 
@@ -398,24 +366,25 @@ void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 	{
 		aiNode const* child = children[index];
 
-		XMMATRIX tempAccumulatedTransform = GetXMMatrix(child->mTransformation) * accumulatedTransform;
-
 		// I pass row major matrices in the shaders, and assimp loads column major matrices.
-		permanentDetails.emplace_back(
-			MeshPermanentDetails{ .worldMatrix = XMMatrixTranspose(tempAccumulatedTransform) }
-		);
+		XMMATRIX tempAccumulatedTransform
+			= XMMatrixTranspose(GetXMMatrix(child->mTransformation)) * accumulatedTransform;
 
-		ProcessMeshChildrenDetails(child, meshNodeData, childrenOffset, meshIndex);
+		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = tempAccumulatedTransform });
+
+		ProcessMeshNodeDetails(child, meshNodeData, meshes, childrenOffset, modelIndex);
 	}
 
 	for (size_t index = 0u; index < childCount; ++index)
 	{
 		aiNode const* child = children[index];
 
-		XMMATRIX tempAccumulatedTransform = GetXMMatrix(child->mTransformation) * accumulatedTransform;
+		XMMATRIX tempAccumulatedTransform
+			= XMMatrixTranspose(GetXMMatrix(child->mTransformation)) * accumulatedTransform;
 
 		TraverseMeshHierarchyDetails(
-			child, tempAccumulatedTransform, permanentDetails, meshNodeData, childrenOffset, meshIndex
+			child, tempAccumulatedTransform, permanentDetails, meshNodeData, meshes, childrenOffset,
+			modelIndex
 		);
 	}
 }
@@ -429,29 +398,28 @@ void MeshBundleTempAssimp::FillMeshHierarchyDetails(
 	XMMATRIX accumulatedTransform = XMMatrixIdentity();
 	std::uint32_t childrenOffset  = 1u;
 
-	const size_t meshCount  = rootNode->mNumMeshes;
+	const size_t meshCount   = rootNode->mNumMeshes;
 
-	std::uint32_t meshIndex = 0u;
+	std::uint32_t modelIndex = 0u;
 
 	// There can be more nodes than the mesh count, but in most cases it won't be.
 	permanentDetails.reserve(meshCount);
 	meshNodeData.reserve(meshCount);
 
-	ProcessMeshChildrenDetails(rootNode, meshNodeData, childrenOffset, meshIndex);
+	ProcessMeshNodeDetails(rootNode, meshNodeData, m_tempScene->mMeshes, childrenOffset, modelIndex);
 
 	{
 		// Calculate the transform for the root.
-		accumulatedTransform = GetXMMatrix(rootNode->mTransformation) * accumulatedTransform;
-
 		// I pass row major matrices in the shaders, and assimp loads column major matrices.
-		permanentDetails.emplace_back(
-			MeshPermanentDetails{ .worldMatrix = XMMatrixTranspose(accumulatedTransform) }
-		);
+		accumulatedTransform
+			= XMMatrixTranspose(GetXMMatrix(rootNode->mTransformation)) * accumulatedTransform;
+
+		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = accumulatedTransform });
 	}
 
 	TraverseMeshHierarchyDetails(
-		rootNode, accumulatedTransform, permanentDetails, meshNodeData, childrenOffset,
-		meshIndex
+		rootNode, accumulatedTransform, permanentDetails, meshNodeData, m_tempScene->mMeshes,
+		childrenOffset, modelIndex
 	);
 }
 
