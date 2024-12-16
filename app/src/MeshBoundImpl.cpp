@@ -158,9 +158,9 @@ static AxisAlignedBoundingBox _generateAABB(
 	XMVECTOR pAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
 	XMVECTOR nAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
 
-	const auto vertexEnd = static_cast<size_t>(meshlet.vertexOffset + meshlet.vertexCount);
+	const auto vertexEnd = static_cast<size_t>(meshlet.indexOffset + meshlet.indexCount);
 
-	for (size_t index = meshlet.vertexOffset; index < vertexEnd; ++index)
+	for (size_t index = meshlet.indexOffset; index < vertexEnd; ++index)
 	{
 		XMFLOAT3 vertexPositionF = GetPosition(vertices[vertexIndices[index]]);
 
@@ -216,9 +216,9 @@ static SphereBoundingVolume _generateSphereBV(
 
 	float radius = 0.f;
 
-	const auto vertexEnd = static_cast<size_t>(meshlet.vertexOffset + meshlet.vertexCount);
+	const auto vertexEnd = static_cast<size_t>(meshlet.indexOffset + meshlet.indexCount);
 
-	for (size_t index = meshlet.vertexOffset; index < vertexEnd; ++index)
+	for (size_t index = meshlet.indexOffset; index < vertexEnd; ++index)
 	{
 		XMFLOAT3 vertexPositionF = GetPosition(vertices[vertexIndices[index]]);
 
@@ -256,9 +256,9 @@ ClusterNormalCone GenerateNormalCone(
 
 	const Meshlet& meshlet  = meshletDetails.meshlet;
 
-	const auto vertexOffset = static_cast<size_t>(meshlet.vertexOffset);
-	const auto primOffset   = static_cast<size_t>(meshlet.primitiveOffset);
-	const auto primCount    = static_cast<size_t>(meshlet.primitiveCount);
+	const auto indexOffset = static_cast<size_t>(meshlet.indexOffset);
+	const auto primOffset  = static_cast<size_t>(meshlet.primitiveOffset);
+	const auto primCount   = static_cast<size_t>(meshlet.primitiveCount);
 
 	XMVECTOR positiveAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
 	XMVECTOR negativeAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
@@ -270,7 +270,7 @@ ClusterNormalCone GenerateNormalCone(
 		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
-		const Vertex& primVertex1 = vertices[vertexIndices[vertexOffset + unpackedIndices.firstIndex]];
+		const Vertex& primVertex1 = vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
 		// All of the vertex normals of a triangle should point towards the same direction.
 
@@ -298,7 +298,7 @@ ClusterNormalCone GenerateNormalCone(
 		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
-		const Vertex& primVertex1 = vertices[vertexIndices[vertexOffset + unpackedIndices.firstIndex]];
+		const Vertex& primVertex1 = vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
 		// All of the vertex normals of a triangle should point towards the same direction.
 
@@ -333,7 +333,7 @@ ClusterNormalCone GenerateNormalCone(
 		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
-		const Vertex& primVertex1 = vertices[vertexIndices[vertexOffset + unpackedIndices.firstIndex]];
+		const Vertex& primVertex1 = vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
 		XMVECTOR centre = XMVectorSubtract(spatialCentre, XMLoadFloat3(&primVertex1.position));
 		XMVECTOR normal = XMLoadFloat3(&primVertex1.normal);
@@ -397,9 +397,9 @@ ClusterNormalCone GenerateNormalCone(
 
 	const Meshlet& meshlet  = meshletDetails.meshlet;
 
-	const auto vertexOffset = static_cast<size_t>(meshlet.vertexOffset);
-	const auto primOffset   = static_cast<size_t>(meshlet.primitiveOffset);
-	const auto primCount    = static_cast<size_t>(meshlet.primitiveCount);
+	const auto indexOffset = static_cast<size_t>(meshlet.indexOffset);
+	const auto primOffset  = static_cast<size_t>(meshlet.primitiveOffset);
+	const auto primCount   = static_cast<size_t>(meshlet.primitiveCount);
 
 	XMVECTOR positiveAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
 	XMVECTOR negativeAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
@@ -412,7 +412,7 @@ ClusterNormalCone GenerateNormalCone(
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
 		XMFLOAT3 primNormal1 = GetXMFloat3(
-			normals[vertexIndices[vertexOffset + unpackedIndices.firstIndex]]
+			normals[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
 		);
 
 		// All of the vertex normals of a triangle should point towards the same direction.
@@ -442,7 +442,7 @@ ClusterNormalCone GenerateNormalCone(
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
 		XMFLOAT3 primNormal1 = GetXMFloat3(
-			normals[vertexIndices[vertexOffset + unpackedIndices.firstIndex]]
+			normals[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
 		);
 
 		// All of the vertex normals of a triangle should point towards the same direction.
@@ -479,10 +479,10 @@ ClusterNormalCone GenerateNormalCone(
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
 		XMFLOAT3 primNormal1   = GetXMFloat3(
-			normals[vertexIndices[vertexOffset + unpackedIndices.firstIndex]]
+			normals[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
 		);
 		XMFLOAT3 primPosition1 = GetXMFloat3(
-			vertices[vertexIndices[vertexOffset + unpackedIndices.firstIndex]]
+			vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
 		);
 
 		XMVECTOR centre = XMVectorSubtract(spatialCentre, XMLoadFloat3(&primPosition1));

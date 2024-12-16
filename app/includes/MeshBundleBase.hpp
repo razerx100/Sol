@@ -18,13 +18,13 @@ struct MeshExtraForMesh
 	std::vector<MeshletDetails> meshletDetails;
 };
 
-struct MeshBundleData
+struct MeshBundleTemporaryData
 {
 	std::vector<Vertex>         vertices;
 	std::vector<std::uint32_t>  indices;
 	std::vector<std::uint32_t>  primIndices;
 	std::vector<MeshletDetails> meshletDetails;
-	MeshBundleDetails           bundleDetails;
+	MeshBundleTemporaryDetails  bundleDetails;
 };
 
 struct MeshChildrenData
@@ -56,27 +56,27 @@ public:
 	virtual void AddMesh(Mesh&&) noexcept {}
 
 	[[nodiscard]]
-	virtual MeshBundleData GenerateTemporaryData(bool meshShader) = 0;
+	virtual MeshBundleTemporaryData GenerateTemporaryData(bool meshShader) = 0;
 };
 
 class MeshBundleTempCustom : public MeshBundleTempIntermediate
 {
 public:
 	[[nodiscard]]
-	MeshBundleData GenerateTemporaryData(bool meshShader) override;
+	MeshBundleTemporaryData GenerateTemporaryData(bool meshShader) override;
 
 	void AddMesh(Mesh&& mesh) noexcept;
 
 private:
 	static void GenerateMeshShaderData(
-		std::vector<Mesh>& meshes, MeshBundleData& meshBundleData
+		std::vector<Mesh>& meshes, MeshBundleTemporaryData& meshBundleTemporaryData
 	);
 	static void GenerateVertexShaderData(
-		std::vector<Mesh>& meshes, MeshBundleData& meshBundleData
+		std::vector<Mesh>& meshes, MeshBundleTemporaryData& meshBundleTemporaryData
 	);
 
-	static void ProcessMeshVS(Mesh& mesh, MeshBundleData& meshBundleData) noexcept;
-	static void ProcessMeshMS(Mesh& mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshVS(Mesh& mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
+	static void ProcessMeshMS(Mesh& mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
 
 private:
 	std::vector<Mesh> m_tempMeshes;
@@ -90,7 +90,7 @@ public:
 
 	// Use the assimp mesh indices to load the meshes in a BFS order.
 	[[nodiscard]]
-	MeshBundleData GenerateTemporaryData(bool meshShader) override;
+	MeshBundleTemporaryData GenerateTemporaryData(bool meshShader) override;
 
 	void SetMeshBundle(const std::string& fileName);
 
@@ -100,17 +100,19 @@ public:
 
 private:
 	[[nodiscard]]
-	static MeshBundleData GenerateMeshShaderData(aiScene const* scene);
+	static MeshBundleTemporaryData GenerateMeshShaderData(aiScene const* scene);
 	[[nodiscard]]
-	static MeshBundleData GenerateVertexShaderData(aiScene const* scene);
+	static MeshBundleTemporaryData GenerateVertexShaderData(aiScene const* scene);
 
-	static void ProcessMeshVertices(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshVertices(
+		aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData
+	) noexcept;
 	static void ProcessMeshFaces(
-		aiMesh* mesh, std::uint32_t vertexOffset, MeshBundleData& meshBundleData
+		aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData
 	) noexcept;
 
-	static void ProcessMeshVS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
-	static void ProcessMeshMS(aiMesh* mesh, MeshBundleData& meshBundleData) noexcept;
+	static void ProcessMeshVS(aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
+	static void ProcessMeshMS(aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
 
 	static void ProcessMeshNodeDetails(
 		aiNode const* node, std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes,
@@ -167,12 +169,12 @@ public:
 		return m_tempData.indices;
 	}
 	[[nodiscard]]
-	const MeshBundleDetails& GetBundleDetails() const noexcept override
+	const MeshBundleTemporaryDetails& GetTemporaryBundleDetails() const noexcept override
 	{
 		return m_tempData.bundleDetails;
 	}
 	[[nodiscard]]
-	MeshBundleDetails&& GetBundleDetails() noexcept override
+	MeshBundleTemporaryDetails&& GetTemporaryBundleDetails() noexcept override
 	{
 		return std::move(m_tempData.bundleDetails);
 	}
@@ -190,7 +192,7 @@ public:
 	}
 
 private:
-	MeshBundleData                              m_tempData;
+	MeshBundleTemporaryData                     m_tempData;
 	std::unique_ptr<MeshBundleTempIntermediate> m_tempIntermediate;
 
 public:
@@ -318,7 +320,7 @@ private:
 		std::vector<std::uint32_t>& vertexIndices
 	) noexcept;
 	[[nodiscard]]
-	static std::uint32_t GetExtraVertexCount(
+	static std::uint32_t GetExtraIndexCount(
 		const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
 		std::uint32_t primIndex1, std::uint32_t primIndex2, std::uint32_t primIndex3
 	) noexcept;

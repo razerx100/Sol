@@ -16,22 +16,33 @@ struct Vertex
 
 struct Meshlet
 {
-	std::uint32_t vertexCount;
-	std::uint32_t vertexOffset;
+	std::uint32_t indexCount;
+	std::uint32_t indexOffset;
 	std::uint32_t primitiveCount;
 	std::uint32_t primitiveOffset;
 };
 
-struct MeshDetails
+struct MeshTemporaryDetailsVS
 {
-	std::uint32_t          elementCount;
-	std::uint32_t          elementOffset;
+	std::uint32_t          indexCount;
+	std::uint32_t          indexOffset;
+	std::uint32_t          vertexOffset;
 	AxisAlignedBoundingBox aabb;
 };
 
-struct MeshBundleDetails
+struct MeshTemporaryDetailsMS
 {
-	std::vector<MeshDetails> meshDetails;
+	std::uint32_t          meshletCount;
+	std::uint32_t          meshletOffset;
+	std::uint32_t          primitiveOffset;
+	std::uint32_t          vertexOffset;
+	AxisAlignedBoundingBox aabb;
+};
+
+struct MeshBundleTemporaryDetails
+{
+	std::vector<MeshTemporaryDetailsVS> meshTemporaryDetailsVS;
+	std::vector<MeshTemporaryDetailsMS> meshTemporaryDetailsMS;
 };
 
 struct MeshletDetails
@@ -48,17 +59,17 @@ public:
 
 	virtual void GenerateTemporaryData(bool meshShader) = 0;
 
-	// Vertex and Mesh
+	// For both the Vertex and Mesh shader
 	[[nodiscard]]
 	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<std::uint32_t>& GetVertexIndices() const noexcept = 0;
 	[[nodiscard]]
-	virtual const MeshBundleDetails& GetBundleDetails() const noexcept = 0;
+	virtual const MeshBundleTemporaryDetails& GetTemporaryBundleDetails() const noexcept = 0;
 	[[nodiscard]]
-	virtual MeshBundleDetails&& GetBundleDetails() noexcept = 0;
+	virtual MeshBundleTemporaryDetails&& GetTemporaryBundleDetails() noexcept = 0;
 
-	// Mesh only
+	// For the Mesh shader only
 	[[nodiscard]]
 	virtual const std::vector<std::uint32_t>& GetPrimIndices() const noexcept = 0;
 	[[nodiscard]]
