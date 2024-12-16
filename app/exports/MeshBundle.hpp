@@ -26,7 +26,9 @@ struct MeshTemporaryDetailsVS
 {
 	std::uint32_t          indexCount;
 	std::uint32_t          indexOffset;
-	std::uint32_t          vertexOffset;
+	// Can't really offset the indices in the shader on a Vertex Shader,
+	// as the Input Assembler will handle that. So, will have to offset it
+	// while generating the data.
 	AxisAlignedBoundingBox aabb;
 };
 

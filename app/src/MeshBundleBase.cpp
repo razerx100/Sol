@@ -24,6 +24,20 @@ static void MemcpyIntoVector(std::vector<T>& dst, const std::vector<T>& src) noe
 	memcpy(std::data(dst) + dstDataStart, std::data(src), srcDataSize);
 }
 
+static void CopyAndOffsetIndices(
+	std::vector<std::uint32_t>& dst, const std::vector<std::uint32_t>& src, std::uint32_t offset
+) noexcept {
+	const size_t srcElementCount = std::size(src);
+	const size_t dstElementCount = std::size(dst);
+
+	const size_t dstDataStart    = dstElementCount;
+
+	dst.resize(srcElementCount + dstElementCount);
+
+	for (size_t index = 0u; index < srcElementCount; ++index)
+		dst[index + dstDataStart] = offset + src[index];
+}
+
 // Mesh Bundle Temp Custom
 MeshBundleTemporaryData MeshBundleTempCustom::GenerateTemporaryData(bool meshShader)
 {
@@ -64,13 +78,14 @@ void MeshBundleTempCustom::ProcessMeshVS(
 	{
 		.indexCount   = static_cast<std::uint32_t>(std::size(mesh.indices)),
 		.indexOffset  = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.indices)),
-		.vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.vertices)),
 		.aabb         = GenerateAABB(mesh.vertices)
 	};
 
 	meshBundleTemporaryData.bundleDetails.meshTemporaryDetailsVS.emplace_back(meshDetailsVS);
 
-	MemcpyIntoVector(meshBundleTemporaryData.indices, mesh.indices);
+	const auto vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.vertices));
+
+	CopyAndOffsetIndices(meshBundleTemporaryData.indices, mesh.indices, vertexOffset);
 	MemcpyIntoVector(meshBundleTemporaryData.vertices, mesh.vertices);
 }
 
@@ -177,7 +192,7 @@ void MeshBundleTempAssimp::ProcessMeshVertices(
 }
 
 void MeshBundleTempAssimp::ProcessMeshFaces(
-	aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData
+	aiMesh* mesh, std::uint32_t vertexOffset, MeshBundleTemporaryData& meshBundleTemporaryData
 ) noexcept {
 	size_t faceCount           = mesh->mNumFaces;
 	const size_t newIndexCount = faceCount * 3u;
@@ -192,9 +207,9 @@ void MeshBundleTempAssimp::ProcessMeshFaces(
 		const aiFace& face = faces[index];
 
 		// Should be all triangles.
-		std::uint32_t vIndex0 = face.mIndices[0];
-		std::uint32_t vIndex1 = face.mIndices[1];
-		std::uint32_t vIndex2 = face.mIndices[2];
+		std::uint32_t vIndex0 = vertexOffset + face.mIndices[0];
+		std::uint32_t vIndex1 = vertexOffset + face.mIndices[1];
+		std::uint32_t vIndex2 = vertexOffset + face.mIndices[2];
 
 		bundleIndices.emplace_back(vIndex0);
 		bundleIndices.emplace_back(vIndex1);
@@ -210,15 +225,16 @@ void MeshBundleTempAssimp::ProcessMeshVS(
 		// Should be all triangles.
 		.indexCount   = mesh->mNumFaces * 3u,
 		.indexOffset  = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.indices)),
-		.vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.vertices)),
 		.aabb         = GetAABB(mesh->mAABB)
 	};
 
 	meshBundleTemporaryData.bundleDetails.meshTemporaryDetailsVS.emplace_back(meshDetailsVS);
 
+	const auto vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.vertices));
+
 	ProcessMeshVertices(mesh, meshBundleTemporaryData);
 
-	ProcessMeshFaces(mesh, meshBundleTemporaryData);
+	ProcessMeshFaces(mesh, vertexOffset, meshBundleTemporaryData);
 }
 
 void MeshBundleTempAssimp::ProcessMeshMS(

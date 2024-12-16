@@ -108,7 +108,7 @@ private:
 		aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData
 	) noexcept;
 	static void ProcessMeshFaces(
-		aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData
+		aiMesh* mesh, std::uint32_t vertexOffset, MeshBundleTemporaryData& meshBundleTemporaryData
 	) noexcept;
 
 	static void ProcessMeshVS(aiMesh* mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
