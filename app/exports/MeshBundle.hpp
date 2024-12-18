@@ -36,6 +36,7 @@ struct MeshTemporaryDetailsMS
 {
 	std::uint32_t          meshletCount;
 	std::uint32_t          meshletOffset;
+	std::uint32_t          indexOffset;
 	std::uint32_t          primitiveOffset;
 	std::uint32_t          vertexOffset;
 	AxisAlignedBoundingBox aabb;

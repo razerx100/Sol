@@ -254,6 +254,7 @@ void MeshBundleTempAssimp::ProcessMeshMS(
 	{
 		.meshletCount    = static_cast<std::uint32_t>(std::size(extraMeshData.meshletDetails)),
 		.meshletOffset   = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.meshletDetails)),
+		.indexOffset     = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.indices)),
 		.primitiveOffset = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.primIndices)),
 		.vertexOffset    = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.vertices)),
 		.aabb            = GetAABB(mesh->mAABB)
