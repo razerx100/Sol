@@ -80,6 +80,23 @@ static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shar
 }
 
 // Model Bundle Base
+ModelBundleBase& ModelBundleBase::AddModel(float scale) noexcept
+{
+	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_models));
+
+	m_modelNodeData.emplace_back(
+		MeshNodeData
+		{
+			.modelIndex   = modelIndex,
+			.meshIndex    = modelIndex,
+			.childrenData = MeshChildrenData{.count = 0u, .startingIndex = 0u }
+		}
+	);
+	m_models.emplace_back(std::make_shared<ModelBase>(scale));
+
+	return *this;
+}
+
 std::shared_ptr<ModelBundleImpl> ModelBundleBase::GetBundleImpl() const noexcept
 {
 	auto bundleImpl               = std::make_shared<ModelBundleImpl>();

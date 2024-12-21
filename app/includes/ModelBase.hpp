@@ -261,19 +261,8 @@ public:
 		: m_modelNodeData{}, m_models{}, m_meshBundleIndex{ std::make_shared<std::uint32_t>(0u) }
 	{}
 
-	ModelBundleBase& AddModel(float scale) noexcept
-	{
-		m_modelNodeData.emplace_back(
-			MeshNodeData
-			{
-				.meshIndex    = static_cast<std::uint32_t>(std::size(m_models)),
-				.childrenData = MeshChildrenData{.count = 0u, .startingIndex = 0u }
-			}
-		);
-		m_models.emplace_back(std::make_shared<ModelBase>(scale));
+	ModelBundleBase& AddModel(float scale) noexcept;
 
-		return *this;
-	}
 	void SetMeshBundleIndex(std::uint32_t index) noexcept
 	{
 		*m_meshBundleIndex = index;
