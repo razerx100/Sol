@@ -89,6 +89,8 @@ public:
 	{
 		m_modelMatrix = matrix;
 	}
+	void MultiplyAndBreakDownModelMatrix(const DirectX::XMMATRIX& matrix) noexcept;
+	void SetAndBreakDownModelMatrix(const DirectX::XMMATRIX& matrix) noexcept;
 	void ResetTransform() noexcept
 	{
 		m_modelMatrix = DirectX::XMMatrixIdentity();
@@ -111,7 +113,18 @@ public:
 	float GetModelScale() const noexcept { return m_modelScale; }
 
 private:
+	struct BrokenDownMatrix
+	{
+		DirectX::XMMATRIX matrix;
+		DirectX::XMFLOAT3 position;
+		float             scale;
+	};
+
+private:
 	void RecalculateScale() noexcept;
+
+	[[nodiscard]]
+	static BrokenDownMatrix BreakDownMatrix(const DirectX::XMMATRIX& matrix) noexcept;
 
 private:
 	DirectX::XMMATRIX m_modelMatrix;

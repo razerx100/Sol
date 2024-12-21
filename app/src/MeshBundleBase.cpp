@@ -418,11 +418,17 @@ void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 	{
 		aiNode const* child = children[index];
 
-		// I pass row major matrices in the shaders, and assimp loads column major matrices.
-		XMMATRIX tempAccumulatedTransform
-			= XMMatrixTranspose(GetXMMatrix(child->mTransformation)) * accumulatedTransform;
+		if (child->mNumMeshes)
+		{
+			// I pass row major matrices in the shaders, and assimp loads column major matrices.
+			XMMATRIX tempAccumulatedTransform =
+				accumulatedTransform * XMMatrixTranspose(GetXMMatrix(child->mTransformation));
 
-		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = tempAccumulatedTransform });
+			permanentDetails.emplace_back(
+				MeshPermanentDetails{ .worldMatrix = tempAccumulatedTransform }
+			);
+		}
+
 
 		ProcessMeshNodeDetails(child, meshNodeData, meshes, childrenOffset, modelIndex);
 	}
@@ -431,8 +437,11 @@ void MeshBundleTempAssimp::TraverseMeshHierarchyDetails(
 	{
 		aiNode const* child = children[index];
 
-		XMMATRIX tempAccumulatedTransform
-			= XMMatrixTranspose(GetXMMatrix(child->mTransformation)) * accumulatedTransform;
+		XMMATRIX tempAccumulatedTransform = accumulatedTransform;
+
+		if (child->mNumMeshes)
+			tempAccumulatedTransform =
+				tempAccumulatedTransform * XMMatrixTranspose(GetXMMatrix(child->mTransformation));
 
 		TraverseMeshHierarchyDetails(
 			child, tempAccumulatedTransform, permanentDetails, meshNodeData, meshes, childrenOffset,
@@ -460,11 +469,12 @@ void MeshBundleTempAssimp::FillMeshHierarchyDetails(
 
 	ProcessMeshNodeDetails(rootNode, meshNodeData, m_tempScene->mMeshes, childrenOffset, modelIndex);
 
+	if (rootNode->mNumMeshes)
 	{
 		// Calculate the transform for the root.
 		// I pass row major matrices in the shaders, and assimp loads column major matrices.
-		accumulatedTransform
-			= XMMatrixTranspose(GetXMMatrix(rootNode->mTransformation)) * accumulatedTransform;
+		accumulatedTransform =
+			accumulatedTransform * XMMatrixTranspose(GetXMMatrix(rootNode->mTransformation));
 
 		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = accumulatedTransform });
 	}

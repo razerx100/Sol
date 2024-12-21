@@ -1,5 +1,56 @@
 #include <ModelBase.hpp>
 #include <concepts>
+#include <ConversionUtilities.hpp>
+
+ModelTransform::BrokenDownMatrix ModelTransform::BreakDownMatrix(
+	const DirectX::XMMATRIX& matrix
+) noexcept {
+	using namespace DirectX;
+
+	BrokenDownMatrix brokenDownMatrix{ .matrix = XMMatrixIdentity() };
+
+	XMVECTOR scale{};
+	XMVECTOR rotationQuat{};
+	XMVECTOR translation{};
+
+	XMMatrixDecompose(&scale, &rotationQuat, &translation, matrix);
+
+	brokenDownMatrix.matrix *= XMMatrixScalingFromVector(scale);
+	brokenDownMatrix.matrix *= XMMatrixRotationQuaternion(rotationQuat);
+
+	XMStoreFloat3(&brokenDownMatrix.position, translation);
+
+	brokenDownMatrix.scale = XMVectorGetX(scale);
+
+	return brokenDownMatrix;
+}
+
+void ModelTransform::MultiplyAndBreakDownModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
+{
+	using namespace DirectX;
+
+	BrokenDownMatrix brokenDownMatrix = BreakDownMatrix(matrix);
+
+	{
+		XMVECTOR newOffset = XMLoadFloat3(&m_modelOffset) + XMLoadFloat3(&brokenDownMatrix.position);
+
+		XMStoreFloat3(&m_modelOffset, newOffset);
+	}
+
+	m_modelMatrix *= brokenDownMatrix.matrix;
+	m_modelScale   = brokenDownMatrix.scale;
+}
+
+void ModelTransform::SetAndBreakDownModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
+{
+	using namespace DirectX;
+
+	BrokenDownMatrix brokenDownMatrix = BreakDownMatrix(matrix);
+
+	m_modelOffset = brokenDownMatrix.position;
+	m_modelMatrix = brokenDownMatrix.matrix;
+	m_modelScale  = brokenDownMatrix.scale;
+}
 
 void ModelTransform::RecalculateScale() noexcept
 {
@@ -100,12 +151,14 @@ void ModelBundleBase::ChangeMeshBundle(
 
 		if (currentNodeData.HasMesh())
 		{
-			ModelTransform& transform = m_models[currentNodeData.modelIndex]->GetTransform();
+			const size_t modelIndex = currentNodeData.modelIndex;
+
+			ModelTransform& transform = m_models[modelIndex]->GetTransform();
 
 			if (discardExistingTransformation)
 				transform.ResetTransform();
 
-			transform.MultiplyModelMatrix(permanentDetails[index].worldMatrix);
+			transform.MultiplyAndBreakDownModelMatrix(permanentDetails[modelIndex].worldMatrix);
 		}
 	}
 }
