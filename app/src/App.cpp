@@ -10,24 +10,32 @@
 #include <TextureAtlas.hpp>
 
 static MeshBundleImpl cubeMeshBundle{ true };
-static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();;
+static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
+static MeshBundleImpl assimpMeshBundle{ false };
+static std::uint32_t assimpMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
 static MeshBundleImpl sphereMeshBundle{ true };
-static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();;
+static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
 static ModelBundleBase cubeBundle1{};
+static ModelBundleBase assimpModelBundle1{};
+static ModelBundleBase assimpModelBundle2{};
 static ModelBundleBase cubeBundle2{};
 static ModelBundleBase cubeBundle3{};
 static ModelBundleBase cubeBundle4{};
-static std::uint32_t cubeBundleIndex1 = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t cubeBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t cubeBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t cubeBundleIndex4 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpBundleIndex1 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex2   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex3   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex4   = std::numeric_limits<std::uint32_t>::max();
 
 static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t whiteMatIndex      = 0u;
 static size_t secondTextureIndex        = std::numeric_limits<size_t>::max();
 static TextureAtlas atlas{};
 static std::uint32_t atlasBindingIndex  = 0u;
+
+static std::shared_ptr<PerspectiveCameraEuler> camera{};
 
 void App::Init()
 {
@@ -40,7 +48,13 @@ void App::Init()
 		cubeMeshBundleIndex = m_renderer->AddMeshBundle(cubeMeshBundle.MoveTemporaryData());
 	}
 
-	auto camera   = std::make_shared<PerspectiveCameraEuler>();
+	{
+		assimpMeshBundle.SetMeshBundle("resources/meshes/emd_gp7_western_pacific_713/scene.gltf");
+
+		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
+	}
+
+	camera = std::make_shared<PerspectiveCameraEuler>();
 
 	camera->SetProjectionMatrix(1920u, 1080u);
 	camera->SetCameraPosition(DirectX::XMFLOAT3{ 0.f, 0.f, -1.f });
@@ -143,6 +157,20 @@ void App::Init()
 		cubeBundle1.SetMeshBundleIndex(cubeMeshBundleIndex);
 		cubeBundleIndex1 = cubeBundle1.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
+
+	{
+		assimpModelBundle1.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
+		assimpModelBundle1.MoveTowardsZ(0u, 1.f);
+		assimpModelBundle1.SetMeshBundleIndex(assimpMeshBundleIndex);
+		assimpBundleIndex1 = assimpModelBundle1.SetModelBundle(*m_renderer, L"TestFragmentShader");
+	}
+
+	{
+		assimpModelBundle2.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
+		assimpModelBundle2.MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, 10.f);
+		assimpModelBundle2.SetMeshBundleIndex(assimpMeshBundleIndex);
+		assimpBundleIndex2 = assimpModelBundle2.SetModelBundle(*m_renderer, L"TestFragmentShader");
+	}
 }
 
 void App::PhysicsUpdate()
@@ -150,6 +178,18 @@ void App::PhysicsUpdate()
 	constexpr float cameraMoveSpeed = 0.5f;
 
 	const Keyboard& keyboard = m_inputManager->GetKeyboard();
+
+	if (keyboard.IsKeyPressed(SKeyCodes::W))
+		camera->MoveForward(0.01f).MoveCamera();
+
+	if (keyboard.IsKeyPressed(SKeyCodes::S))
+		camera->MoveBackward(0.01f).MoveCamera();
+
+	if (keyboard.IsKeyPressed(SKeyCodes::E))
+		assimpModelBundle1.RotatePitchDegree(0u, 1.f);
+
+	if (keyboard.IsKeyPressed(SKeyCodes::Q))
+		assimpModelBundle1.RotatePitchDegree(0u, -1.f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
 		cubeBundle1.MoveTowardsX(0u, 0.01f);
