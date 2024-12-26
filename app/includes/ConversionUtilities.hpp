@@ -3,6 +3,7 @@
 #include <cstring>
 #include <DirectXMath.h>
 #include <assimp/matrix4x4.h>
+#include <assimp/types.h>
 
 [[nodiscard]]
 inline DirectX::XMMATRIX GetXMMatrix(const aiMatrix4x4& aiMatrix) noexcept
@@ -30,5 +31,25 @@ inline DirectX::XMFLOAT3 GetXMFloat3(const aiVector3D& aiVec3) noexcept
 	memcpy(&dxF3, &aiVec3, sizeof(aiVector3D));
 
 	return dxF3;
+}
+
+[[nodiscard]]
+inline DirectX::XMFLOAT4 GetXMFloat4(const aiColor3D& aiColour3) noexcept
+{
+	DirectX::XMFLOAT4 dxF4{};
+
+	memcpy(&dxF4, &aiColour3, sizeof(aiColor3D));
+
+	return dxF4;
+}
+
+[[nodiscard]]
+inline DirectX::XMFLOAT4 GetXMFloat4(const aiColor4D& aiColour4) noexcept
+{
+	DirectX::XMFLOAT4 dxF4{};
+
+	memcpy(&dxF4, &aiColour4, sizeof(aiColor4D));
+
+	return dxF4;
 }
 #endif

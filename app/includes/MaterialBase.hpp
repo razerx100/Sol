@@ -8,11 +8,12 @@ public:
 	MaterialBase()
 		: Material{},
 		m_materialData{
-			.ambient  = { 1.f, 1.f, 1.f, 1.f },
+			.ambient  = { 0.f, 0.f, 0.f, 1.f },
 			.diffuse  = { 1.f, 1.f, 1.f, 1.f },
-			.specular = { 1.f, 1.f, 1.f, 1.f }
+			.specular = { 0.f, 0.f, 0.f, 1.f }
 		}
 	{}
+	MaterialBase(const MaterialData& materialData) : Material{}, m_materialData{ materialData } {}
 
 	void SetData(const MaterialData& data) noexcept { m_materialData = data; }
 

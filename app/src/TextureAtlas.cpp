@@ -4,6 +4,7 @@
 #include <optional>
 #include <format>
 #include <Exception.hpp>
+#include <unordered_map>
 
 #include <TextureAtlas.hpp>
 
@@ -117,7 +118,7 @@ void TextureAtlas::CreateAtlas() noexcept
 			.vScale  = static_cast<float>(texInfo.height) / m_texture.height
 		};
 
-		m_uvInfoMap.insert_or_assign(name, uvInfo);
+		m_uvInfoData.emplace_back(UVData{ name, uvInfo });
 	}
 
 	const size_t bytesPerPixel = m_16bitsComponent ? 8u : 4u;
@@ -160,18 +161,14 @@ void TextureAtlas::CreateAtlas() noexcept
 
 UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept
 {
-	auto data = m_uvInfoMap.find(name);
+	auto data = std::ranges::find(
+		m_uvInfoData, name, [](const UVData& uvData) { return uvData.name; }
+	);
 
-	if (data != std::end(m_uvInfoMap))
-		return data->second;
-	else {
-		auto defaultColour = m_uvInfoMap.find("Default");
-
-		if (defaultColour != std::end(m_uvInfoMap)) [[likely]]
-			return defaultColour->second;
-		else [[unlikely]]
-			return {};
-	}
+	if (data != std::end(m_uvInfoData))
+		return data->uvInfo;
+	else
+		return UVInfo{};
 }
 
 bool TextureAtlas::ManagePartitions(

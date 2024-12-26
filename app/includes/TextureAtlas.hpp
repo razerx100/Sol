@@ -2,7 +2,6 @@
 #define TEXTURE_ATLAS_HPP_
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <array>
 #include <memory>
 #include <concepts>
@@ -24,7 +23,7 @@ class TextureAtlas
 {
 public:
 	TextureAtlas()
-		: m_texture{}, m_uvInfoMap{}, m_unprocessedData{}, m_unprocessedTextures{},
+		: m_texture{}, m_uvInfoData{}, m_unprocessedData{}, m_unprocessedTextures{},
 		m_textureBorder{ 1u }, m_16bitsComponent{ false }
 	{}
 
@@ -54,6 +53,8 @@ public:
 	[[nodiscard]]
 	bool DoesTextureExist() const noexcept { return m_texture.data != nullptr; }
 	[[nodiscard]]
+	bool DoUnprocessedTexturesExist() const noexcept { return !std::empty(m_unprocessedTextures); }
+	[[nodiscard]]
 	STexture MoveTexture() noexcept { return std::move(m_texture); }
 
 private:
@@ -62,6 +63,12 @@ private:
 		std::string   name;
 		std::uint32_t width;
 		std::uint32_t height;
+	};
+
+	struct UVData
+	{
+		std::string name;
+		UVInfo      uvInfo;
 	};
 
 private:
@@ -77,19 +84,19 @@ private:
 	}
 
 private:
-	STexture                                m_texture;
-	std::unordered_map<std::string, UVInfo> m_uvInfoMap;
-	std::vector<TextureInfo>                m_unprocessedData;
-	std::vector<std::shared_ptr<void>>      m_unprocessedTextures;
-	std::uint32_t                           m_textureBorder;
-	bool                                    m_16bitsComponent;
+	STexture                           m_texture;
+	std::vector<UVData>                m_uvInfoData;
+	std::vector<TextureInfo>           m_unprocessedData;
+	std::vector<std::shared_ptr<void>> m_unprocessedTextures;
+	std::uint32_t                      m_textureBorder;
+	bool                               m_16bitsComponent;
 
 public:
 	TextureAtlas(const TextureAtlas& other) noexcept = delete;
 	TextureAtlas& operator=(const TextureAtlas& other) noexcept = delete;
 
 	TextureAtlas(TextureAtlas&& other) noexcept
-		: m_texture{ std::move(other.m_texture) }, m_uvInfoMap{ std::move(other.m_uvInfoMap) },
+		: m_texture{ std::move(other.m_texture) }, m_uvInfoData{ std::move(other.m_uvInfoData) },
 		m_unprocessedData{ std::move(other.m_unprocessedData) },
 		m_unprocessedTextures{ std::move(other.m_unprocessedTextures) },
 		m_textureBorder{ other.m_textureBorder }, m_16bitsComponent{ other.m_16bitsComponent }
@@ -97,7 +104,7 @@ public:
 	TextureAtlas& operator=(TextureAtlas&& other) noexcept
 	{
 		m_texture             = std::move(other.m_texture);
-		m_uvInfoMap           = std::move(other.m_uvInfoMap);
+		m_uvInfoData          = std::move(other.m_uvInfoData);
 		m_unprocessedData     = std::move(other.m_unprocessedData);
 		m_unprocessedTextures = std::move(other.m_unprocessedTextures);
 		m_textureBorder       = other.m_textureBorder;
