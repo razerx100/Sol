@@ -8,16 +8,17 @@ SceneProcessor::SceneProcessor(const std::string& scenePath)
 		aiImportFile(
 			scenePath.c_str(),
 			static_cast<std::uint32_t>(
-			aiProcess_CalcTangentSpace      |
-			aiProcess_Triangulate           |
-			aiProcess_JoinIdenticalVertices |
-			aiProcess_MakeLeftHanded        |
-			aiProcess_FlipUVs               |
-			aiProcess_FlipWindingOrder      |
-			aiProcess_GenBoundingBoxes      |
-			aiProcess_GenNormals            |
-			aiProcess_GenUVCoords           |
-			aiProcess_SortByPType
+			aiProcess_CalcTangentSpace         |
+			aiProcess_Triangulate              |
+			aiProcess_JoinIdenticalVertices    |
+			aiProcess_MakeLeftHanded           |
+			aiProcess_FlipUVs                  |
+			aiProcess_FlipWindingOrder         |
+			aiProcess_GenBoundingBoxes         |
+			aiProcess_GenNormals               |
+			aiProcess_GenUVCoords              |
+			aiProcess_SortByPType              |
+			aiProcess_RemoveRedundantMaterials
 			)
 		)
 	}, m_filePath{ scenePath }

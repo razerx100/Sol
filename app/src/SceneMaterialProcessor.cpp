@@ -12,13 +12,44 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 
 	const std::string fileDirectory = m_scene->GetFileDirectory();
 
+	m_materialData.reserve(materialCount);
+	m_materialDetails.reserve(materialCount);
+
 	for (size_t index = 0u; index < materialCount; ++index)
 	{
 		aiMaterial* material = materials[index];
 
+		// Material
+		aiColor3D diffuse{ 1.f, 1.f, 1.f };
+		aiColor3D specular{ 0.f, 0.f, 0.f };
+		aiColor3D ambient{ 0.f, 0.f, 0.f };
+		float shininess = 1.f;
+		aiString name{};
+
+		material->Get(AI_MATKEY_NAME, name);
+		material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
+		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
+		material->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
+		material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess);
+
+		m_materialData.emplace_back(
+			MaterialData
+			{
+				.ambient   = GetXMFloat4(ambient),
+				.diffuse   = GetXMFloat4(diffuse),
+				.specular  = GetXMFloat4(specular),
+				.shininess = shininess
+			}
+		);
+
+		m_materialDetails.emplace_back(MaterialDetails{ .name = name.C_Str() });
+
+		// Base Colour
 		constexpr aiTextureType baseColour = aiTextureType_BASE_COLOR;
 
-		if (material->GetTextureCount(baseColour))
+		const auto baseCount = material->GetTextureCount(baseColour);
+
+		if (baseCount)
 		{
 			// Texture
 			aiString aiTexturePath{};
@@ -32,29 +63,9 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 					.baseColour = fileDirectory + aiTexturePath.C_Str()
 				}
 			);
-
-			// Material
-			aiColor3D diffuse{ 1.f, 1.f, 1.f };
-			aiColor3D specular{ 0.f, 0.f, 0.f };
-			aiColor3D ambient{ 0.f, 0.f, 0.f };
-			float shininess = 1.f;
-
-			material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
-			material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
-			material->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
-			material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess);
-
-			m_materialData.emplace_back(
-				MaterialData
-				{
-					.ambient   = GetXMFloat4(ambient),
-					.diffuse   = GetXMFloat4(diffuse),
-					.specular  = GetXMFloat4(specular),
-					.shininess = shininess
-				}
+			m_baseTextureDetails.emplace_back(
+				TextureDetails{ .materialIndex = static_cast<std::uint32_t>(index) }
 			);
-
-			m_textureDetails.emplace_back();
 		}
 	}
 }
@@ -69,7 +80,7 @@ void SceneMaterialProcessor::LoadMaterials(Renderer& renderer)
 			std::make_shared<MaterialBase>(m_materialData[index])
 		);
 
-		m_textureDetails[index].materialIndex = static_cast<std::uint32_t>(materialIndex);
+		m_materialDetails[index].materialIndex = static_cast<std::uint32_t>(materialIndex);
 	}
 }
 
@@ -90,7 +101,7 @@ void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)
 		const std::string& baseTexturePath = texturePath.baseColour;
 		const std::string baseName         = SceneProcessor::GetFileName(baseTexturePath);
 
-		m_textureDetails[index].baseName   = baseName;
+		m_baseTextureDetails[index].name   = baseName;
 
 		baseColourAtlas.AddTexture(baseName, baseTexturePath);
 	}
@@ -105,9 +116,9 @@ void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)
 
 		for (size_t index = 0u; index < textureCount; ++index)
 		{
-			TextureDetails& textureDetails  = m_textureDetails[index];
-			textureDetails.baseTextureIndex = baseTextureIndex;
-			textureDetails.uvInfo           = baseColourAtlas.GetUVInfo(textureDetails.baseName);
+			TextureDetails& baseTextureDetails = m_baseTextureDetails[index];
+			baseTextureDetails.textureIndex    = baseTextureIndex;
+			baseTextureDetails.uvInfo          = baseColourAtlas.GetUVInfo(baseTextureDetails.name);
 		}
 	}
 }
@@ -129,9 +140,9 @@ void SceneMaterialProcessor::LoadTextures(Renderer& renderer)
 		{
 			const size_t baseTextureIndex   = renderer.AddTexture(std::move(*baseTexture));
 
-			TextureDetails& textureDetails  = m_textureDetails[index];
-			textureDetails.baseName         = SceneProcessor::GetFileName(baseTexturePath);
-			textureDetails.baseTextureIndex = static_cast<std::uint32_t>(baseTextureIndex);
+			TextureDetails& baseTextureDetails = m_baseTextureDetails[index];
+			baseTextureDetails.name            = SceneProcessor::GetFileName(baseTexturePath);
+			baseTextureDetails.textureIndex    = static_cast<std::uint32_t>(baseTextureIndex);
 
 			// The UV info will be the default one for non atlas textures, so no need to set it.
 		}
