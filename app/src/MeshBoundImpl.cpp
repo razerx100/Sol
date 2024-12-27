@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <MeshBoundImpl.hpp>
-#include <MeshBundleBase.hpp>
+#include <MeshletMaker.hpp>
 #include <DirectXPackedVector.h>
 
 AxisAlignedBoundingBox GetAABB(const aiAABB& aiAABB) noexcept
