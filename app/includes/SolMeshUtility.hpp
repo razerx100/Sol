@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include <MeshBundle.hpp>
+#include <Model.hpp>
 
 struct Mesh
 {
@@ -42,9 +43,20 @@ struct MeshNodeData
 	bool HasMesh() const noexcept { return meshIndex != std::numeric_limits<std::uint32_t>::max(); }
 };
 
+struct MeshTextureDetails
+{
+	// Use this one to remove the texture resource.
+	std::uint32_t baseTextureIndex;
+	// Use this one to actually use it.
+	std::uint32_t baseTextureBindingIndex;
+	std::uint32_t materialIndex;
+	UVInfo        uvInfo;
+};
+
 struct MeshPermanentDetails
 {
-	DirectX::XMMATRIX worldMatrix;
+	DirectX::XMMATRIX  worldMatrix;
+	MeshTextureDetails baseTextureDetails;
 };
 
 template<typename T>

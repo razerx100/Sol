@@ -170,12 +170,23 @@ void ModelBundleBase::ChangeMeshBundle(
 		{
 			const size_t modelIndex = currentNodeData.modelIndex;
 
-			ModelTransform& transform = m_models[modelIndex]->GetTransform();
+			std::shared_ptr<ModelBase>& model       = m_models[modelIndex];
+			const MeshPermanentDetails& meshDetails = permanentDetails[modelIndex];
+
+			// Base Colour
+			const MeshTextureDetails& baseColourDetails = meshDetails.baseTextureDetails;
+
+			model->SetDiffuseIndex(baseColourDetails.baseTextureBindingIndex);
+			model->SetDiffuseUVInfo(baseColourDetails.uvInfo);
+			model->SetMaterialIndex(baseColourDetails.materialIndex);
+
+			// Transform
+			ModelTransform& transform = model->GetTransform();
 
 			if (discardExistingTransformation)
 				transform.ResetTransform();
 
-			transform.MultiplyAndBreakDownModelMatrix(permanentDetails[modelIndex].worldMatrix);
+			transform.MultiplyAndBreakDownModelMatrix(meshDetails.worldMatrix);
 		}
 	}
 }

@@ -7,6 +7,7 @@
 #include <Renderer.hpp>
 #include <assimp/scene.h>
 #include <SceneMeshProcessor.hpp>
+#include <SceneMaterialProcessor.hpp>
 
 class MeshBundleTempIntermediate
 {
@@ -53,6 +54,7 @@ public:
 	void SetMeshBundle(std::shared_ptr<SceneProcessor> scene);
 
 	void LoadMeshNodeDetails(
+		const SceneMaterialProcessor& materialProcessor,
 		std::vector<MeshPermanentDetails>& permananeDetails, std::vector<MeshNodeData>& meshNodeData
 	);
 
@@ -84,7 +86,7 @@ public:
 	void AddMesh(Mesh&& mesh);
 
 	void SetMeshBundle(
-		std::shared_ptr<SceneProcessor> scene,
+		std::shared_ptr<SceneProcessor> scene, const SceneMaterialProcessor& materialProcessor,
 		std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
 	);
 
@@ -153,7 +155,9 @@ public:
 
 	void AddMesh(Mesh&& mesh);
 
-	void SetMeshBundle(std::shared_ptr<SceneProcessor> scene);
+	void SetMeshBundle(
+		std::shared_ptr<SceneProcessor> scene, const SceneMaterialProcessor& materialProcessor
+	);
 
 	[[nodiscard]]
 	std::unique_ptr<MeshBundleTemporary> MoveTemporaryData() override

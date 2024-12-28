@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <SceneProcessor.hpp>
+#include <SceneMaterialProcessor.hpp>
 #include <SolMeshUtility.hpp>
 
 class SceneMeshProcessor
@@ -19,6 +20,7 @@ public:
 	MeshBundleTemporaryData GenerateTemporaryMeshData(bool meshShader);
 
 	void LoadMeshNodeDetails(
+		const SceneMaterialProcessor& materialProcessor,
 		std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
 	);
 
@@ -39,11 +41,13 @@ private:
 	) noexcept;
 
 	static void ProcessMeshNodeDetails(
-		aiNode const* node, std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes,
-		std::uint32_t& childrenOffset, std::uint32_t& modelIndex
+		aiNode const* node, std::vector<MeshNodeData>& meshNodeData,
+		const SceneMaterialProcessor& materialProcessor,
+		DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
+		aiMesh** meshes, std::uint32_t& childrenOffset, std::uint32_t& modelIndex
 	);
 	static void TraverseMeshHierarchyDetails(
-		aiNode const* node,
+		aiNode const* node, const SceneMaterialProcessor& materialProcessor,
 		DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
 		std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes, std::uint32_t& childrenOffset,
 		std::uint32_t& modelIndex

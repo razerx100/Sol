@@ -2,6 +2,8 @@
 #include <ConversionUtilities.hpp>
 #include <MaterialBase.hpp>
 #include <TextureAtlas.hpp>
+#include <ranges>
+#include <algorithm>
 
 void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 {
@@ -110,15 +112,20 @@ void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)
 	{
 		baseColourAtlas.CreateAtlas();
 
-		const auto baseTextureIndex = static_cast<std::uint32_t>(
+		const auto baseTextureIndex     = static_cast<std::uint32_t>(
 			renderer.AddTexture(std::move(baseColourAtlas.MoveTexture()))
+		);
+		const auto baseTextureBindIndex = static_cast<std::uint32_t>(
+			renderer.BindTexture(baseTextureIndex)
 		);
 
 		for (size_t index = 0u; index < textureCount; ++index)
 		{
-			TextureDetails& baseTextureDetails = m_baseTextureDetails[index];
-			baseTextureDetails.textureIndex    = baseTextureIndex;
-			baseTextureDetails.uvInfo          = baseColourAtlas.GetUVInfo(baseTextureDetails.name);
+			TextureDetails& baseTextureDetails  = m_baseTextureDetails[index];
+
+			baseTextureDetails.textureIndex     = baseTextureIndex;
+			baseTextureDetails.textureBindIndex = baseTextureBindIndex;
+			baseTextureDetails.uvInfo           = baseColourAtlas.GetUVInfo(baseTextureDetails.name);
 		}
 	}
 }
@@ -138,13 +145,47 @@ void SceneMaterialProcessor::LoadTextures(Renderer& renderer)
 
 		if (baseTexture)
 		{
-			const size_t baseTextureIndex   = renderer.AddTexture(std::move(*baseTexture));
+			const auto baseTextureIndex = static_cast<std::uint32_t>(
+				renderer.AddTexture(std::move(*baseTexture))
+			);
+			const auto baseTextureBindIndex = static_cast<std::uint32_t>(
+				renderer.BindTexture(baseTextureIndex)
+			);
 
-			TextureDetails& baseTextureDetails = m_baseTextureDetails[index];
-			baseTextureDetails.name            = SceneProcessor::GetFileName(baseTexturePath);
-			baseTextureDetails.textureIndex    = static_cast<std::uint32_t>(baseTextureIndex);
+			TextureDetails& baseTextureDetails  = m_baseTextureDetails[index];
+
+			baseTextureDetails.name             = SceneProcessor::GetFileName(baseTexturePath);
+			baseTextureDetails.textureIndex     = baseTextureIndex;
+			baseTextureDetails.textureBindIndex = baseTextureBindIndex;
 
 			// The UV info will be the default one for non atlas textures, so no need to set it.
 		}
 	}
+}
+
+const SceneMaterialProcessor::TextureDetails& SceneMaterialProcessor::GetBaseTextureDetails(
+	const std::string& fileName
+) const noexcept {
+	auto result = std::ranges::find(
+		m_baseTextureDetails, fileName, [](const TextureDetails& details) { return details.name; }
+	);
+
+	if (std::end(m_baseTextureDetails) != result)
+		return *result;
+
+	return m_defaultTextureDetails;
+}
+
+const SceneMaterialProcessor::TextureDetails& SceneMaterialProcessor::GetBaseTextureDetails(
+	size_t materialIndex
+) const noexcept {
+	auto result = std::ranges::find(
+		m_baseTextureDetails, materialIndex, [](const TextureDetails& details)
+		{ return details.materialIndex; }
+	);
+
+	if (std::end(m_baseTextureDetails) != result)
+		return *result;
+
+	return m_defaultTextureDetails;
 }

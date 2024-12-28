@@ -22,6 +22,7 @@ void SceneMeshProcessor::SetSceneProcessor(std::shared_ptr<SceneProcessor> scene
 }
 
 void SceneMeshProcessor::LoadMeshNodeDetails(
+	const SceneMaterialProcessor& materialProcessor,
 	std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
 ) {
 	using namespace DirectX;
@@ -29,6 +30,8 @@ void SceneMeshProcessor::LoadMeshNodeDetails(
 	aiScene const* scene          = m_scene->GetScene();
 
 	aiNode const* rootNode        = scene->mRootNode;
+	aiMesh** meshes               = scene->mMeshes;
+
 	XMMATRIX accumulatedTransform = XMMatrixIdentity();
 	std::uint32_t childrenOffset  = 1u;
 
@@ -40,21 +43,20 @@ void SceneMeshProcessor::LoadMeshNodeDetails(
 	permanentDetails.reserve(meshCount);
 	meshNodeData.reserve(meshCount);
 
-	ProcessMeshNodeDetails(rootNode, meshNodeData, scene->mMeshes, childrenOffset, modelIndex);
+	ProcessMeshNodeDetails(
+		rootNode, meshNodeData, materialProcessor, accumulatedTransform, permanentDetails, meshes,
+		childrenOffset, modelIndex
+	);
 
 	if (rootNode->mNumMeshes)
-	{
 		// Calculate the transform for the root.
 		// I pass row major matrices in the shaders, and assimp loads column major matrices.
 		accumulatedTransform =
 			accumulatedTransform * XMMatrixTranspose(GetXMMatrix(rootNode->mTransformation));
 
-		permanentDetails.emplace_back(MeshPermanentDetails{ .worldMatrix = accumulatedTransform });
-	}
-
 	TraverseMeshHierarchyDetails(
-		rootNode, accumulatedTransform, permanentDetails, meshNodeData, scene->mMeshes,
-		childrenOffset, modelIndex
+		rootNode, materialProcessor,
+		accumulatedTransform, permanentDetails, meshNodeData, meshes, childrenOffset, modelIndex
 	);
 }
 
@@ -231,7 +233,9 @@ void SceneMeshProcessor::ProcessMeshFaces(
 }
 
 void SceneMeshProcessor::ProcessMeshNodeDetails(
-	aiNode const* node, std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes,
+	aiNode const* node, std::vector<MeshNodeData>& meshNodeData,
+	const SceneMaterialProcessor& materialProcessor, DirectX::XMMATRIX accumulatedTransform,
+	std::vector<MeshPermanentDetails>& permanentDetails, aiMesh** meshes,
 	std::uint32_t& childrenOffset, std::uint32_t& modelIndex
 ) {
 	const std::uint32_t childCount = node->mNumChildren;
@@ -256,11 +260,39 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 
 			// Multiple meshes per node isn't supported yet.
 			meshIndex = static_cast<std::uint32_t>(currentMeshIndex);
+
+			currentModelIndex = modelIndex;
+			++modelIndex;
+
+			// Permanent Details
+			{
+				// Base Colour
+				const size_t materialIndex = mesh->mMaterialIndex;
+
+				SceneMaterialProcessor::TextureDetails baseTextureDetailsM
+					= materialProcessor.GetBaseTextureDetails(materialIndex);
+
+				MeshTextureDetails baseTextureDetails
+				{
+					.baseTextureIndex = baseTextureDetailsM.textureIndex,
+					.materialIndex    = materialProcessor.GetMaterialDetails(materialIndex).materialIndex,
+					.uvInfo           = baseTextureDetailsM.uvInfo
+				};
+
+				// I pass row major matrices in the shaders, and assimp loads column major matrices.
+				permanentDetails.emplace_back(
+					MeshPermanentDetails
+					{
+						.worldMatrix = accumulatedTransform * DirectX::XMMatrixTranspose(
+							GetXMMatrix(node->mTransformation)
+						),
+						.baseTextureDetails = baseTextureDetails
+					}
+				);
+			}
+
 			break;
 		}
-
-		currentModelIndex = modelIndex;
-		++modelIndex;
 	}
 
 	meshNodeData.emplace_back(
@@ -276,7 +308,7 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 }
 
 void SceneMeshProcessor::TraverseMeshHierarchyDetails(
-	aiNode const* node,
+	aiNode const* node, const SceneMaterialProcessor& materialProcessor,
 	DirectX::XMMATRIX accumulatedTransform, std::vector<MeshPermanentDetails>& permanentDetails,
 	std::vector<MeshNodeData>& meshNodeData, aiMesh** meshes, std::uint32_t& childrenOffset,
 	std::uint32_t& modelIndex
@@ -287,22 +319,10 @@ void SceneMeshProcessor::TraverseMeshHierarchyDetails(
 	aiNode** children = node->mChildren;
 
 	for (size_t index = 0u; index < childCount; ++index)
-	{
-		aiNode const* child = children[index];
-
-		if (child->mNumMeshes)
-		{
-			// I pass row major matrices in the shaders, and assimp loads column major matrices.
-			XMMATRIX tempAccumulatedTransform =
-				accumulatedTransform * XMMatrixTranspose(GetXMMatrix(child->mTransformation));
-
-			permanentDetails.emplace_back(
-				MeshPermanentDetails{ .worldMatrix = tempAccumulatedTransform }
-			);
-		}
-
-		ProcessMeshNodeDetails(child, meshNodeData, meshes, childrenOffset, modelIndex);
-	}
+		ProcessMeshNodeDetails(
+			children[index], meshNodeData, materialProcessor, accumulatedTransform, permanentDetails,
+			meshes, childrenOffset, modelIndex
+		);
 
 	for (size_t index = 0u; index < childCount; ++index)
 	{
@@ -315,8 +335,8 @@ void SceneMeshProcessor::TraverseMeshHierarchyDetails(
 				tempAccumulatedTransform * XMMatrixTranspose(GetXMMatrix(child->mTransformation));
 
 		TraverseMeshHierarchyDetails(
-			child, tempAccumulatedTransform, permanentDetails, meshNodeData, meshes, childrenOffset,
-			modelIndex
+			child, materialProcessor,
+			tempAccumulatedTransform, permanentDetails, meshNodeData, meshes, childrenOffset, modelIndex
 		);
 	}
 }

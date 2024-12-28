@@ -8,6 +8,7 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 #include <TextureAtlas.hpp>
+#include <SceneMaterialProcessor.hpp>
 
 static MeshBundleImpl cubeMeshBundle{ true };
 static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
@@ -49,7 +50,18 @@ void App::Init()
 	}
 
 	{
-		assimpMeshBundle.SetMeshBundle("resources/meshes/emd_gp7_western_pacific_713/scene.gltf");
+		auto sceneProcessor = std::make_shared<SceneProcessor>(
+			"resources/meshes/emd_gp7_western_pacific_713/scene.gltf"
+		);
+
+		SceneMaterialProcessor materialProcessor{ sceneProcessor };
+		materialProcessor.ProcessMeshAndMaterialData();
+
+		materialProcessor.LoadMaterials(*m_renderer);
+		//materialProcessor.LoadTextures(*m_renderer);
+		materialProcessor.LoadTexturesAsAtlas(*m_renderer);
+
+		assimpMeshBundle.SetMeshBundle(sceneProcessor, materialProcessor);
 
 		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
