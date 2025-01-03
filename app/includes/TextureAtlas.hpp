@@ -6,6 +6,7 @@
 #include <memory>
 #include <concepts>
 #include <limits>
+#include <optional>
 #include <TextureTools.hpp>
 
 #include <DirectXMath.h>
@@ -40,7 +41,7 @@ public:
 	void SetIfComponentsAre16bits(bool component16bits) noexcept { m_16bitsComponent = component16bits; }
 	void SetBorder(std::uint32_t border) noexcept { m_textureBorder = border; }
 
-	void CreateAtlas() noexcept;
+	void CreateAtlas();
 
 	[[nodiscard]]
 	UVInfo GetUVInfo(const std::string& name) const noexcept;
@@ -63,6 +64,7 @@ private:
 		std::string   name;
 		std::uint32_t width;
 		std::uint32_t height;
+		size_t        dataIndex;
 	};
 
 	struct UVData
@@ -71,17 +73,43 @@ private:
 		UVInfo      uvInfo;
 	};
 
+	struct Resolution
+	{
+		std::uint32_t width;
+		std::uint32_t height;
+
+		bool operator==(const Resolution& other) const noexcept
+		{
+			return other.width == width && other.height == height;
+		}
+	};
+
+	struct PartitionDetails
+	{
+		UVU32      partition;
+		Resolution newAtlasResolution;
+	};
+
 private:
 	[[nodiscard]]
-	static bool ManagePartitions(
-		std::vector<UVU32>& partitions, const TextureInfo& texData,
-		std::vector<UVU32>& processedData, const std::uint32_t textureBorder
+	// Returns the index or empty.
+	static std::optional<size_t> FindSuitablePartition(
+		const std::vector<UVU32>& freePartitions, const TextureInfo& texInfo
 	) noexcept;
+
 	[[nodiscard]]
-	static bool IsCoordSuitable(const UVU32& coord) noexcept
-	{
-		return coord.vEnd >= coord.vStart && coord.uEnd >= coord.uStart;
-	}
+	// Returns empty if can't find/create a partition without going over the dimension limits.
+	std::optional<PartitionDetails> FindOrCreateSuitablePartition(
+		std::vector<UVU32>& freePartitions, const TextureInfo& texInfo
+	) const noexcept;
+
+	static void PlaceTextureInSuitablePartition(
+		std::vector<UVU32>& freePartitions, std::vector<UVU32>& processedPartitions,
+		const TextureInfo& texInfo, const UVU32& suitablePartition, std::uint32_t textureBorder
+	) noexcept;
+
+	void GenerateUVInfo(const std::vector<UVU32>& processedPartitions) noexcept;
+	void AllocateAndCopyIntoAtlas(const std::vector<UVU32>& processedPartitions) noexcept;
 
 private:
 	STexture                           m_texture;
@@ -90,6 +118,8 @@ private:
 	std::vector<std::shared_ptr<void>> m_unprocessedTextures;
 	std::uint32_t                      m_textureBorder;
 	bool                               m_16bitsComponent;
+
+	static constexpr std::uint16_t s_maxTextureDimensionLength = 16384u;
 
 public:
 	TextureAtlas(const TextureAtlas& other) noexcept = delete;
