@@ -20,12 +20,14 @@ static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>:
 static ModelBundleBase cubeBundle1{};
 static ModelBundleBase assimpModelBundle1{};
 static ModelBundleBase assimpModelBundle2{};
+static ModelBundleBase assimpModelBundle3{};
 static ModelBundleBase cubeBundle2{};
 static ModelBundleBase cubeBundle3{};
 static ModelBundleBase cubeBundle4{};
 static std::uint32_t cubeBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t assimpBundleIndex1 = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t assimpBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeBundleIndex2   = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeBundleIndex3   = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeBundleIndex4   = std::numeric_limits<std::uint32_t>::max();
@@ -182,6 +184,13 @@ void App::Init()
 		assimpModelBundle2.MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, 10.f);
 		assimpModelBundle2.SetMeshBundleIndex(assimpMeshBundleIndex);
 		assimpBundleIndex2 = assimpModelBundle2.SetModelBundle(*m_renderer, L"TestFragmentShader");
+	}
+
+	{
+		assimpModelBundle3.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
+		assimpModelBundle3.MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, -10.f);
+		assimpModelBundle3.SetMeshBundleIndex(assimpMeshBundleIndex);
+		assimpBundleIndex3 = assimpModelBundle3.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
 }
 

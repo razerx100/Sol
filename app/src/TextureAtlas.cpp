@@ -226,6 +226,8 @@ void TextureAtlas::PlaceTextureInSuitablePartition(
 		return partition.vEnd >= partition.vStart && partition.uEnd >= partition.uStart;
 	};
 
+	// Since we aren't adding any new textures to the atlas after this, sorting the free partitions
+	// or merging them doesn't really matter, as the atlas resolution wouldn't really be changing anyway.
 	if (IsPartitionValid(newVerticalPartition))
 		freePartitions.emplace_back(newVerticalPartition);
 
