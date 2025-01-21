@@ -16,11 +16,12 @@ struct ExternalBufferDetails
 struct ExternalBufferBindingDetails
 {
 	// If the bindingIndex is the same, then the frameIndex must be different.
-	std::uint32_t bindingIndex;
-	std::uint32_t externalBufferIndex;
-	std::uint32_t frameIndex;
-	size_t        bufferOffset;
-	size_t        bufferSize;
+	std::uint32_t      bindingIndex;
+	std::uint32_t      externalBufferIndex;
+	std::uint32_t      frameIndex;
+	ExternalBufferType type;
+	size_t             bufferOffset;
+	size_t             bufferSize;
 };
 
 class GraphicsTechniqueExtension
