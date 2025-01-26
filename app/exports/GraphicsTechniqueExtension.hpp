@@ -8,18 +8,25 @@
 struct ExternalBufferDetails
 {
 	std::uint32_t      bufferId;
+	std::uint32_t      externalBufferIndex; // Will be valid after the buffer has been created.
 	ExternalBufferType type;
 };
 
 struct ExternalBufferBindingDetails
 {
 	// If the bindingIndex is the same, then the frameIndex must be different.
-	std::uint32_t      bindingIndex;        // Will be valid from the start.
-	std::uint32_t      externalBufferIndex; // Will be valid after the buffer has been created.
-	std::uint32_t      frameIndex;          // Will be valid from the start.
-	ExternalBufferType type;                // Will be valid from the start.
-	size_t             bufferOffset;        // Will be ever changing.
-	size_t             bufferSize;          // Will be ever changing.
+	struct
+	{
+		std::uint32_t      bindingIndex;
+		ExternalBufferType type;
+	} layoutInfo; // Will be valid from the start.
+	struct
+	{
+		std::uint32_t externalBufferIndex; // Will be valid after the buffer has been created.
+		std::uint32_t frameIndex;          // Will be changed before a call to changing a descriptor.
+		size_t        bufferOffset;        // Will be ever changing.
+		size_t        bufferSize;          // Will be ever changing.
+	} descriptorInfo;
 };
 
 class GraphicsTechniqueExtension
