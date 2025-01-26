@@ -3,25 +3,23 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
-#include <Shader.hpp>
 #include <ExternalBuffer.hpp>
 
 struct ExternalBufferDetails
 {
 	std::uint32_t      bufferId;
 	ExternalBufferType type;
-	size_t             size;
 };
 
 struct ExternalBufferBindingDetails
 {
 	// If the bindingIndex is the same, then the frameIndex must be different.
-	std::uint32_t      bindingIndex;
-	std::uint32_t      externalBufferIndex;
-	std::uint32_t      frameIndex;
-	ExternalBufferType type;
-	size_t             bufferOffset;
-	size_t             bufferSize;
+	std::uint32_t      bindingIndex;        // Will be valid from the start.
+	std::uint32_t      externalBufferIndex; // Will be valid after the buffer has been created.
+	std::uint32_t      frameIndex;          // Will be valid from the start.
+	ExternalBufferType type;                // Will be valid from the start.
+	size_t             bufferOffset;        // Will be ever changing.
+	size_t             bufferSize;          // Will be ever changing.
 };
 
 class GraphicsTechniqueExtension
@@ -41,8 +39,5 @@ public:
 	virtual const std::vector<ExternalBufferDetails>& GetBufferDetails() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<ExternalBufferBindingDetails>& GetBindingDetails() const noexcept = 0;
-
-	[[nodiscard]]
-	virtual const ShaderName& GetShaderName() const noexcept = 0;
 };
 #endif
