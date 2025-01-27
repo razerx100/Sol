@@ -5,13 +5,6 @@
 #include <memory>
 #include <ExternalBuffer.hpp>
 
-struct ExternalBufferDetails
-{
-	std::uint32_t      bufferId;
-	std::uint32_t      externalBufferIndex; // Will be valid after the buffer has been created.
-	ExternalBufferType type;
-};
-
 struct ExternalBufferBindingDetails
 {
 	// If the bindingIndex is the same, then the frameIndex must be different.
@@ -36,14 +29,8 @@ public:
 
 	virtual void UpdateCPUData(size_t frameIndex) const noexcept = 0;
 
-	virtual void SetBuffer(
-		std::shared_ptr<ExternalBuffer> buffer, std::uint32_t bufferId,
-		std::uint32_t externalBufferIndex
-	) noexcept = 0;
-
 	[[nodiscard]]
-	// Will be used to create the necessary buffers.
-	virtual const std::vector<ExternalBufferDetails>& GetBufferDetails() const noexcept = 0;
+	virtual const std::vector<std::uint32_t>& GetExternalBufferIndices() const noexcept = 0;
 	[[nodiscard]]
 	virtual const std::vector<ExternalBufferBindingDetails>& GetBindingDetails() const noexcept = 0;
 };
