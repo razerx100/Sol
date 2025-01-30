@@ -191,6 +191,8 @@ public:
 
 	[[nodiscard]]
 	const ModelTransform& GetTransform() const noexcept { return m_transform; }
+	[[nodiscard]]
+	ModelTransform& GetTransform() noexcept { return m_transform; }
 
 	[[nodiscard]]
 	std::uint32_t GetDiffuseIndex() const noexcept override { return m_diffuseIndex; }
@@ -200,10 +202,6 @@ public:
 	std::uint32_t GetSpecularIndex() const noexcept override { return m_specularIndex; }
 	[[nodiscard]]
 	UVInfo GetSpecularUVInfo() const noexcept override { return m_specularUVInfo; }
-
-private:
-	[[nodiscard]]
-	ModelTransform& GetTransform() noexcept { return m_transform; }
 
 private:
 	std::uint32_t  m_materialIndex;

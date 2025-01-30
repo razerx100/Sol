@@ -27,7 +27,7 @@ class GraphicsTechniqueExtension
 public:
 	virtual ~GraphicsTechniqueExtension() = default;
 
-	virtual void UpdateCPUData(size_t frameIndex) const noexcept = 0;
+	virtual void UpdateCPUData(size_t frameIndex) noexcept = 0;
 
 	[[nodiscard]]
 	virtual const std::vector<std::uint32_t>& GetExternalBufferIndices() const noexcept = 0;
