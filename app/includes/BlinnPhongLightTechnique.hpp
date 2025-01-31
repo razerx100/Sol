@@ -7,7 +7,7 @@
 
 struct BlinnPhongLightProperties
 {
-	DirectX::XMFLOAT3 lightColour{ 1.f, 1.f, 1.f };
+	DirectX::XMFLOAT4 lightColour{ 1.f, 1.f, 1.f, 1.f };
 };
 
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
@@ -49,7 +49,9 @@ private:
 	struct LightData
 	{
 		DirectX::XMFLOAT3         lightPosition;
+		float                     padding1;
 		BlinnPhongLightProperties properties;
+		// Vec3 in GLSL are Vec4, so need the padding.
 	};
 
 private:
