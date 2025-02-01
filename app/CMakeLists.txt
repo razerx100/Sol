@@ -107,6 +107,16 @@ FetchContent_MakeAvailable(Europa)
 
 message(STATUS "Fetched Europa")
 
+message(STATUS "Fetching Callisto....")
+
+FetchContent_Declare(
+    Callisto
+    GIT_REPOSITORY https://github.com/razerx100/Callisto.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(Callisto)
+
 message(STATUS "Fetching DirectXMath....")
 
 FetchContent_Declare(
@@ -141,7 +151,7 @@ message(STATUS "Fetching Assimp....")
 FetchContent_Declare(
     Assimp
     GIT_REPOSITORY https://github.com/assimp/assimp.git
-    GIT_TAG master
+    GIT_TAG 53b5dba4df171373fddb5ce7f00db6399c0aeeaa
 )
 
 FetchContent_MakeAvailable(Assimp)
@@ -154,7 +164,7 @@ unset(ASSIMP_INSTALL_PDB)
 message(STATUS "Fetched Assimp")
 
 target_link_libraries(SolApp PRIVATE
-    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb assimp
+    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::callisto razer::DxMath razer::stb assimp
 )
 
 add_dependencies(SolApp GLSL HLSL)
