@@ -15,7 +15,7 @@ public:
 	virtual void MoveZ(float offset) noexcept = 0;
 
 	[[nodiscard]]
-	virtual const DirectX::XMFLOAT3& GetPosition() const noexcept = 0;
+	virtual DirectX::XMFLOAT3 GetPosition() const noexcept = 0;
 };
 
 class LightSourceWithoutModel : public LightSource
@@ -49,7 +49,7 @@ public:
 	}
 
 	[[nodiscard]]
-	const DirectX::XMFLOAT3& GetPosition() const noexcept override { return m_position; }
+	DirectX::XMFLOAT3 GetPosition() const noexcept override { return m_position; }
 
 private:
 	DirectX::XMFLOAT3 m_position;
@@ -96,7 +96,7 @@ public:
 	}
 
 	[[nodiscard]]
-	const DirectX::XMFLOAT3& GetPosition() const noexcept override
+	DirectX::XMFLOAT3 GetPosition() const noexcept override
 	{
 		return m_model->GetModelOffset();
 	}

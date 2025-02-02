@@ -31,7 +31,7 @@ BlinnPhongLightTechnique::BlinnPhongLightTechnique(std::uint32_t frameCount)
 	};
 }
 
-void BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> lightSource)
+std::uint32_t BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> lightSource)
 {
 	const size_t lightIndex = m_lights.Add(
 		LightInfo
@@ -41,8 +41,8 @@ void BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> lightSource
 		}, s_extraAllocationCount
 	);
 
-	if (lightIndex < std::size(m_lightStatus))
-		m_lightStatus.resize(std::size(m_lights.Get()), true);
+	if (lightIndex >= std::size(m_lightStatus))
+		m_lightStatus.resize(std::size(m_lights), false);
 
 	m_lightStatus[lightIndex] = true;
 
@@ -59,6 +59,8 @@ void BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> lightSource
 
 		m_lightInfoExtBuffer->Create(newBufferInfo.bufferSize);
 	}
+
+	return static_cast<std::uint32_t>(lightIndex);
 }
 
 void BlinnPhongLightTechnique::SetProperties(

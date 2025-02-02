@@ -23,7 +23,8 @@ class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 public:
 	BlinnPhongLightTechnique(std::uint32_t frameCount);
 
-	void AddLight(std::shared_ptr<LightSource> lightSource);
+	[[nodiscard]]
+	std::uint32_t AddLight(std::shared_ptr<LightSource> lightSource);
 
 	void RemoveLight(size_t index) noexcept;
 	void ToggleLight(size_t index, bool value) noexcept;
