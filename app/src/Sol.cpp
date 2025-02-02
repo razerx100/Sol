@@ -19,9 +19,12 @@ Sol::Sol(const std::string& appName)
 			m_threadPool, m_window->GetWindowHandle(), m_window->GetModuleInstance(),
 			m_configManager.GetRenderEngineType()
 		)
-	},
+	}, m_extensionManager{},
 	m_app{
-		std::make_unique<App>(m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType())
+		std::make_unique<App>(
+			m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType(),
+			&m_extensionManager, s_frameCount
+		)
 	}
 {
 	// Input Manager
@@ -39,6 +42,10 @@ Sol::Sol(const std::string& appName)
 	// Renderer
 	m_renderer->SetShaderPath(L"resources/shaders/");
 	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
+
+	m_extensionManager.SetBuffers(m_renderer.get());
+	m_extensionManager.SetAllExtensions(m_renderer.get());
+
 	m_renderer->FinaliseInitialisation();
 
 	// App

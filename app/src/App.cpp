@@ -9,6 +9,7 @@
 #include <DirectXMath.h>
 #include <TextureAtlas.hpp>
 #include <SceneMaterialProcessor.hpp>
+#include <AllocationLiterals.hpp>
 
 static MeshBundleImpl cubeMeshBundle{ true };
 static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
@@ -40,6 +41,17 @@ static std::uint32_t atlasBindingIndex  = 0u;
 
 static std::shared_ptr<PerspectiveCameraEuler> camera{};
 
+App::App(
+	Renderer* renderer, InputManager* inputManager, RenderEngineType engineType,
+	ExtensionManager* extensionManager, std::uint32_t frameCount
+) : m_renderer{ renderer }, m_blinnPhong{ nullptr }, m_inputManager{ inputManager },
+	m_engineType{ engineType }
+{
+	extensionManager->SetBlinnPhongLight(frameCount);
+
+	m_blinnPhong = extensionManager->GetBlinnPhongLight();
+}
+
 void App::Init()
 {
 	{
@@ -51,6 +63,7 @@ void App::Init()
 		cubeMeshBundleIndex = m_renderer->AddMeshBundle(cubeMeshBundle.MoveTemporaryData());
 	}
 
+	/*
 	{
 		auto sceneProcessor = std::make_shared<SceneProcessor>(
 			"resources/meshes/emd_gp7_western_pacific_713/scene.gltf"
@@ -67,6 +80,13 @@ void App::Init()
 
 		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
+	*/
+
+	auto lightModel = std::make_shared<ModelBase>(0.3f);
+
+	std::uint32_t lightIndex = m_blinnPhong->AddLight(std::make_shared<LightSourceWithModel>(lightModel));
+
+	m_blinnPhong->SetLightColour(0u, DirectX::XMFLOAT3{ 1.f, 0.f, 0.f });
 
 	camera = std::make_shared<PerspectiveCameraEuler>();
 
@@ -169,9 +189,10 @@ void App::Init()
 		}
 
 		cubeBundle1.SetMeshBundleIndex(cubeMeshBundleIndex);
-		cubeBundleIndex1 = cubeBundle1.SetModelBundle(*m_renderer, L"TestFragmentShader");
+		cubeBundleIndex1 = cubeBundle1.SetModelBundle(*m_renderer, m_blinnPhong->GetLightDstShaderName());
 	}
 
+	/*
 	{
 		assimpModelBundle1.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
 		assimpModelBundle1.MoveTowardsZ(0u, 1.f);
@@ -192,6 +213,7 @@ void App::Init()
 		assimpModelBundle3.SetMeshBundleIndex(assimpMeshBundleIndex);
 		assimpBundleIndex3 = assimpModelBundle3.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
+	*/
 }
 
 void App::PhysicsUpdate()
@@ -244,7 +266,9 @@ void App::PhysicsUpdate()
 			}
 
 			cubeBundle2.SetMeshBundleIndex(cubeMeshBundleIndex);
-			cubeBundleIndex2 = cubeBundle2.SetModelBundle(*m_renderer, L"TestFragmentShader");
+			cubeBundleIndex2 = cubeBundle2.SetModelBundle(
+				*m_renderer, m_blinnPhong->GetLightDstShaderName()
+			);
 		}
 	}
 
@@ -289,7 +313,9 @@ void App::PhysicsUpdate()
 			}
 
 			cubeBundle3.SetMeshBundleIndex(cubeMeshBundleIndex);
-			cubeBundleIndex3 = cubeBundle3.SetModelBundle(*m_renderer, L"TestFragmentShader");
+			cubeBundleIndex3 = cubeBundle3.SetModelBundle(
+				*m_renderer, m_blinnPhong->GetLightDstShaderName()
+			);
 		}
 	}
 
@@ -334,7 +360,9 @@ void App::PhysicsUpdate()
 			}
 
 			cubeBundle4.SetMeshBundleIndex(cubeMeshBundleIndex);
-			cubeBundleIndex4 = cubeBundle4.SetModelBundle(*m_renderer, L"TestFragmentShader");
+			cubeBundleIndex4 = cubeBundle4.SetModelBundle(
+				*m_renderer, m_blinnPhong->GetLightDstShaderName()
+			);
 		}
 	}
 
