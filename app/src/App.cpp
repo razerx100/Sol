@@ -47,7 +47,7 @@ App::App(
 ) : m_renderer{ renderer }, m_blinnPhong{ nullptr }, m_inputManager{ inputManager },
 	m_engineType{ engineType }
 {
-	extensionManager->SetBlinnPhongLight(frameCount);
+	extensionManager->SetBlinnPhongLight(renderer, frameCount);
 
 	m_blinnPhong = extensionManager->GetBlinnPhongLight();
 }

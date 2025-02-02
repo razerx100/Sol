@@ -2,11 +2,14 @@
 #define GRAPHICS_TECHNIQUE_EXTENSION_BASE_HPP_
 #include <optional>
 #include <GraphicsTechniqueExtension.hpp>
+#include <Renderer.hpp>
 
 class GraphicsTechniqueExtensionBase : public GraphicsTechniqueExtension
 {
 public:
-	GraphicsTechniqueExtensionBase() : m_externalBufferIndices{}, m_bufferBindingDetails{} {}
+	GraphicsTechniqueExtensionBase(Renderer* renderer)
+		: m_externalBufferIndices{}, m_bufferBindingDetails{}, m_renderer{ renderer }
+	{}
 
 	void UpdateCPUData([[maybe_unused]] size_t frameIndex) noexcept override {}
 
@@ -51,9 +54,13 @@ protected:
 		return GetNewBufferSize(buffer, sizeof(T), std::size(vec), instanceCount, extraAllocationCount);
 	}
 
+	// Assuming the GPU isn't doing anything.
+	void UpdateCPUBufferDescriptor(size_t bindingDetailsIndex, size_t frameIndex, size_t instanceSize);
+
 protected:
 	std::vector<std::uint32_t>                m_externalBufferIndices;
 	std::vector<ExternalBufferBindingDetails> m_bufferBindingDetails;
+	Renderer*                                 m_renderer;
 
 public:
 	GraphicsTechniqueExtensionBase(const GraphicsTechniqueExtensionBase&) = delete;
@@ -61,13 +68,15 @@ public:
 
 	GraphicsTechniqueExtensionBase(GraphicsTechniqueExtensionBase&& other) noexcept
 		: m_externalBufferIndices{ std::move(other.m_externalBufferIndices) },
-		m_bufferBindingDetails{ std::move(other.m_bufferBindingDetails) }
+		m_bufferBindingDetails{ std::move(other.m_bufferBindingDetails) },
+		m_renderer{ other.m_renderer }
 	{}
 
 	GraphicsTechniqueExtensionBase& operator=(GraphicsTechniqueExtensionBase&& other) noexcept
 	{
 		m_externalBufferIndices = std::move(other.m_externalBufferIndices);
 		m_bufferBindingDetails  = std::move(other.m_bufferBindingDetails);
+		m_renderer              = other.m_renderer;
 
 		return *this;
 	}

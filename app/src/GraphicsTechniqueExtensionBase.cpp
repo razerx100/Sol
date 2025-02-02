@@ -35,3 +35,16 @@ GraphicsTechniqueExtensionBase::NewBufferInfo_t GraphicsTechniqueExtensionBase::
 
 	return newSize;
 }
+
+void GraphicsTechniqueExtensionBase::UpdateCPUBufferDescriptor(
+	size_t bindingDetailsIndex, size_t frameIndex, size_t instanceSize
+) {
+	// Need to change some data, so can't do const ref.
+	ExternalBufferBindingDetails bindingDetails = m_bufferBindingDetails[bindingDetailsIndex];
+
+	bindingDetails.descriptorInfo.frameIndex    = static_cast<std::uint32_t>(frameIndex);
+	bindingDetails.descriptorInfo.bufferSize    = instanceSize;
+	bindingDetails.descriptorInfo.bufferOffset  = frameIndex * instanceSize;
+
+	m_renderer->UpdateExternalBufferDescriptor(bindingDetails);
+}

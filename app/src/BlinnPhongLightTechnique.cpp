@@ -4,9 +4,9 @@
 ShaderName BlinnPhongLightTechnique::s_lightSrcShaderName = L"NoLightShader";
 ShaderName BlinnPhongLightTechnique::s_lightDstShaderName = L"BlinnPhongShader";
 
-BlinnPhongLightTechnique::BlinnPhongLightTechnique(std::uint32_t frameCount)
-	: GraphicsTechniqueExtensionBase{}, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{}, m_lights{},
-	m_lightStatus{}, m_lightInfoInstanceSize{ 0u }, m_frameCount{ frameCount }
+BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount)
+	: GraphicsTechniqueExtensionBase{ renderer }, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
+	m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u }, m_frameCount{ frameCount }
 {
 	constexpr size_t bufferBindingCount = 2u;
 
@@ -47,7 +47,7 @@ std::uint32_t BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> li
 	m_lightStatus[lightIndex] = true;
 
 	const NewBufferInfo_t newBufferSize = GetNewBufferSize(
-		*m_lightInfoExtBuffer, sizeof(LightData), std::size(m_lights.Get()), m_frameCount,
+		*m_lightInfoExtBuffer, sizeof(LightData), std::size(m_lights), m_frameCount,
 		s_extraAllocationCount
 	);
 
@@ -57,7 +57,15 @@ std::uint32_t BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> li
 
 		m_lightInfoInstanceSize = newBufferInfo.instanceSize;
 
+		// Should wait for the gpu to finish before recreating the buffer.
+		m_renderer->WaitForGPUToFinish();
+
 		m_lightInfoExtBuffer->Create(newBufferInfo.bufferSize);
+
+		// The new light data will be copied on the next frame. And we don't
+		// need to worry about the GPU waiting for that. But we will need to
+		// update the descriptor if the buffer size is increased.
+		UpdateLightInfoDescriptors();
 	}
 
 	return static_cast<std::uint32_t>(lightIndex);
@@ -171,4 +179,21 @@ void BlinnPhongLightTechnique::SetBuffers(ExternalResourceFactory* resourceFacto
 		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = lightInfoBufferIndexU32;
 		m_externalBufferIndices[bufferIndex]                                   = lightInfoBufferIndexU32;
 	}
+}
+
+void BlinnPhongLightTechnique::UpdateLightCountDescriptors()
+{
+	for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
+		UpdateCPUBufferDescriptor(s_lightCountBufferIndex, frameIndex, s_lightCountInstanceSize);
+}
+
+void BlinnPhongLightTechnique::UpdateLightInfoDescriptors()
+{
+	for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
+		UpdateCPUBufferDescriptor(s_lightInfoBufferIndex, frameIndex, m_lightInfoInstanceSize);
+}
+
+void BlinnPhongLightTechnique::SetFixedDescriptors()
+{
+	UpdateLightCountDescriptors();
 }

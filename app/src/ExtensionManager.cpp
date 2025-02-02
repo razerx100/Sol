@@ -1,8 +1,8 @@
 #include <ExtensionManager.hpp>
 
-void ExtensionManager::SetBlinnPhongLight(std::uint32_t frameCount)
+void ExtensionManager::SetBlinnPhongLight(Renderer* renderer, std::uint32_t frameCount)
 {
-	m_blinnPhongLight = std::make_shared<BlinnPhongLightTechnique>(frameCount);
+	m_blinnPhongLight = std::make_shared<BlinnPhongLightTechnique>(renderer, frameCount);
 }
 
 void ExtensionManager::SetBuffers(Renderer* renderer)
@@ -20,4 +20,10 @@ void ExtensionManager::SetAllExtensions(Renderer* renderer)
 
 	if (m_blinnPhongLight)
 		m_blinnPhongLightIndex = resourceManager->AddGraphicsTechniqueExtension(m_blinnPhongLight);
+}
+
+void ExtensionManager::SetFixedDescriptors()
+{
+	if (m_blinnPhongLight)
+		m_blinnPhongLight->SetFixedDescriptors();
 }

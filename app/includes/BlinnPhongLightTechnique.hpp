@@ -21,7 +21,7 @@ class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 	};
 
 public:
-	BlinnPhongLightTechnique(std::uint32_t frameCount);
+	BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount);
 
 	[[nodiscard]]
 	std::uint32_t AddLight(std::shared_ptr<LightSource> lightSource);
@@ -31,6 +31,8 @@ public:
 
 	void SetProperties(size_t lightIndex, const BlinnPhongLightProperties& properties) noexcept;
 	void SetLightColour(size_t lightIndex, const DirectX::XMFLOAT3& lightColour) noexcept;
+
+	void SetFixedDescriptors();
 
 	void UpdateCPUData(size_t frameIndex) noexcept override;
 
@@ -54,6 +56,10 @@ private:
 		BlinnPhongLightProperties properties;
 		// Vec3 in GLSL are Vec4, so need the padding.
 	};
+
+private:
+	void UpdateLightCountDescriptors();
+	void UpdateLightInfoDescriptors();
 
 private:
 	std::shared_ptr<ExternalBuffer> m_lightCountExtBuffer;

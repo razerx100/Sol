@@ -10,10 +10,12 @@ class ExtensionManager
 public:
 	ExtensionManager() : m_blinnPhongLight{}, m_blinnPhongLightIndex{ 0u } {}
 
-	void SetBlinnPhongLight(std::uint32_t frameCount);
+	void SetBlinnPhongLight(Renderer* renderer, std::uint32_t frameCount);
 
 	void SetBuffers(Renderer* renderer);
 	void SetAllExtensions(Renderer* renderer);
+
+	void SetFixedDescriptors();
 
 	[[nodiscard]]
 	BlinnPhongLightTechnique* GetBlinnPhongLight() const noexcept { return m_blinnPhongLight.get(); }

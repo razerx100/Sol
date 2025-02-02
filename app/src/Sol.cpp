@@ -48,6 +48,10 @@ Sol::Sol(const std::string& appName)
 
 	m_renderer->FinaliseInitialisation();
 
+	// The descriptor layouts should be set with the FinaliseInitialisation function. So,
+	// Create the fixed Descriptors here.
+	m_extensionManager.SetFixedDescriptors();
+
 	// App
 	m_app->Init();
 }
