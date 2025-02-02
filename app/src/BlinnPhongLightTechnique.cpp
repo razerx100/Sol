@@ -124,8 +124,9 @@ void BlinnPhongLightTechnique::UpdateCPUData(size_t frameIndex) noexcept
 	const size_t lightCountInstanceOffset = s_lightCountInstanceSize * frameIndex;
 	const auto activeLightCountU32        = static_cast<std::uint32_t>(activeLightIndex);
 
+	// Can't use the lightCount instance size here as it is bigger than the data size.
 	memcpy(
-		lightCountCpuStart + lightCountInstanceOffset, &activeLightCountU32, s_lightCountInstanceSize
+		lightCountCpuStart + lightCountInstanceOffset, &activeLightCountU32, sizeof(std::uint32_t)
 	);
 }
 

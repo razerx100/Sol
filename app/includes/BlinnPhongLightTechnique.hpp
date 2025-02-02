@@ -75,8 +75,9 @@ private:
 	static constexpr std::uint32_t s_lightCountBufferIndex = 0u;
 	static constexpr std::uint32_t s_lightInfoBufferIndex  = 1u;
 
-	static constexpr size_t s_lightCountInstanceSize = sizeof(std::uint32_t);
-	static constexpr size_t s_extraAllocationCount = 4u;
+	// Since the light count is set as a Uniform buffer, it must be 256 bytes aligned.
+	static constexpr size_t s_lightCountInstanceSize = 256u;
+	static constexpr size_t s_extraAllocationCount   = 4u;
 
 public:
 	BlinnPhongLightTechnique(const BlinnPhongLightTechnique&) = delete;
