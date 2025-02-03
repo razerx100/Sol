@@ -8,6 +8,8 @@
 struct BlinnPhongLightProperties
 {
 	DirectX::XMFLOAT4 lightColour{ 1.f, 1.f, 1.f, 1.f };
+	float             ambientStrength = 1.f;
+	float             padding[3];
 };
 
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase

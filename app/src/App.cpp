@@ -86,7 +86,16 @@ void App::Init()
 
 	std::uint32_t lightIndex = m_blinnPhong->AddLight(std::make_shared<LightSourceWithModel>(lightModel));
 
-	m_blinnPhong->SetLightColour(0u, DirectX::XMFLOAT3{ 1.f, 0.f, 0.f });
+	{
+		// Light Properties
+		BlinnPhongLightProperties lightProperties
+		{
+			.lightColour     = DirectX::XMFLOAT4{ 1.f, 0.f, 0.f, 1.f },
+			.ambientStrength = 0.2f
+		};
+
+		m_blinnPhong->SetProperties(0u, lightProperties);
+	}
 
 	camera = std::make_shared<PerspectiveCameraEuler>();
 
