@@ -25,13 +25,15 @@ static ModelBundleBase assimpModelBundle3{};
 static ModelBundleBase cubeBundle2{};
 static ModelBundleBase cubeBundle3{};
 static ModelBundleBase cubeBundle4{};
-static std::uint32_t cubeBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t assimpBundleIndex1 = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t assimpBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t assimpBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t cubeBundleIndex2   = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t cubeBundleIndex3   = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t cubeBundleIndex4   = std::numeric_limits<std::uint32_t>::max();
+static ModelBundleBase cubeLightBundle{};
+static std::uint32_t cubeBundleIndex1     = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpBundleIndex2   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpBundleIndex3   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex2     = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex3     = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeBundleIndex4     = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t cubeLightBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
 static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t whiteMatIndex      = 0u;
@@ -82,15 +84,19 @@ void App::Init()
 	}
 	*/
 
-	auto lightModel = std::make_shared<ModelBase>(0.3f);
+	cubeLightBundle.AddModel(0.3f);
 
-	std::uint32_t lightIndex = m_blinnPhong->AddLight(std::make_shared<LightSourceWithModel>(lightModel));
+	std::shared_ptr<ModelBase> lightModel = cubeLightBundle.GetModel(0u);
+
+	std::uint32_t lightIndex = m_blinnPhong->AddLight(
+		std::make_shared<LightSourceWithModel>(std::move(lightModel))
+	);
 
 	{
 		// Light Properties
 		BlinnPhongLightProperties lightProperties
 		{
-			.lightColour     = DirectX::XMFLOAT4{ 1.f, 0.f, 0.f, 1.f },
+			.lightColour     = DirectX::XMFLOAT4{ 1.f, 1.f, 1.f, 1.f },
 			.ambientStrength = 0.2f
 		};
 
@@ -174,6 +180,22 @@ void App::Init()
 	}
 
 	{
+		{
+			ModelBase& model1 = *cubeLightBundle.GetModel(0u);
+
+			model1.SetMeshIndex(0u);
+			model1.SetMaterialIndex(whiteMatIndex);
+			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
+			model1.SetDiffuseIndex(atlasBindingIndex);
+		}
+
+		cubeLightBundle.SetMeshBundleIndex(cubeMeshBundleIndex);
+		cubeLightBundleIndex = cubeLightBundle.SetModelBundle(
+			*m_renderer, m_blinnPhong->GetLightSrcShaderName()
+		);
+	}
+
+	{
 		cubeBundle1.AddModel(0.3f).AddModel(0.3f);
 
 		// We have only a single mesh in the bundle.
@@ -230,6 +252,18 @@ void App::PhysicsUpdate()
 	constexpr float cameraMoveSpeed = 0.5f;
 
 	const Keyboard& keyboard = m_inputManager->GetKeyboard();
+
+	if (keyboard.IsKeyPressed(SKeyCodes::UpArrow))
+		cubeLightBundle.MoveTowardsZ(0u, 0.05f);
+
+	if (keyboard.IsKeyPressed(SKeyCodes::DownArrow))
+		cubeLightBundle.MoveTowardsZ(0u, -0.05f);
+
+	if (keyboard.IsKeyPressed(SKeyCodes::RightArrow))
+		cubeLightBundle.MoveTowardsX(0u, 0.05f);
+
+	if (keyboard.IsKeyPressed(SKeyCodes::LeftArrow))
+		cubeLightBundle.MoveTowardsX(0u, -0.05f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::W))
 		camera->MoveForward(0.01f).MoveCamera();

@@ -9,7 +9,8 @@ struct BlinnPhongLightProperties
 {
 	DirectX::XMFLOAT4 lightColour{ 1.f, 1.f, 1.f, 1.f };
 	float             ambientStrength = 1.f;
-	float             padding[3];
+	float             padding[3]; // This is necessary because in GLSL, if you use vec4 in a struct,
+	// that struct must be 16bytes aligned. Even in SSBO.
 };
 
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
