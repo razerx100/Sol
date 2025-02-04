@@ -96,8 +96,9 @@ void App::Init()
 		// Light Properties
 		BlinnPhongLightProperties lightProperties
 		{
-			.lightColour     = DirectX::XMFLOAT4{ 1.f, 1.f, 1.f, 1.f },
-			.ambientStrength = 0.2f
+			.lightColour      = DirectX::XMFLOAT4{ 1.f, 1.f, 1.f, 1.f },
+			.ambientStrength  = 0.2f,
+			.specularStrength = 0.5f
 		};
 
 		m_blinnPhong->SetProperties(0u, lightProperties);
