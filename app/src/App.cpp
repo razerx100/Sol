@@ -84,7 +84,7 @@ void App::Init()
 	}
 	*/
 
-	cubeLightBundle.AddModel(0.3f);
+	cubeLightBundle.AddModel(0.1f);
 
 	std::shared_ptr<ModelBase> lightModel = cubeLightBundle.GetModel(0u);
 
@@ -97,8 +97,8 @@ void App::Init()
 		BlinnPhongLightProperties lightProperties
 		{
 			.lightColour      = DirectX::XMFLOAT4{ 1.f, 1.f, 1.f, 1.f },
-			.ambientStrength  = 0.2f,
-			.specularStrength = 0.5f
+			.ambientStrength  = 0.01f,
+			.specularStrength = 0.8f
 		};
 
 		m_blinnPhong->SetProperties(0u, lightProperties);
@@ -134,9 +134,10 @@ void App::Init()
 		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::White);
 		const MaterialData white{
-			.ambient  = colourBuffer,
-			.diffuse  = colourBuffer,
-			.specular = { 1.f, 1.f, 1.f, 1.f }
+			.ambient   = colourBuffer,
+			.diffuse   = colourBuffer,
+			.specular  = { 1.f, 1.f, 1.f, 1.f },
+			.shininess = 16.f
 		};
 
 		auto whiteMat = std::make_shared<MaterialBase>();
@@ -197,7 +198,7 @@ void App::Init()
 	}
 
 	{
-		cubeBundle1.AddModel(0.3f).AddModel(0.3f);
+		cubeBundle1.AddModel(0.45f).AddModel(0.45f);
 
 		// We have only a single mesh in the bundle.
 		{
@@ -207,6 +208,8 @@ void App::Init()
 			model1.SetMaterialIndex(whiteMatIndex);
 			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
 			model1.SetDiffuseIndex(atlasBindingIndex);
+
+			cubeBundle1.MoveTowardsX(0u, 0.75f);
 		}
 
 		{
@@ -217,7 +220,7 @@ void App::Init()
 			model2.SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
 			model2.SetDiffuseIndex(atlasBindingIndex);
 
-			cubeBundle1.MoveTowardsY(1u, 1.2f);
+			cubeBundle1.MoveTowardsY(1u, 0.75f);
 		}
 
 		cubeBundle1.SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -288,7 +291,7 @@ void App::PhysicsUpdate()
 	{
 		if (cubeBundleIndex2 == std::numeric_limits<std::uint32_t>::max())
 		{
-			cubeBundle2.AddModel(0.3f).AddModel(0.3f);
+			cubeBundle2.AddModel(0.45f).AddModel(0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
@@ -306,7 +309,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
 
-				cubeBundle2.MoveTowardsX(1u, -1.5f);
+				cubeBundle2.MoveTowardsX(1u, -0.75f);
 			}
 
 			cubeBundle2.SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -331,7 +334,7 @@ void App::PhysicsUpdate()
 	{
 		if (cubeBundleIndex3 == std::numeric_limits<std::uint32_t>::max())
 		{
-			cubeBundle3.AddModel(0.3f).AddModel(0.3f);
+			cubeBundle3.AddModel(0.45f).AddModel(0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
@@ -342,7 +345,7 @@ void App::PhysicsUpdate()
 				model1.SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
 				model1.SetDiffuseIndex(atlasBindingIndex);
 
-				cubeBundle3.MoveModel(0u, DirectX::XMFLOAT3{ -2.4f, -1.2f, 0.f });
+				cubeBundle3.MoveModel(0u, DirectX::XMFLOAT3{ -1.4f, -0.75f, 0.f });
 			}
 
 			{
@@ -353,7 +356,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
 
-				cubeBundle3.MoveModel(1u, DirectX::XMFLOAT3{ -0.8f, -1.2f, 0.f });
+				cubeBundle3.MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
 			}
 
 			cubeBundle3.SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -378,7 +381,7 @@ void App::PhysicsUpdate()
 	{
 		if (cubeBundleIndex4 == std::numeric_limits<std::uint32_t>::max())
 		{
-			cubeBundle4.AddModel(0.3f).AddModel(0.3f);
+			cubeBundle4.AddModel(0.45f).AddModel(0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
@@ -389,7 +392,7 @@ void App::PhysicsUpdate()
 				model1.SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
 				model1.SetDiffuseIndex(atlasBindingIndex);
 
-				cubeBundle4.MoveModel(0u, DirectX::XMFLOAT3{ 2.4f, -1.2f, 0.f });
+				cubeBundle4.MoveModel(0u, DirectX::XMFLOAT3{ 1.4f, -0.75f, 0.f });
 			}
 
 			{
@@ -400,7 +403,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
 
-				cubeBundle4.MoveModel(1u, DirectX::XMFLOAT3{ 0.8f, -1.2f, 0.f });
+				cubeBundle4.MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
 			}
 
 			cubeBundle4.SetMeshBundleIndex(cubeMeshBundleIndex);
