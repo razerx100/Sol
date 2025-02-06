@@ -96,9 +96,9 @@ void App::Init()
 		// Light Properties
 		BlinnPhongLightProperties lightProperties
 		{
-			.lightColour      = DirectX::XMFLOAT4{ 1.f, 1.f, 1.f, 1.f },
-			.ambientStrength  = 0.01f,
-			.specularStrength = 0.8f
+			.ambient  = DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f },
+			.diffuse  = DirectX::XMFLOAT3{ 0.7f, 0.7f, 0.7f },
+			.specular = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
 		};
 
 		m_blinnPhong->SetProperties(0u, lightProperties);
@@ -208,6 +208,8 @@ void App::Init()
 			model1.SetMaterialIndex(whiteMatIndex);
 			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
 			model1.SetDiffuseIndex(atlasBindingIndex);
+			model1.SetSpecularUVInfo(atlas.GetUVInfo("Narrative"));
+			model1.SetSpecularIndex(atlasBindingIndex);
 
 			cubeBundle1.MoveTowardsX(0u, 0.75f);
 		}
@@ -219,6 +221,8 @@ void App::Init()
 			model2.SetMaterialIndex(whiteMatIndex);
 			model2.SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
 			model2.SetDiffuseIndex(atlasBindingIndex);
+			model2.SetSpecularUVInfo(atlas.GetUVInfo("Katarin"));
+			model2.SetSpecularIndex(atlasBindingIndex);
 
 			cubeBundle1.MoveTowardsY(1u, 0.75f);
 		}
@@ -308,6 +312,8 @@ void App::PhysicsUpdate()
 				model2.SetMaterialIndex(whiteMatIndex);
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
+				model2.SetSpecularUVInfo(atlas.GetUVInfo("Monika"));
+				model2.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle2.MoveTowardsX(1u, -0.75f);
 			}
@@ -344,6 +350,8 @@ void App::PhysicsUpdate()
 				model1.SetMaterialIndex(whiteMatIndex);
 				model1.SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
 				model1.SetDiffuseIndex(atlasBindingIndex);
+				model1.SetSpecularUVInfo(atlas.GetUVInfo("Unicorn"));
+				model1.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle3.MoveModel(0u, DirectX::XMFLOAT3{ -1.4f, -0.75f, 0.f });
 			}
@@ -355,6 +363,8 @@ void App::PhysicsUpdate()
 				model2.SetMaterialIndex(whiteMatIndex);
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
+				model2.SetSpecularUVInfo(atlas.GetUVInfo("Panda"));
+				model2.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle3.MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
 			}
@@ -391,6 +401,8 @@ void App::PhysicsUpdate()
 				model1.SetMaterialIndex(whiteMatIndex);
 				model1.SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
 				model1.SetDiffuseIndex(atlasBindingIndex);
+				model1.SetSpecularUVInfo(atlas.GetUVInfo("UltraMarine"));
+				model1.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle4.MoveModel(0u, DirectX::XMFLOAT3{ 1.4f, -0.75f, 0.f });
 			}
@@ -402,6 +414,8 @@ void App::PhysicsUpdate()
 				model2.SetMaterialIndex(whiteMatIndex);
 				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
 				model2.SetDiffuseIndex(atlasBindingIndex);
+				model2.SetSpecularUVInfo(atlas.GetUVInfo("Goku"));
+				model2.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle4.MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
 			}

@@ -37,7 +37,12 @@ std::uint32_t BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> li
 		LightInfo
 		{
 			.source     = std::move(lightSource),
-			.properties = BlinnPhongLightProperties{ .lightColour = DirectX::XMFLOAT4{ 1.f, 1.f, 1.f, 1.f } }
+			.properties = BlinnPhongLightProperties
+			{
+				.ambient  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.diffuse  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.specular = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f }
+			}
 		}, s_extraAllocationCount
 	);
 
@@ -78,11 +83,12 @@ void BlinnPhongLightTechnique::SetProperties(
 }
 
 void BlinnPhongLightTechnique::SetLightColour(
-	size_t lightIndex, const DirectX::XMFLOAT3& lightColour
+	size_t lightIndex, const DirectX::XMFLOAT3& ambient, const DirectX::XMFLOAT3& diffuse,
+	const DirectX::XMFLOAT3& specular
 ) noexcept {
-	m_lights[lightIndex].properties.lightColour.x = lightColour.x;
-	m_lights[lightIndex].properties.lightColour.y = lightColour.y;
-	m_lights[lightIndex].properties.lightColour.z = lightColour.z;
+	m_lights[lightIndex].properties.ambient  = ambient;
+	m_lights[lightIndex].properties.diffuse  = diffuse;
+	m_lights[lightIndex].properties.specular = specular;
 }
 
 void BlinnPhongLightTechnique::UpdateCPUData(size_t frameIndex) noexcept

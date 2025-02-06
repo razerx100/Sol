@@ -5,13 +5,16 @@
 #include <LightSource.hpp>
 #include <ReusableVector.hpp>
 
+// The alphas aren't needed but keeping them for alignment reasons. And it would be
+// easier to deal in Float3 all the time.
 struct BlinnPhongLightProperties
 {
-	DirectX::XMFLOAT4 lightColour{ 1.f, 1.f, 1.f, 1.f };
-	float             ambientStrength  = 1.f;
-	float             specularStrength = 1.f;
-	float             padding[2]; // This is necessary because in GLSL, if you use vec4 in a struct,
-	// that struct must be 16bytes aligned. Even in SSBO.
+	DirectX::XMFLOAT3 ambient{ 1.f, 1.f, 1.f };
+	float             ambientAlpha = 1.f;
+	DirectX::XMFLOAT3 diffuse{ 1.f, 1.f, 1.f };
+	float             diffuseAlpha = 1.f;
+	DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
+	float             specularAlpha = 1.f;
 };
 
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
@@ -34,7 +37,10 @@ public:
 	void ToggleLight(size_t index, bool value) noexcept;
 
 	void SetProperties(size_t lightIndex, const BlinnPhongLightProperties& properties) noexcept;
-	void SetLightColour(size_t lightIndex, const DirectX::XMFLOAT3& lightColour) noexcept;
+	void SetLightColour(
+		size_t lightIndex, const DirectX::XMFLOAT3& ambient, const DirectX::XMFLOAT3& diffuse,
+		const DirectX::XMFLOAT3& specular
+	) noexcept;
 
 	void SetFixedDescriptors();
 
