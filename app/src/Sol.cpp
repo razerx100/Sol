@@ -46,7 +46,11 @@ Sol::Sol(const std::string& appName)
 	m_extensionManager.SetBuffers(m_renderer.get());
 	m_extensionManager.SetAllExtensions(m_renderer.get());
 
+	// This function creates the descriptor layouts.
 	m_renderer->FinaliseInitialisation();
+
+	// Since we are binding the texture, it must be after the layouts have been created.
+	AddDefaultTexture(m_renderer.get());
 
 	// The descriptor layouts should be set with the FinaliseInitialisation function. So,
 	// Create the fixed Descriptors here.
@@ -187,4 +191,25 @@ void Sol::FullscreenCallback([[maybe_unused]]void* callbackData, void* extraData
 	const Renderer::Resolution resolution = sol->m_renderer->GetFirstDisplayCoordinates();
 
 	sol->m_window->ToggleFullscreen(resolution.width, resolution.height);
+}
+
+void Sol::AddDefaultTexture(Renderer* renderer)
+{
+	// The texture should be in RGBA
+	struct Pixel
+	{
+		std::uint8_t r;
+		std::uint8_t g;
+		std::uint8_t b;
+		std::uint8_t a;
+	} pixel{ .r = 255u, .g = 255u, .b = 255u, . a = 255u };
+
+	STexture defaultTexture{};
+
+	defaultTexture.data   = std::make_shared<Pixel>(pixel);
+	defaultTexture.height = 1u;
+	defaultTexture.width  = 1u;
+
+	size_t defaultTexIndex                   = renderer->AddTexture(std::move(defaultTexture));
+	[[maybe_unused]] std::uint32_t bindIndex = renderer->BindTexture(defaultTexIndex);
 }

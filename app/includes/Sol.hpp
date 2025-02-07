@@ -47,6 +47,8 @@ private:
 	static void ResizeCallback(void* callbackData, void* extraData);
 	static void FullscreenCallback(void* callbackData, void* extraData);
 
+	void AddDefaultTexture(Renderer* renderer);
+
 private:
 	static constexpr std::uint32_t s_width      = 1920u;
 	static constexpr std::uint32_t s_height     = 1080u;

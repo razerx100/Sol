@@ -303,6 +303,8 @@ void App::PhysicsUpdate()
 
 				model1.SetMeshIndex(0u);
 				model1.SetMaterialIndex(1u);
+				model1.SetDiffuseIndex(atlasBindingIndex);
+				model1.SetSpecularIndex(atlasBindingIndex);
 			}
 
 			{
@@ -496,8 +498,21 @@ void App::PhysicsUpdate()
 
 		if (bundle1Exists && sphereExists)
 		{
-			cubeBundle1.GetModel(0u)->SetMeshIndex(0u);
-			cubeBundle1.GetModel(1u)->SetMeshIndex(0u);
+			ModelBase& model1 = *cubeBundle1.GetModel(0u);
+
+			model1.SetMeshIndex(0u);
+			model1.SetDiffuseIndex(0u);
+			model1.SetSpecularIndex(0u);
+			model1.SetDiffuseUVInfo(UVInfo{});
+			model1.SetSpecularUVInfo(UVInfo{});
+
+			ModelBase& model2 = *cubeBundle1.GetModel(1u);
+
+			model2.SetMeshIndex(0u);
+			model2.SetDiffuseIndex(0u);
+			model2.SetSpecularIndex(0u);
+			model2.SetDiffuseUVInfo(UVInfo{});
+			model2.SetSpecularUVInfo(UVInfo{});
 
 			cubeBundle1.SetMeshBundleIndex(sphereMeshBundleIndex);
 		}
