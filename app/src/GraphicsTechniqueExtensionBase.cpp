@@ -1,15 +1,5 @@
 #include <GraphicsTechniqueExtensionBase.hpp>
-
-void GraphicsTechniqueExtensionBase::ExtendCPUVisibleBuffer(
-	ExternalBuffer& cpuBuffer, ExternalBuffer& cpuTempBuffer, size_t newSize
-) noexcept {
-	cpuTempBuffer.Create(newSize);
-
-	memcpy(cpuTempBuffer.CPUHandle(), cpuBuffer.CPUHandle(), cpuBuffer.BufferSize());
-
-	cpuBuffer = std::move(cpuTempBuffer);
-}
-
+#include <limits>
 
 GraphicsTechniqueExtensionBase::NewBufferInfo_t GraphicsTechniqueExtensionBase::GetNewBufferSize(
 	const ExternalBuffer& buffer, size_t strideSize, size_t elementCount,
@@ -45,6 +35,19 @@ void GraphicsTechniqueExtensionBase::UpdateCPUBufferDescriptor(
 	bindingDetails.descriptorInfo.frameIndex    = static_cast<std::uint32_t>(frameIndex);
 	bindingDetails.descriptorInfo.bufferSize    = instanceSize;
 	bindingDetails.descriptorInfo.bufferOffset  = frameIndex * instanceSize;
+
+	m_renderer->UpdateExternalBufferDescriptor(bindingDetails);
+}
+
+void GraphicsTechniqueExtensionBase::UpdateCPUBufferDescriptor(
+	size_t bindingDetailsIndex, size_t bufferSize
+) {
+	// Need to change some data, so can't do const ref.
+	ExternalBufferBindingDetails bindingDetails = m_bufferBindingDetails[bindingDetailsIndex];
+
+	bindingDetails.descriptorInfo.frameIndex    = std::numeric_limits<std::uint32_t>::max();
+	bindingDetails.descriptorInfo.bufferSize    = bufferSize;
+	bindingDetails.descriptorInfo.bufferOffset  = 0;
 
 	m_renderer->UpdateExternalBufferDescriptor(bindingDetails);
 }

@@ -1,7 +1,6 @@
 #include <TextureTools.hpp>
 
 #include <App.hpp>
-#include <MaterialBase.hpp>
 #include <ModelBase.hpp>
 #include <BasicMeshBundles.hpp>
 #include <CameraManagerSol.hpp>
@@ -35,8 +34,8 @@ static std::uint32_t cubeBundleIndex3     = std::numeric_limits<std::uint32_t>::
 static std::uint32_t cubeBundleIndex4     = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeLightBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
-static std::shared_ptr<MaterialBase> sTeal{};
 static std::uint32_t whiteMatIndex      = 0u;
+static std::uint32_t tealMatIndex       = std::numeric_limits<std::uint32_t>::max();
 static size_t secondTextureIndex        = std::numeric_limits<size_t>::max();
 static TextureAtlas atlas{};
 static std::uint32_t atlasBindingIndex  = 0u;
@@ -74,7 +73,7 @@ void App::Init()
 		SceneMaterialProcessor materialProcessor{ sceneProcessor };
 		materialProcessor.ProcessMeshAndMaterialData();
 
-		materialProcessor.LoadMaterials(*m_renderer);
+		materialProcessor.LoadBlinnPhongMaterials(*m_blinnPhong);
 		//materialProcessor.LoadTextures(*m_renderer);
 		materialProcessor.LoadTexturesAsAtlas(*m_renderer);
 
@@ -117,33 +116,29 @@ void App::Init()
 		// Green
 		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Green);
-		const MaterialData green{
+		const BlinnPhongMaterial green
+		{
 			.ambient  = colourBuffer,
 			.diffuse  = colourBuffer,
 			.specular = { 1.f, 1.f, 1.f, 1.f }
 		};
 
-		auto greenMat = std::make_shared<MaterialBase>();
-		greenMat->SetData(green);
-
-		const size_t materialIndex = m_renderer->AddMaterial(std::move(greenMat));
+		const size_t materialIndex = m_blinnPhong->AddMaterial(green);
 	}
 
 	{
 		// White
 		DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::White);
-		const MaterialData white{
+		const BlinnPhongMaterial white
+		{
 			.ambient   = colourBuffer,
 			.diffuse   = colourBuffer,
 			.specular  = { 1.f, 1.f, 1.f, 1.f },
 			.shininess = 16.f
 		};
 
-		auto whiteMat = std::make_shared<MaterialBase>();
-		whiteMat->SetData(white);
-
-		const size_t materialIndex = m_renderer->AddMaterial(std::move(whiteMat));
+		const size_t materialIndex = m_blinnPhong->AddMaterial(white);
 
 		whiteMatIndex = static_cast<std::uint32_t>(materialIndex);
 	}
@@ -152,16 +147,14 @@ void App::Init()
 		// Orange
 		DirectX::XMFLOAT4 colourBuffer{};
 		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Orange);
-		const MaterialData orange{
+		const BlinnPhongMaterial orange
+		{
 			.ambient  = colourBuffer,
 			.diffuse  = colourBuffer,
 			.specular = { 1.f, 1.f, 1.f, 1.f }
 		};
 
-		auto orangeMat = std::make_shared<MaterialBase>();
-		orangeMat->SetData(orange);
-
-		const size_t materialIndex = m_renderer->AddMaterial(std::move(orangeMat));
+		const size_t materialIndex = m_blinnPhong->AddMaterial(orange);
 	}
 
 	{
@@ -442,30 +435,29 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::F))
 	{
-		DirectX::XMFLOAT4 colourBuffer{};
-		DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Teal);
-		const MaterialData teal{
-			.ambient  = colourBuffer,
-			.diffuse  = colourBuffer,
-			.specular = { 1.f, 1.f, 1.f, 1.f }
-		};
+		if (tealMatIndex == std::numeric_limits<std::uint32_t>::max())
+		{
+			DirectX::XMFLOAT4 colourBuffer{};
+			DirectX::XMStoreFloat4(&colourBuffer, DirectX::Colors::Teal);
+			const BlinnPhongMaterial teal
+			{
+				.ambient  = colourBuffer,
+				.diffuse  = colourBuffer,
+				.specular = { 1.f, 1.f, 1.f, 1.f }
+			};
 
-		auto tealMat = std::make_shared<MaterialBase>();
-		tealMat->SetData(teal);
-
-		const size_t materialIndex = m_renderer->AddMaterial(tealMat);
-
-		sTeal = std::move(tealMat);
+			tealMatIndex = m_blinnPhong->AddMaterial(teal);
+		}
 	}
 
-	if (keyboard.IsKeyPressed(SKeyCodes::Q))
+	if (keyboard.IsKeyPressed(SKeyCodes::G))
 	{
 		if (cubeBundleIndex2 != std::numeric_limits<std::uint32_t>::max())
 		{
-			std::uint32_t index = 2u;
+			std::uint32_t index = whiteMatIndex;
 
-			if (sTeal)
-				index = 3u;
+			if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
+				index = tealMatIndex;
 
 			ModelBase& model1 = *cubeBundle2.GetModel(0u);
 
@@ -475,7 +467,12 @@ void App::PhysicsUpdate()
 
 	if (keyboard.IsKeyPressed(SKeyCodes::R))
 	{
-		sTeal.reset();
+		if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
+		{
+			m_blinnPhong->RemoveMaterial(tealMatIndex);
+
+			tealMatIndex = std::numeric_limits<std::uint32_t>::max();
+		}
 	}
 
 	if (keyboard.IsKeyPressed(SKeyCodes::O))

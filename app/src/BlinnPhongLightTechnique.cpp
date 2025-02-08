@@ -6,9 +6,9 @@ ShaderName BlinnPhongLightTechnique::s_lightDstShaderName = L"BlinnPhongShader";
 
 BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount)
 	: GraphicsTechniqueExtensionBase{ renderer }, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
-	m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u }, m_frameCount{ frameCount }
+	m_materials{}, m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u }, m_frameCount{ frameCount }
 {
-	constexpr size_t bufferBindingCount = 2u;
+	constexpr size_t bufferBindingCount = 3u;
 
 	m_bufferBindingDetails.resize(bufferBindingCount);
 
@@ -26,6 +26,15 @@ BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint
 		.layoutInfo =
 		{
 			.bindingIndex = ExternalBinding::s_lightInfo,
+			.type         = ExternalBufferType::CPUVisibleSSBO
+		}
+	};
+
+	m_bufferBindingDetails[s_materialBufferIndex] = ExternalBufferBindingDetails
+	{
+		.layoutInfo =
+		{
+			.bindingIndex = ExternalBinding::s_material,
 			.type         = ExternalBufferType::CPUVisibleSSBO
 		}
 	};
@@ -74,6 +83,22 @@ std::uint32_t BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> li
 	}
 
 	return static_cast<std::uint32_t>(lightIndex);
+}
+
+std::uint32_t BlinnPhongLightTechnique::AddMaterial(const BlinnPhongMaterial& material)
+{
+	m_renderer->WaitForGPUToFinish();
+
+	const auto index = static_cast<std::uint32_t>(m_materials.Add(material));
+
+	UpdateMaterialDescriptor();
+
+	return index;
+}
+
+void BlinnPhongLightTechnique::RemoveMaterial(size_t index)
+{
+	m_materials.Remove(index);
 }
 
 void BlinnPhongLightTechnique::SetProperties(
@@ -150,23 +175,23 @@ void BlinnPhongLightTechnique::ToggleLight(size_t index, bool value) noexcept
 
 void BlinnPhongLightTechnique::SetBuffers(ExternalResourceFactory* resourceFactory)
 {
-	constexpr size_t externalBufferCount = 2u;
+	constexpr size_t externalBufferCount = 3u;
 
 	m_externalBufferIndices.resize(externalBufferCount);
 
 	// Light Count
 	{
-		const size_t bufferIndex           = s_lightCountBufferIndex;
-		const size_t lightCountBufferIndex = resourceFactory->CreateExternalBuffer(
+		const size_t bufferIndex    = s_lightCountBufferIndex;
+		const size_t extBufferIndex = resourceFactory->CreateExternalBuffer(
 			ExternalBufferType::CPUVisibleUniform
 		);
 
-		m_lightCountExtBuffer = resourceFactory->GetExternalBufferSP(lightCountBufferIndex);
+		m_lightCountExtBuffer = resourceFactory->GetExternalBufferSP(extBufferIndex);
 
-		const auto lightCountBufferIndexU32 = static_cast<std::uint32_t>(lightCountBufferIndex);
+		const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
 
-		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = lightCountBufferIndexU32;
-		m_externalBufferIndices[bufferIndex]                                   = lightCountBufferIndexU32;
+		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = extBufferIndexU32;
+		m_externalBufferIndices[bufferIndex]                                   = extBufferIndexU32;
 
 		// The Light Count bufferSize should be fixed.
 		m_lightCountExtBuffer->Create(m_frameCount * s_lightCountInstanceSize);
@@ -174,17 +199,34 @@ void BlinnPhongLightTechnique::SetBuffers(ExternalResourceFactory* resourceFacto
 
 	// Light Info
 	{
-		const size_t bufferIndex          = s_lightInfoBufferIndex;
-		const size_t lightInfoBufferIndex = resourceFactory->CreateExternalBuffer(
+		const size_t bufferIndex    = s_lightInfoBufferIndex;
+		const size_t extBufferIndex = resourceFactory->CreateExternalBuffer(
 			ExternalBufferType::CPUVisibleSSBO
 		);
 
-		m_lightInfoExtBuffer = resourceFactory->GetExternalBufferSP(lightInfoBufferIndex);
+		m_lightInfoExtBuffer         = resourceFactory->GetExternalBufferSP(extBufferIndex);
 
-		const auto lightInfoBufferIndexU32 = static_cast<std::uint32_t>(lightInfoBufferIndex);
+		const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
 
-		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = lightInfoBufferIndexU32;
-		m_externalBufferIndices[bufferIndex]                                   = lightInfoBufferIndexU32;
+		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = extBufferIndexU32;
+		m_externalBufferIndices[bufferIndex]                                   = extBufferIndexU32;
+	}
+
+	// Material
+	{
+		const size_t bufferIndex    = s_materialBufferIndex;
+		const size_t extBufferIndex = resourceFactory->CreateExternalBuffer(
+			ExternalBufferType::CPUVisibleSSBO
+		);
+
+		m_materials.SetCPUExtBuffer(
+			resourceFactory->GetExternalBufferSP(extBufferIndex)
+		);
+
+		const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
+
+		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = extBufferIndexU32;
+		m_externalBufferIndices[bufferIndex]                                   = extBufferIndexU32;
 	}
 }
 
@@ -198,6 +240,11 @@ void BlinnPhongLightTechnique::UpdateLightInfoDescriptors()
 {
 	for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
 		UpdateCPUBufferDescriptor(s_lightInfoBufferIndex, frameIndex, m_lightInfoInstanceSize);
+}
+
+void BlinnPhongLightTechnique::UpdateMaterialDescriptor()
+{
+	UpdateCPUBufferDescriptor(s_materialBufferIndex, m_materials.GetExtBuffer()->BufferSize());
 }
 
 void BlinnPhongLightTechnique::SetFixedDescriptors()

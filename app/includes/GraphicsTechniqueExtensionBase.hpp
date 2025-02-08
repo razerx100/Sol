@@ -34,11 +34,6 @@ protected:
 	using NewBufferInfo_t = std::optional<NewBufferInfo>;
 
 protected:
-	// This will copy the old buffer into the new one and set it to cpuBuffer and empty the temp buffer.
-	static void ExtendCPUVisibleBuffer(
-		ExternalBuffer& cpuBuffer, ExternalBuffer& cpuTempBuffer, size_t newSize
-	) noexcept;
-
 	[[nodiscard]]
 	static NewBufferInfo_t GetNewBufferSize(
 		const ExternalBuffer& buffer, size_t strideSize, size_t elementCount,
@@ -56,6 +51,8 @@ protected:
 
 	// Assuming the GPU isn't doing anything.
 	void UpdateCPUBufferDescriptor(size_t bindingDetailsIndex, size_t frameIndex, size_t instanceSize);
+	// Assuming the GPU isn't doing anything. And this descriptor will be bound on all the frames.
+	void UpdateCPUBufferDescriptor(size_t bindingDetailsIndex, size_t bufferSize);
 
 protected:
 	std::vector<std::uint32_t>                m_externalBufferIndices;

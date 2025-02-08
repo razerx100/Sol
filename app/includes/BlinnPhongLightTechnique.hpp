@@ -4,6 +4,7 @@
 #include <ExternalResourceFactory.hpp>
 #include <LightSource.hpp>
 #include <ReusableVector.hpp>
+#include <ReusableExtBuffer.hpp>
 
 // The alphas aren't needed but keeping them for alignment reasons. And it would be
 // easier to deal in Float3 all the time.
@@ -15,6 +16,15 @@ struct BlinnPhongLightProperties
 	float             diffuseAlpha = 1.f;
 	DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
 	float             specularAlpha = 1.f;
+};
+
+struct BlinnPhongMaterial
+{
+	DirectX::XMFLOAT4 ambient;
+	DirectX::XMFLOAT4 diffuse;
+	DirectX::XMFLOAT4 specular;
+	float             shininess = 1.f;
+	float             padding[3] = {};
 };
 
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
@@ -32,6 +42,8 @@ public:
 
 	[[nodiscard]]
 	std::uint32_t AddLight(std::shared_ptr<LightSource> lightSource);
+	[[nodiscard]]
+	std::uint32_t AddMaterial(const BlinnPhongMaterial& material);
 
 	void RemoveLight(size_t index) noexcept;
 	void ToggleLight(size_t index, bool value) noexcept;
@@ -41,6 +53,8 @@ public:
 		size_t lightIndex, const DirectX::XMFLOAT3& ambient, const DirectX::XMFLOAT3& diffuse,
 		const DirectX::XMFLOAT3& specular
 	) noexcept;
+
+	void RemoveMaterial(size_t index);
 
 	void SetFixedDescriptors();
 
@@ -70,20 +84,23 @@ private:
 private:
 	void UpdateLightCountDescriptors();
 	void UpdateLightInfoDescriptors();
+	void UpdateMaterialDescriptor();
 
 private:
-	std::shared_ptr<ExternalBuffer> m_lightCountExtBuffer;
-	std::shared_ptr<ExternalBuffer> m_lightInfoExtBuffer;
-	ReusableVector<LightInfo>       m_lights;
-	std::vector<bool>               m_lightStatus;
-	size_t                          m_lightInfoInstanceSize;
-	std::uint32_t                   m_frameCount;
+	std::shared_ptr<ExternalBuffer>          m_lightCountExtBuffer;
+	std::shared_ptr<ExternalBuffer>          m_lightInfoExtBuffer;
+	ReusableCPUExtBuffer<BlinnPhongMaterial> m_materials;
+	ReusableVector<LightInfo>                m_lights;
+	std::vector<bool>                        m_lightStatus;
+	size_t                                   m_lightInfoInstanceSize;
+	std::uint32_t                            m_frameCount;
 
 	static ShaderName s_lightSrcShaderName;
 	static ShaderName s_lightDstShaderName;
 
 	static constexpr std::uint32_t s_lightCountBufferIndex = 0u;
 	static constexpr std::uint32_t s_lightInfoBufferIndex  = 1u;
+	static constexpr std::uint32_t s_materialBufferIndex   = 2u;
 
 	// Since the light count is set as a Uniform buffer, it must be 256 bytes aligned.
 	static constexpr size_t s_lightCountInstanceSize = 256u;
@@ -97,6 +114,7 @@ public:
 		: GraphicsTechniqueExtensionBase{ std::move(other) },
 		m_lightCountExtBuffer{ std::move(other.m_lightCountExtBuffer) },
 		m_lightInfoExtBuffer{ std::move(other.m_lightInfoExtBuffer) },
+		m_materials{ std::move(other.m_materials) },
 		m_lights{ std::move(other.m_lights) },
 		m_lightStatus{ std::move(other.m_lightStatus) },
 		m_lightInfoInstanceSize{ other.m_lightInfoInstanceSize },
@@ -107,6 +125,7 @@ public:
 		GraphicsTechniqueExtensionBase::operator=(std::move(other));
 		m_lightCountExtBuffer   = std::move(other.m_lightCountExtBuffer);
 		m_lightInfoExtBuffer    = std::move(other.m_lightInfoExtBuffer);
+		m_materials             = std::move(other.m_materials);
 		m_lights                = std::move(other.m_lights);
 		m_lightStatus           = std::move(other.m_lightStatus);
 		m_lightInfoInstanceSize = other.m_lightInfoInstanceSize;

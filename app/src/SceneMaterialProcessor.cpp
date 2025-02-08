@@ -1,6 +1,5 @@
 #include <SceneMaterialProcessor.hpp>
 #include <ConversionUtilities.hpp>
-#include <MaterialBase.hpp>
 #include <TextureAtlas.hpp>
 #include <ranges>
 #include <algorithm>
@@ -35,7 +34,7 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess);
 
 		m_materialData.emplace_back(
-			MaterialData
+			BlinnPhongMaterial
 			{
 				.ambient   = GetXMFloat4(ambient),
 				.diffuse   = GetXMFloat4(diffuse),
@@ -72,18 +71,12 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 	}
 }
 
-void SceneMaterialProcessor::LoadMaterials(Renderer& renderer)
+void SceneMaterialProcessor::LoadBlinnPhongMaterials(BlinnPhongLightTechnique& blinnPhongTechnique)
 {
 	const size_t materialCount = std::size(m_materialData);
 
 	for (size_t index = 0u; index < materialCount; ++index)
-	{
-		const size_t materialIndex = renderer.AddMaterial(
-			std::make_shared<MaterialBase>(m_materialData[index])
-		);
-
-		m_materialDetails[index].materialIndex = static_cast<std::uint32_t>(materialIndex);
-	}
+		m_materialDetails[index].materialIndex = blinnPhongTechnique.AddMaterial(m_materialData[index]);
 }
 
 void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)

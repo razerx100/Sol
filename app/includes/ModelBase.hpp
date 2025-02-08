@@ -4,7 +4,7 @@
 #include <string>
 #include <array>
 
-#include <MeshBundleBase.hpp>
+#include <SolMeshUtility.hpp>
 #include <Model.hpp>
 #include <Renderer.hpp>
 
@@ -266,13 +266,41 @@ public:
 		*m_meshBundleIndex = index;
 	}
 
+	// Because of circular inclusion, can't include the MeshBundleBase header in this header.
+	// So, have to do some template stuff to figure that out.
+	template<class T>
 	void SetMeshBundle(
-		std::uint32_t meshBundleIndex, float modelScale, const MeshBundleImpl& meshBundle
+		std::uint32_t meshBundleIndex, float modelScale, const T& meshBundle
+	) {
+		const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
+		const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
+
+		SetMeshBundle(meshBundleIndex, modelScale, newNodeData, permanentDetails);
+	}
+
+	void SetMeshBundle(
+		std::uint32_t meshBundleIndex, float modelScale,
+		const std::vector<MeshNodeData>& newNodeData,
+		const std::vector<MeshPermanentDetails>& permanentDetails
 	);
+
+	// Because of circular inclusion, can't include the MeshBundleBase header in this header.
+	// So, have to do some template stuff to figure that out.
+	template<class T>
+	void ChangeMeshBundle(
+		std::uint32_t meshBundleIndex, const T& meshBundle, bool discardExistingTransformation = true
+	) {
+		const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
+		const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
+
+		ChangeMeshBundle(meshBundleIndex, newNodeData, permanentDetails, discardExistingTransformation);
+	}
 
 	// Can only be changed if the new mesh count is the same as before.
 	void ChangeMeshBundle(
-		std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle,
+		std::uint32_t meshBundleIndex,
+		const std::vector<MeshNodeData>& newNodeData,
+		const std::vector<MeshPermanentDetails>& permanentDetails,
 		bool discardExistingTransformation = true
 	);
 
@@ -352,7 +380,7 @@ public:
 	std::uint32_t SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName) const;
 
 private:
-	void SetModels(float modelScale, const MeshBundleImpl& meshBundle);
+	void SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData);
 
 private:
 	[[nodiscard]]

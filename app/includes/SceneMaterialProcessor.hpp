@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <limits>
-#include <Material.hpp>
+#include <BlinnPhongLightTechnique.hpp>
 #include <SceneProcessor.hpp>
 #include <Renderer.hpp>
 
@@ -38,7 +38,7 @@ public:
 
 	void ProcessMeshAndMaterialData();
 
-	void LoadMaterials(Renderer& renderer);
+	void LoadBlinnPhongMaterials(BlinnPhongLightTechnique& blinnPhongTechnique);
 	void LoadTexturesAsAtlas(Renderer& renderer);
 	void LoadTextures(Renderer& renderer);
 
@@ -72,7 +72,7 @@ private:
 private:
 	std::shared_ptr<SceneProcessor> m_scene;
 	std::vector<TexturePath>        m_texturePaths;
-	std::vector<MaterialData>       m_materialData;
+	std::vector<BlinnPhongMaterial> m_materialData;
 	std::vector<TextureDetails>     m_baseTextureDetails;
 	std::vector<MaterialDetails>    m_materialDetails;
 	TextureDetails                  m_defaultTextureDetails;

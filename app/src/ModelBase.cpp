@@ -112,17 +112,17 @@ std::uint32_t ModelBundleBase::SetModelBundle(Renderer& renderer, const ShaderNa
 }
 
 void ModelBundleBase::SetMeshBundle(
-	std::uint32_t meshBundleIndex, float modelScale, const MeshBundleImpl& meshBundle
+	std::uint32_t meshBundleIndex, float modelScale,
+	const std::vector<MeshNodeData>& newNodeData,
+	const std::vector<MeshPermanentDetails>& permanentDetails
 ) {
-	SetModels(modelScale, meshBundle);
+	SetModels(modelScale, newNodeData);
 
-	ChangeMeshBundle(meshBundleIndex, meshBundle, false);
+	ChangeMeshBundle(meshBundleIndex, newNodeData, permanentDetails, false);
 }
 
-void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBundle)
+void ModelBundleBase::SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData)
 {
-	const std::vector<MeshNodeData>& nodeData = meshBundle.GetMeshNodeData();
-
 	const size_t nodeCount = std::size(nodeData);
 
 	m_modelNodeData.resize(nodeCount);
@@ -145,13 +145,12 @@ void ModelBundleBase::SetModels(float modelScale, const MeshBundleImpl& meshBund
 }
 
 void ModelBundleBase::ChangeMeshBundle(
-	std::uint32_t meshBundleIndex, const MeshBundleImpl& meshBundle, bool discardExistingTransformation
+	std::uint32_t meshBundleIndex,
+	const std::vector<MeshNodeData>& newNodeData,
+	const std::vector<MeshPermanentDetails>& permanentDetails,
+	bool discardExistingTransformation
 ) {
-	*m_meshBundleIndex = meshBundleIndex;
-
-	const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
-	const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
-
+	*m_meshBundleIndex        = meshBundleIndex;
 	const size_t newNodeCount = std::size(newNodeData);
 
 	assert(!std::empty(m_models) && "The models haven't been set yet.");
