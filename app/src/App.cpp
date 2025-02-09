@@ -107,9 +107,10 @@ void App::Init()
 	// Light Properties
 	BlinnPhongLightProperties lightProperties
 	{
-		.ambient  = DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f },
-		.diffuse  = DirectX::XMFLOAT3{ 0.7f, 0.7f, 0.7f },
-		.specular = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f }
+		.ambient   = DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f },
+		.diffuse   = DirectX::XMFLOAT3{ 0.7f, 0.7f, 0.7f },
+		.specular  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+		.lightType = static_cast<std::uint32_t>(lightType)
 	};
 
 	switch (lightType)
