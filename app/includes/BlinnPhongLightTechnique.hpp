@@ -10,6 +10,8 @@
 // easier to deal in Float3 all the time.
 struct BlinnPhongLightProperties
 {
+	DirectX::XMFLOAT3 direction{ 0.f, 0.f, 0.f };
+	float             padding;
 	DirectX::XMFLOAT3 ambient{ 1.f, 1.f, 1.f };
 	float             ambientAlpha = 1.f;
 	DirectX::XMFLOAT3 diffuse{ 1.f, 1.f, 1.f };
@@ -17,10 +19,10 @@ struct BlinnPhongLightProperties
 	DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
 	float             specularAlpha = 1.f;
 	// Attenuation co-efficients
-	float             constant; // Inner cutoff if Spotlight
-	float             linear; // Outer cutoff if Spotlight
-	float             quadratic;
-	std::uint32_t     lightType; // 0 for Directional, 1 for Point and 2 for Spotlight
+	float             constant  = 1.f; // Inner cutoff if Spotlight
+	float             linear    = 0.f; // Outer cutoff if Spotlight
+	float             quadratic = 0.f;
+	std::uint32_t     lightType = 0u; // 0 for Directional, 1 for Point and 2 for Spotlight
 };
 
 enum class BlinnPhongLightType
@@ -61,10 +63,20 @@ public:
 	void ToggleLight(size_t index, bool value) noexcept;
 
 	void SetProperties(size_t lightIndex, const BlinnPhongLightProperties& properties) noexcept;
+
 	void SetLightColour(
 		size_t lightIndex, const DirectX::XMFLOAT3& ambient, const DirectX::XMFLOAT3& diffuse,
 		const DirectX::XMFLOAT3& specular
 	) noexcept;
+
+	// Works for Directional and Spotlight.
+	void SetDirection(size_t lightIndex, const DirectX::XMFLOAT3& direction) noexcept;
+	// Works only for Point Light
+	void SetAttenuationCoefficients(
+		size_t lightIndex, float constant, float linear, float quadratic
+	) noexcept;
+	// Works only for SpotLight
+	void SetCutoffs(size_t lightIndex, float innerCutoff, float outerCutoff) noexcept;
 
 	void RemoveMaterial(size_t index);
 

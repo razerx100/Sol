@@ -62,6 +62,7 @@ public:
 	PerspectiveCamera();
 
 	PerspectiveCamera& SetWorldForwardDirection(bool positiveZ) noexcept;
+
 	void SetTravelSpeed(float travelSpeed) noexcept { m_travelSpeed = travelSpeed; }
 	void SetRotationSpeed(float rotationSpeed) noexcept { m_rotationSpeed = rotationSpeed; }
 

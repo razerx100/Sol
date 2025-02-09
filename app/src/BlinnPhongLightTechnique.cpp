@@ -1,5 +1,6 @@
 #include <BlinnPhongLightTechnique.hpp>
 #include <ExternalBindingIndices.hpp>
+#include <ConversionUtilities.hpp>
 
 ShaderName BlinnPhongLightTechnique::s_lightSrcShaderName = L"NoLightShader";
 ShaderName BlinnPhongLightTechnique::s_lightDstShaderName = L"BlinnPhongShader";
@@ -49,9 +50,13 @@ std::uint32_t BlinnPhongLightTechnique::AddLight(
 			.source     = std::move(lightSource),
 			.properties = BlinnPhongLightProperties
 			{
+				.direction = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
 				.ambient   = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
 				.diffuse   = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
 				.specular  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.constant  = 1.f,
+				.linear    = 0.f,
+				.quadratic = 0.f,
 				.lightType = static_cast<std::uint32_t>(type)
 			}
 		}, s_extraAllocationCount
@@ -106,7 +111,8 @@ void BlinnPhongLightTechnique::RemoveMaterial(size_t index)
 void BlinnPhongLightTechnique::SetProperties(
 	size_t lightIndex, const BlinnPhongLightProperties& properties
 ) noexcept {
-	m_lights[lightIndex].properties = properties;
+	m_lights[lightIndex].properties           = properties;
+	m_lights[lightIndex].properties.direction = NormaliseFloat3(properties.direction);
 }
 
 void BlinnPhongLightTechnique::SetLightColour(
@@ -116,6 +122,27 @@ void BlinnPhongLightTechnique::SetLightColour(
 	m_lights[lightIndex].properties.ambient  = ambient;
 	m_lights[lightIndex].properties.diffuse  = diffuse;
 	m_lights[lightIndex].properties.specular = specular;
+}
+
+void BlinnPhongLightTechnique::SetDirection(
+	size_t lightIndex, const DirectX::XMFLOAT3& direction
+) noexcept {
+	m_lights[lightIndex].properties.direction = NormaliseFloat3(direction);
+}
+
+void BlinnPhongLightTechnique::SetAttenuationCoefficients(
+	size_t lightIndex, float constant, float linear, float quadratic
+) noexcept {
+	m_lights[lightIndex].properties.constant  = constant;
+	m_lights[lightIndex].properties.linear    = linear;
+	m_lights[lightIndex].properties.quadratic = quadratic;
+}
+
+void BlinnPhongLightTechnique::SetCutoffs(
+	size_t lightIndex, float innerCutoff, float outerCutoff
+) noexcept {
+	m_lights[lightIndex].properties.constant = innerCutoff;
+	m_lights[lightIndex].properties.linear   = outerCutoff;
 }
 
 void BlinnPhongLightTechnique::UpdateCPUData(size_t frameIndex) noexcept

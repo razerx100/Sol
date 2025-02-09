@@ -85,24 +85,13 @@ void App::Init()
 	*/
 	cubeLightBundle.AddModel(0.1f);
 
-	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Directional;
+	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Point;
 
-	if (lightType != BlinnPhongLightType::Directional)
-	{
-		std::shared_ptr<ModelBase> lightModel = cubeLightBundle.GetModel(0u);
+	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle.GetModel(0u);
 
-		std::uint32_t lightIndex = m_blinnPhong->AddLight(
-			std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
-		);
-	}
-	else
-	{
-		DirectX::XMFLOAT3 direction{ 1.f, -0.f, -0.f };
-
-		std::uint32_t lightIndex = m_blinnPhong->AddLight(
-			std::make_shared<LightSourceWithoutModel>(direction), lightType
-		);
-	}
+	std::uint32_t lightIndex = m_blinnPhong->AddLight(
+		std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
+	);
 
 	// Light Properties
 	BlinnPhongLightProperties lightProperties
@@ -123,12 +112,21 @@ void App::Init()
 
 			break;
 		}
+		case BlinnPhongLightType::Directional:
+		{
+			lightProperties.direction = DirectX::XMFLOAT3{ 1.f, -0.f, -0.f };
+
+			break;
+		}
 		case BlinnPhongLightType::Spotlight:
 		{
+			// Focus direction
+			lightProperties.direction = DirectX::XMFLOAT3{ 0.f, 0.f, 1.f };
+
 			// These are done in Cosine, so calculation on the shaders is easier. As we will have
 			// to compare the cuttoffs with Dot products.
-			lightProperties.constant  = std::cos(DirectX::XMConvertToRadians(12.5f)); // Inner cutoff
-			lightProperties.linear    = std::cos(DirectX::XMConvertToRadians(17.5f)); // Outer cutoff
+			lightProperties.constant = std::cos(DirectX::XMConvertToRadians(12.5f)); // Inner cutoff
+			lightProperties.linear   = std::cos(DirectX::XMConvertToRadians(17.5f)); // Outer cutoff
 
 			break;
 		}

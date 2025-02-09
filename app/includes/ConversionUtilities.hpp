@@ -52,4 +52,20 @@ inline DirectX::XMFLOAT4 GetXMFloat4(const aiColor4D& aiColour4) noexcept
 
 	return dxF4;
 }
+
+[[nodiscard]]
+inline DirectX::XMFLOAT3 NormaliseFloat3(const DirectX::XMFLOAT3& vec) noexcept
+{
+	using namespace DirectX;
+
+	XMVECTOR vVec = XMLoadFloat3(&vec);
+
+	vVec          = XMVector3Normalize(vVec);
+
+	XMFLOAT3 nFloat3{};
+
+	XMStoreFloat3(&nFloat3, vVec);
+
+	return nFloat3;
+}
 #endif
