@@ -40,17 +40,19 @@ BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint
 	};
 }
 
-std::uint32_t BlinnPhongLightTechnique::AddLight(std::shared_ptr<LightSource> lightSource)
-{
+std::uint32_t BlinnPhongLightTechnique::AddLight(
+	std::shared_ptr<LightSource> lightSource, BlinnPhongLightType type
+) {
 	const size_t lightIndex = m_lights.Add(
 		LightInfo
 		{
 			.source     = std::move(lightSource),
 			.properties = BlinnPhongLightProperties
 			{
-				.ambient  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.diffuse  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.specular = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f }
+				.ambient   = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.diffuse   = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.specular  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.lightType = static_cast<std::uint32_t>(type)
 			}
 		}, s_extraAllocationCount
 	);

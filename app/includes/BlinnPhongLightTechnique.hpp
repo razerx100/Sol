@@ -16,6 +16,18 @@ struct BlinnPhongLightProperties
 	float             diffuseAlpha = 1.f;
 	DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
 	float             specularAlpha = 1.f;
+	// Attenuation co-efficients
+	float             constant; // Inner cutoff if Spotlight
+	float             linear; // Outer cutoff if Spotlight
+	float             quadratic;
+	std::uint32_t     lightType; // 0 for Directional, 1 for Point and 2 for Spotlight
+};
+
+enum class BlinnPhongLightType
+{
+	Directional,
+	Point,
+	Spotlight
 };
 
 struct BlinnPhongMaterial
@@ -41,7 +53,7 @@ public:
 	BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount);
 
 	[[nodiscard]]
-	std::uint32_t AddLight(std::shared_ptr<LightSource> lightSource);
+	std::uint32_t AddLight(std::shared_ptr<LightSource> lightSource, BlinnPhongLightType type);
 	[[nodiscard]]
 	std::uint32_t AddMaterial(const BlinnPhongMaterial& material);
 

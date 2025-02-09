@@ -1,4 +1,5 @@
 #include <TextureTools.hpp>
+#include <cmath>
 
 #include <App.hpp>
 #include <ModelBase.hpp>
@@ -82,26 +83,57 @@ void App::Init()
 		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
 	*/
-
 	cubeLightBundle.AddModel(0.1f);
 
-	std::shared_ptr<ModelBase> lightModel = cubeLightBundle.GetModel(0u);
+	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Directional;
 
-	std::uint32_t lightIndex = m_blinnPhong->AddLight(
-		std::make_shared<LightSourceWithModel>(std::move(lightModel))
-	);
-
+	if (lightType != BlinnPhongLightType::Directional)
 	{
-		// Light Properties
-		BlinnPhongLightProperties lightProperties
-		{
-			.ambient  = DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f },
-			.diffuse  = DirectX::XMFLOAT3{ 0.7f, 0.7f, 0.7f },
-			.specular = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-		};
+		std::shared_ptr<ModelBase> lightModel = cubeLightBundle.GetModel(0u);
 
-		m_blinnPhong->SetProperties(0u, lightProperties);
+		std::uint32_t lightIndex = m_blinnPhong->AddLight(
+			std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
+		);
 	}
+	else
+	{
+		DirectX::XMFLOAT3 direction{ 1.f, -0.f, -0.f };
+
+		std::uint32_t lightIndex = m_blinnPhong->AddLight(
+			std::make_shared<LightSourceWithoutModel>(direction), lightType
+		);
+	}
+
+	// Light Properties
+	BlinnPhongLightProperties lightProperties
+	{
+		.ambient  = DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f },
+		.diffuse  = DirectX::XMFLOAT3{ 0.7f, 0.7f, 0.7f },
+		.specular = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f }
+	};
+
+	switch (lightType)
+	{
+		case BlinnPhongLightType::Point:
+		{
+			lightProperties.constant  = 1.f;
+			lightProperties.linear    = 0.09f;
+			lightProperties.quadratic = 0.032f;
+
+			break;
+		}
+		case BlinnPhongLightType::Spotlight:
+		{
+			// These are done in Cosine, so calculation on the shaders is easier. As we will have
+			// to compare the cuttoffs with Dot products.
+			lightProperties.constant  = std::cos(DirectX::XMConvertToRadians(12.5f)); // Inner cutoff
+			lightProperties.linear    = std::cos(DirectX::XMConvertToRadians(17.5f)); // Outer cutoff
+
+			break;
+		}
+	}
+
+	m_blinnPhong->SetProperties(0u, lightProperties);
 
 	camera = std::make_shared<PerspectiveCameraEuler>();
 
@@ -135,7 +167,7 @@ void App::Init()
 			.ambient   = colourBuffer,
 			.diffuse   = colourBuffer,
 			.specular  = { 1.f, 1.f, 1.f, 1.f },
-			.shininess = 16.f
+			.shininess = 32.f
 		};
 
 		const size_t materialIndex = m_blinnPhong->AddMaterial(white);
@@ -158,13 +190,15 @@ void App::Init()
 	}
 
 	{
-		atlas.AddTexture("Narrative",  "resources/textures/NTHead.jpg")
-			.AddTexture("Panda",       "resources/textures/Panda.png")
-			.AddTexture("Unicorn",     "resources/textures/unicorn.jpeg")
-			.AddTexture("Katarin",     "resources/textures/Katarin.png")
-			.AddTexture("Monika",      "resources/textures/MonikaGun.png")
-			.AddTexture("UltraMarine", "resources/textures/UltraMarine.jpg")
-			.AddTexture("Goku",        "resources/textures/Goku.jpg");
+		atlas.AddTexture("Narrative",    "resources/textures/NTHead.jpg")
+			.AddTexture("Panda",         "resources/textures/Panda.png")
+			.AddTexture("Unicorn",       "resources/textures/unicorn.jpeg")
+			.AddTexture("Katarin",       "resources/textures/Katarin.png")
+			.AddTexture("Monika",        "resources/textures/MonikaGun.png")
+			.AddTexture("UltraMarine",   "resources/textures/UltraMarine.jpg")
+			.AddTexture("Goku",          "resources/textures/Goku.jpg")
+			.AddTexture("Container",     "resources/textures/container.png")
+			.AddTexture("ContainerSpec", "resources/textures/container_specular.png");
 
 		atlas.CreateAtlas();
 
@@ -199,9 +233,9 @@ void App::Init()
 
 			model1.SetMeshIndex(0u);
 			model1.SetMaterialIndex(whiteMatIndex);
-			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
+			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Container"));
 			model1.SetDiffuseIndex(atlasBindingIndex);
-			model1.SetSpecularUVInfo(atlas.GetUVInfo("Narrative"));
+			model1.SetSpecularUVInfo(atlas.GetUVInfo("ContainerSpec"));
 			model1.SetSpecularIndex(atlasBindingIndex);
 
 			cubeBundle1.MoveTowardsX(0u, 0.75f);
