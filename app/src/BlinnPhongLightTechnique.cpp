@@ -50,14 +50,16 @@ std::uint32_t BlinnPhongLightTechnique::AddLight(
 			.source     = std::move(lightSource),
 			.properties = BlinnPhongLightProperties
 			{
-				.direction = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
-				.ambient   = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.diffuse   = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.specular  = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.constant  = 1.f,
-				.linear    = 0.f,
-				.quadratic = 0.f,
-				.lightType = static_cast<std::uint32_t>(type)
+				.direction   = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
+				.ambient     = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.innerCutoff = 1.f,
+				.diffuse     = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.specular    = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+				.outerCutoff = 1.f,
+				.constant    = 1.f,
+				.linear      = 0.f,
+				.quadratic   = 0.f,
+				.lightType   = static_cast<std::uint32_t>(type)
 			}
 		}, s_extraAllocationCount
 	);
@@ -141,8 +143,13 @@ void BlinnPhongLightTechnique::SetAttenuationCoefficients(
 void BlinnPhongLightTechnique::SetCutoffs(
 	size_t lightIndex, float innerCutoff, float outerCutoff
 ) noexcept {
-	m_lights[lightIndex].properties.constant = innerCutoff;
-	m_lights[lightIndex].properties.linear   = outerCutoff;
+	m_lights[lightIndex].properties.innerCutoff = innerCutoff;
+	m_lights[lightIndex].properties.outerCutoff = outerCutoff;
+}
+
+void BlinnPhongLightTechnique::SetType(size_t lightIndex, BlinnPhongLightType type) noexcept
+{
+	m_lights[lightIndex].properties.lightType = static_cast<std::uint32_t>(type);
 }
 
 void BlinnPhongLightTechnique::UpdateCPUData(size_t frameIndex) noexcept

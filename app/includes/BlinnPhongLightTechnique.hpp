@@ -13,16 +13,16 @@ struct BlinnPhongLightProperties
 	DirectX::XMFLOAT3 direction{ 0.f, 0.f, 0.f };
 	float             padding;
 	DirectX::XMFLOAT3 ambient{ 1.f, 1.f, 1.f };
-	float             ambientAlpha = 1.f;
+	float             innerCutoff = 1.f;
 	DirectX::XMFLOAT3 diffuse{ 1.f, 1.f, 1.f };
 	float             diffuseAlpha = 1.f;
 	DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
-	float             specularAlpha = 1.f;
+	float             outerCutoff = 1.f;
 	// Attenuation co-efficients
-	float             constant  = 1.f; // Inner cutoff if Spotlight
-	float             linear    = 0.f; // Outer cutoff if Spotlight
-	float             quadratic = 0.f;
-	std::uint32_t     lightType = 0u; // 0 for Directional, 1 for Point and 2 for Spotlight
+	float             constant    = 1.f;
+	float             linear      = 0.f;
+	float             quadratic   = 0.f;
+	std::uint32_t     lightType   = 0u; // 0 for Directional, 1 for Point and 2 for Spotlight
 };
 
 enum class BlinnPhongLightType
@@ -71,12 +71,13 @@ public:
 
 	// Works for Directional and Spotlight.
 	void SetDirection(size_t lightIndex, const DirectX::XMFLOAT3& direction) noexcept;
-	// Works only for Point Light
+	// Works for Point Light and Spotlight.
 	void SetAttenuationCoefficients(
 		size_t lightIndex, float constant, float linear, float quadratic
 	) noexcept;
 	// Works only for SpotLight
 	void SetCutoffs(size_t lightIndex, float innerCutoff, float outerCutoff) noexcept;
+	void SetType(size_t lightIndex, BlinnPhongLightType type) noexcept;
 
 	void RemoveMaterial(size_t index);
 
@@ -100,7 +101,7 @@ private:
 	struct LightData
 	{
 		DirectX::XMFLOAT3         lightPosition;
-		float                     padding1;
+		float                     padding;
 		BlinnPhongLightProperties properties;
 		// Vec3 in GLSL are Vec4, so need the padding.
 	};

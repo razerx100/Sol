@@ -85,12 +85,16 @@ void App::Init()
 	*/
 	cubeLightBundle.AddModel(0.1f);
 
-	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Point;
+	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Spotlight;
 
 	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle.GetModel(0u);
 
 	std::uint32_t lightIndex = m_blinnPhong->AddLight(
 		std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
+	);
+
+	std::uint32_t lightIndex1 = m_blinnPhong->AddLight(
+		std::make_shared<LightSourceWithoutModel>(), BlinnPhongLightType::Directional
 	);
 
 	// Light Properties
@@ -123,16 +127,24 @@ void App::Init()
 			// Focus direction
 			lightProperties.direction = DirectX::XMFLOAT3{ 0.f, 0.f, 1.f };
 
+			lightProperties.constant  = 1.f;
+			lightProperties.linear    = 0.09f;
+			lightProperties.quadratic = 0.032f;
+
 			// These are done in Cosine, so calculation on the shaders is easier. As we will have
 			// to compare the cuttoffs with Dot products.
-			lightProperties.constant = std::cos(DirectX::XMConvertToRadians(12.5f)); // Inner cutoff
-			lightProperties.linear   = std::cos(DirectX::XMConvertToRadians(17.5f)); // Outer cutoff
+			lightProperties.innerCutoff = std::cos(DirectX::XMConvertToRadians(12.5f));
+			lightProperties.outerCutoff = std::cos(DirectX::XMConvertToRadians(17.5f));
 
 			break;
 		}
 	}
 
-	m_blinnPhong->SetProperties(0u, lightProperties);
+	m_blinnPhong->SetProperties(lightIndex, lightProperties);
+
+	m_blinnPhong->SetProperties(lightIndex1, lightProperties);
+	m_blinnPhong->SetDirection(lightIndex1, DirectX::XMFLOAT3{ 1.f, 0.f, 0.f });
+	m_blinnPhong->SetType(lightIndex1, BlinnPhongLightType::Directional);
 
 	camera = std::make_shared<PerspectiveCameraEuler>();
 
