@@ -29,6 +29,10 @@ public:
 	virtual std::uint32_t GetMeshIndex() const noexcept = 0;
 	[[nodiscard]]
 	virtual float GetModelScale() const noexcept = 0;
+	[[nodiscard]]
+	virtual std::uint32_t GetPipelineIndex() const noexcept = 0;
+	[[nodiscard]]
+	virtual bool IsVisible() const noexcept = 0;
 
 	[[nodiscard]]
 	virtual std::uint32_t GetDiffuseIndex() const noexcept = 0;

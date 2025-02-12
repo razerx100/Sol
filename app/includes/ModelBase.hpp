@@ -139,7 +139,8 @@ class ModelBase : public Model
 public:
 	ModelBase()
 		: m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u }, m_meshIndex{ 0u },
-		m_transform{}, m_diffuseUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
+		m_pipelineIndex{ 0u }, m_visible{ true }, m_transform{}, m_diffuseUVInfo{0.f, 0.f, 1.f, 1.f},
+		m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
 	{}
 	ModelBase(float scale) : ModelBase{}
 	{
@@ -177,6 +178,8 @@ public:
 		);
 	}
 	void SetSpecularUVInfo(const UVInfo& uvInfo) noexcept { m_specularUVInfo = uvInfo; }
+	void SetPipelineIndex(std::uint32_t pipelineIndex) noexcept { m_pipelineIndex = pipelineIndex; }
+	void SetVisibility(bool value) noexcept { m_visible = value; }
 
 	[[nodiscard]]
 	DirectX::XMMATRIX GetModelMatrix() const noexcept override { return m_transform.GetModelMatrix(); }
@@ -187,7 +190,11 @@ public:
 	[[nodiscard]]
 	std::uint32_t GetMeshIndex() const noexcept override { return m_meshIndex; }
 	[[nodiscard]]
-	float GetModelScale() const noexcept override { return m_transform.GetModelScale(); };
+	float GetModelScale() const noexcept override { return m_transform.GetModelScale(); }
+	[[nodiscard]]
+	std::uint32_t GetPipelineIndex() const noexcept override { return m_pipelineIndex; }
+	[[nodiscard]]
+	bool IsVisible() const noexcept override { return m_visible; }
 
 	[[nodiscard]]
 	const ModelTransform& GetTransform() const noexcept { return m_transform; }
@@ -208,6 +215,8 @@ private:
 	std::uint32_t  m_diffuseIndex;
 	std::uint32_t  m_specularIndex;
 	std::uint32_t  m_meshIndex;
+	std::uint32_t  m_pipelineIndex;
+	bool           m_visible;
 	ModelTransform m_transform;
 	UVInfo         m_diffuseUVInfo;
 	UVInfo         m_specularUVInfo;

@@ -1,7 +1,6 @@
 #ifndef SHADER_SOL_HPP_
 #define SHADER_SOL_HPP_
 #include <string>
-#include <compare>
 
 enum class ShaderType
 {
