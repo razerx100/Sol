@@ -41,6 +41,9 @@ static size_t secondTextureIndex        = std::numeric_limits<size_t>::max();
 static TextureAtlas atlas{};
 static std::uint32_t atlasBindingIndex  = 0u;
 
+static std::uint32_t nonLightPSOIndex   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t lightPSOIndex      = std::numeric_limits<std::uint32_t>::max();
+
 static std::shared_ptr<PerspectiveCameraEuler> camera{};
 
 App::App(
@@ -83,11 +86,18 @@ void App::Init()
 		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
 	*/
+	{
+		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(m_blinnPhong->GetLightSrcShaderName());
+		lightPSOIndex    = m_renderer->AddGraphicsPipeline(m_blinnPhong->GetLightDstShaderName());
+	}
+
 	cubeLightBundle.AddModel(0.1f);
 
 	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Spotlight;
 
 	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle.GetModel(0u);
+
+	lightModel->SetPipelineIndex(nonLightPSOIndex);
 
 	std::uint32_t lightIndex = m_blinnPhong->AddLight(
 		std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
@@ -248,6 +258,7 @@ void App::Init()
 			model1.SetDiffuseIndex(atlasBindingIndex);
 			model1.SetSpecularUVInfo(atlas.GetUVInfo("ContainerSpec"));
 			model1.SetSpecularIndex(atlasBindingIndex);
+			model1.SetPipelineIndex(lightPSOIndex);
 
 			cubeBundle1.MoveTowardsX(0u, 0.75f);
 		}
@@ -261,6 +272,7 @@ void App::Init()
 			model2.SetDiffuseIndex(atlasBindingIndex);
 			model2.SetSpecularUVInfo(atlas.GetUVInfo("Katarin"));
 			model2.SetSpecularIndex(atlasBindingIndex);
+			model2.SetPipelineIndex(lightPSOIndex);
 
 			cubeBundle1.MoveTowardsY(1u, 0.75f);
 		}
@@ -343,6 +355,7 @@ void App::PhysicsUpdate()
 				model1.SetMaterialIndex(1u);
 				model1.SetDiffuseIndex(atlasBindingIndex);
 				model1.SetSpecularIndex(atlasBindingIndex);
+				model1.SetPipelineIndex(lightPSOIndex);
 			}
 
 			{
@@ -354,6 +367,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseIndex(atlasBindingIndex);
 				model2.SetSpecularUVInfo(atlas.GetUVInfo("Monika"));
 				model2.SetSpecularIndex(atlasBindingIndex);
+				model2.SetPipelineIndex(lightPSOIndex);
 
 				cubeBundle2.MoveTowardsX(1u, -0.75f);
 			}
@@ -392,6 +406,7 @@ void App::PhysicsUpdate()
 				model1.SetDiffuseIndex(atlasBindingIndex);
 				model1.SetSpecularUVInfo(atlas.GetUVInfo("Unicorn"));
 				model1.SetSpecularIndex(atlasBindingIndex);
+				model1.SetPipelineIndex(lightPSOIndex);
 
 				cubeBundle3.MoveModel(0u, DirectX::XMFLOAT3{ -1.4f, -0.75f, 0.f });
 			}
@@ -405,6 +420,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseIndex(atlasBindingIndex);
 				model2.SetSpecularUVInfo(atlas.GetUVInfo("Panda"));
 				model2.SetSpecularIndex(atlasBindingIndex);
+				model2.SetPipelineIndex(lightPSOIndex);
 
 				cubeBundle3.MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
 			}
@@ -443,6 +459,7 @@ void App::PhysicsUpdate()
 				model1.SetDiffuseIndex(atlasBindingIndex);
 				model1.SetSpecularUVInfo(atlas.GetUVInfo("UltraMarine"));
 				model1.SetSpecularIndex(atlasBindingIndex);
+				model1.SetPipelineIndex(lightPSOIndex);
 
 				cubeBundle4.MoveModel(0u, DirectX::XMFLOAT3{ 1.4f, -0.75f, 0.f });
 			}
@@ -456,6 +473,7 @@ void App::PhysicsUpdate()
 				model2.SetDiffuseIndex(atlasBindingIndex);
 				model2.SetSpecularUVInfo(atlas.GetUVInfo("Goku"));
 				model2.SetSpecularIndex(atlasBindingIndex);
+				model2.SetPipelineIndex(lightPSOIndex);
 
 				cubeBundle4.MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
 			}
