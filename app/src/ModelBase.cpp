@@ -92,23 +92,13 @@ ModelBundleBase& ModelBundleBase::AddModel(float scale) noexcept
 			.childrenData = MeshChildrenData{.count = 0u, .startingIndex = 0u }
 		}
 	);
-	m_models.emplace_back(std::make_shared<ModelBase>(scale));
+
+	auto model = std::make_shared<ModelBase>(scale);
+
+	m_models.emplace_back(model);
+	m_modelsNonBase.emplace_back(std::move(model));
 
 	return *this;
-}
-
-std::shared_ptr<ModelBundleImpl> ModelBundleBase::GetBundleImpl() const noexcept
-{
-	auto bundleImpl               = std::make_shared<ModelBundleImpl>();
-	bundleImpl->m_meshBundleIndex = m_meshBundleIndex;
-	bundleImpl->m_models          = UpCastVector<Model>(m_models);
-
-	return bundleImpl;
-}
-
-std::uint32_t ModelBundleBase::SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName) const
-{
-	return renderer.AddModelBundle(std::move(GetBundleImpl()), pixelShaderName);
 }
 
 void ModelBundleBase::SetMeshBundle(
@@ -150,7 +140,7 @@ void ModelBundleBase::ChangeMeshBundle(
 	const std::vector<MeshPermanentDetails>& permanentDetails,
 	bool discardExistingTransformation
 ) {
-	*m_meshBundleIndex        = meshBundleIndex;
+	m_meshBundleIndex         = meshBundleIndex;
 	const size_t newNodeCount = std::size(newNodeData);
 
 	assert(!std::empty(m_models) && "The models haven't been set yet.");

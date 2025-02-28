@@ -6,7 +6,6 @@
 
 #include <SolMeshUtility.hpp>
 #include <Model.hpp>
-#include <Renderer.hpp>
 
 class ModelTransform
 {
@@ -222,57 +221,16 @@ private:
 	UVInfo         m_specularUVInfo;
 };
 
-class ModelBundleImpl : public ModelBundle
-{
-	friend class ModelBundleBase;
-public:
-	ModelBundleImpl() : ModelBundle{}, m_models{}, m_meshBundleIndex{} {}
-
-	[[nodiscard]]
-	const std::vector<std::shared_ptr<Model>>& GetModels() const noexcept override { return m_models; }
-	[[nodiscard]]
-	std::uint32_t GetMeshBundleIndex() const noexcept override { return *m_meshBundleIndex; }
-
-private:
-	std::vector<std::shared_ptr<Model>> m_models;
-	std::shared_ptr<std::uint32_t>      m_meshBundleIndex;
-
-public:
-	ModelBundleImpl(const ModelBundleImpl& other) noexcept
-		: m_models{ other.m_models }, m_meshBundleIndex{ other.m_meshBundleIndex }
-	{}
-	ModelBundleImpl& operator=(const ModelBundleImpl& other) noexcept
-	{
-		m_models          = other.m_models;
-		m_meshBundleIndex = other.m_meshBundleIndex;
-
-		return *this;
-	}
-	ModelBundleImpl(ModelBundleImpl&& other) noexcept
-		: m_models{ std::move(other.m_models) },
-		m_meshBundleIndex{ std::move(other.m_meshBundleIndex) }
-	{}
-	ModelBundleImpl& operator=(ModelBundleImpl&& other) noexcept
-	{
-		m_models          = std::move(other.m_models);
-		m_meshBundleIndex = std::move(other.m_meshBundleIndex);
-
-		return *this;
-	}
-};
-
 class ModelBundleBase
 {
 public:
-	ModelBundleBase()
-		: m_modelNodeData{}, m_models{}, m_meshBundleIndex{ std::make_shared<std::uint32_t>(0u) }
-	{}
+	ModelBundleBase() : m_modelNodeData{}, m_models{}, m_modelsNonBase{}, m_meshBundleIndex { 0u } {}
 
 	ModelBundleBase& AddModel(float scale) noexcept;
 
 	void SetMeshBundleIndex(std::uint32_t index) noexcept
 	{
-		*m_meshBundleIndex = index;
+		m_meshBundleIndex = index;
 	}
 
 	// Because of circular inclusion, can't include the MeshBundleBase header in this header.
@@ -377,51 +335,80 @@ public:
 	std::vector<std::shared_ptr<ModelBase>>& GetModels() noexcept { return m_models; }
 	[[nodiscard]]
 	const std::vector<std::shared_ptr<ModelBase>>& GetModels() const noexcept { return m_models; }
+	[[nodiscard]]
+	const std::vector<std::shared_ptr<Model>>& GetModelsNonBase() const noexcept
+	{
+		return m_modelsNonBase;
+	}
 
 	[[nodiscard]]
 	std::shared_ptr<ModelBase>& GetModel(size_t index) noexcept { return m_models[index]; }
 	[[nodiscard]]
 	const std::shared_ptr<ModelBase>& GetModel(size_t index) const noexcept { return m_models[index]; }
 	[[nodiscard]]
-	std::uint32_t GetMeshBundleIndex() const noexcept { return *m_meshBundleIndex; }
-
-	[[nodiscard]]
-	std::uint32_t SetModelBundle(Renderer& renderer, const ShaderName& pixelShaderName) const;
+	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
 
 private:
 	void SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData);
 
 private:
-	[[nodiscard]]
-	std::shared_ptr<ModelBundleImpl> GetBundleImpl() const noexcept;
-
-private:
 	std::vector<MeshNodeData>               m_modelNodeData;
 	std::vector<std::shared_ptr<ModelBase>> m_models;
-	std::shared_ptr<std::uint32_t>          m_meshBundleIndex;
+	// This is just so it could be shared in the interface. And would be the same pointers as above
+	// so won't have to do all the operations.
+	std::vector<std::shared_ptr<Model>>     m_modelsNonBase;
+	std::uint32_t                           m_meshBundleIndex;
 
 public:
-	ModelBundleBase(const ModelBundleBase& other) noexcept
-		: m_modelNodeData{ other.m_modelNodeData }, m_models { other.m_models },
-		m_meshBundleIndex{ other.m_meshBundleIndex }
-	{}
-	ModelBundleBase& operator=(const ModelBundleBase& other) noexcept
-	{
-		m_modelNodeData   = other.m_modelNodeData;
-		m_models          = other.m_models;
-		m_meshBundleIndex = other.m_meshBundleIndex;
+	ModelBundleBase(const ModelBundleBase&) = delete;
+	ModelBundleBase& operator=(const ModelBundleBase&) = delete;
 
-		return *this;
-	}
 	ModelBundleBase(ModelBundleBase&& other) noexcept
 		: m_modelNodeData{ std::move(other.m_modelNodeData) }, m_models{ std::move(other.m_models) },
-		m_meshBundleIndex{ std::move(other.m_meshBundleIndex) }
+		m_modelsNonBase{ std::move(other.m_modelsNonBase) }, m_meshBundleIndex{ other.m_meshBundleIndex }
 	{}
 	ModelBundleBase& operator=(ModelBundleBase&& other) noexcept
 	{
 		m_modelNodeData   = std::move(other.m_modelNodeData);
 		m_models          = std::move(other.m_models);
-		m_meshBundleIndex = std::move(other.m_meshBundleIndex);
+		m_modelsNonBase   = std::move(other.m_modelsNonBase);
+		m_meshBundleIndex = other.m_meshBundleIndex;
+
+		return *this;
+	}
+};
+
+class ModelBundleImpl : public ModelBundle
+{
+public:
+	ModelBundleImpl(std::shared_ptr<ModelBundleBase> modelBundleBase)
+		: ModelBundle{}, m_modelBundleBase{ std::move(modelBundleBase) }
+	{}
+
+	[[nodiscard]]
+	const std::vector<std::shared_ptr<Model>>& GetModels() const noexcept override
+	{
+		return m_modelBundleBase->GetModelsNonBase();
+	}
+	[[nodiscard]]
+	std::uint32_t GetMeshBundleIndex() const noexcept override
+	{
+		return m_modelBundleBase->GetMeshBundleIndex();
+	}
+
+private:
+	std::shared_ptr<ModelBundleBase> m_modelBundleBase;
+
+public:
+	ModelBundleImpl(const ModelBundleImpl&) = delete;
+	ModelBundleImpl& operator=(const ModelBundleImpl&) = delete;
+
+	ModelBundleImpl(ModelBundleImpl&& other) noexcept
+		: m_modelBundleBase{ std::move(other.m_modelBundleBase) }
+	{}
+	ModelBundleImpl& operator=(ModelBundleImpl&& other) noexcept
+	{
+		m_modelBundleBase = std::move(other.m_modelBundleBase);
 
 		return *this;
 	}

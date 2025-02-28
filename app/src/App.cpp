@@ -18,14 +18,14 @@ static std::uint32_t assimpMeshBundleIndex   = std::numeric_limits<std::uint32_t
 static MeshBundleImpl sphereMeshBundle{ true };
 static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
-static ModelBundleBase cubeBundle1{};
-static ModelBundleBase assimpModelBundle1{};
-static ModelBundleBase assimpModelBundle2{};
-static ModelBundleBase assimpModelBundle3{};
-static ModelBundleBase cubeBundle2{};
-static ModelBundleBase cubeBundle3{};
-static ModelBundleBase cubeBundle4{};
-static ModelBundleBase cubeLightBundle{};
+static std::shared_ptr<ModelBundleBase> cubeBundle1{};
+static std::shared_ptr<ModelBundleBase> assimpModelBundle1{};
+static std::shared_ptr<ModelBundleBase> assimpModelBundle2{};
+static std::shared_ptr<ModelBundleBase> assimpModelBundle3{};
+static std::shared_ptr<ModelBundleBase> cubeBundle2{};
+static std::shared_ptr<ModelBundleBase> cubeBundle3{};
+static std::shared_ptr<ModelBundleBase> cubeBundle4{};
+static std::shared_ptr<ModelBundleBase> cubeLightBundle{};
 static std::uint32_t cubeBundleIndex1     = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t assimpBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t assimpBundleIndex2   = std::numeric_limits<std::uint32_t>::max();
@@ -91,11 +91,13 @@ void App::Init()
 		lightPSOIndex    = m_renderer->AddGraphicsPipeline(m_blinnPhong->GetLightDstShaderName());
 	}
 
-	cubeLightBundle.AddModel(0.1f);
+	cubeLightBundle = std::make_shared<ModelBundleBase>();
+
+	cubeLightBundle->AddModel(0.1f);
 
 	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Spotlight;
 
-	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle.GetModel(0u);
+	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle->GetModel(0u);
 
 	lightModel->SetPipelineIndex(nonLightPSOIndex);
 
@@ -231,7 +233,7 @@ void App::Init()
 
 	{
 		{
-			ModelBase& model1 = *cubeLightBundle.GetModel(0u);
+			ModelBase& model1 = *cubeLightBundle->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
 			model1.SetMaterialIndex(whiteMatIndex);
@@ -239,18 +241,21 @@ void App::Init()
 			model1.SetDiffuseIndex(atlasBindingIndex);
 		}
 
-		cubeLightBundle.SetMeshBundleIndex(cubeMeshBundleIndex);
-		cubeLightBundleIndex = cubeLightBundle.SetModelBundle(
-			*m_renderer, m_blinnPhong->GetLightSrcShaderName()
+		cubeLightBundle->SetMeshBundleIndex(cubeMeshBundleIndex);
+
+		cubeLightBundleIndex = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(cubeLightBundle), m_blinnPhong->GetLightSrcShaderName()
 		);
 	}
 
 	{
-		cubeBundle1.AddModel(0.45f).AddModel(0.45f);
+		cubeBundle1 = std::make_shared<ModelBundleBase>();
+
+		cubeBundle1->AddModel(0.45f).AddModel(0.45f);
 
 		// We have only a single mesh in the bundle.
 		{
-			ModelBase& model1 = *cubeBundle1.GetModel(0u);
+			ModelBase& model1 = *cubeBundle1->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
 			model1.SetMaterialIndex(whiteMatIndex);
@@ -260,11 +265,11 @@ void App::Init()
 			model1.SetSpecularIndex(atlasBindingIndex);
 			model1.SetPipelineIndex(lightPSOIndex);
 
-			cubeBundle1.MoveTowardsX(0u, 0.75f);
+			cubeBundle1->MoveTowardsX(0u, 0.75f);
 		}
 
 		{
-			ModelBase& model2 = *cubeBundle1.GetModel(1u);
+			ModelBase& model2 = *cubeBundle1->GetModel(1u);
 
 			model2.SetMeshIndex(0u);
 			model2.SetMaterialIndex(whiteMatIndex);
@@ -274,11 +279,14 @@ void App::Init()
 			model2.SetSpecularIndex(atlasBindingIndex);
 			model2.SetPipelineIndex(lightPSOIndex);
 
-			cubeBundle1.MoveTowardsY(1u, 0.75f);
+			cubeBundle1->MoveTowardsY(1u, 0.75f);
 		}
 
-		cubeBundle1.SetMeshBundleIndex(cubeMeshBundleIndex);
-		cubeBundleIndex1 = cubeBundle1.SetModelBundle(*m_renderer, m_blinnPhong->GetLightDstShaderName());
+		cubeBundle1->SetMeshBundleIndex(cubeMeshBundleIndex);
+
+		cubeBundleIndex1 = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(cubeBundle1), m_blinnPhong->GetLightDstShaderName()
+		);
 	}
 
 	/*
@@ -312,16 +320,16 @@ void App::PhysicsUpdate()
 	const Keyboard& keyboard = m_inputManager->GetKeyboard();
 
 	if (keyboard.IsKeyPressed(SKeyCodes::UpArrow))
-		cubeLightBundle.MoveTowardsZ(0u, 0.05f);
+		cubeLightBundle->MoveTowardsZ(0u, 0.05f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::DownArrow))
-		cubeLightBundle.MoveTowardsZ(0u, -0.05f);
+		cubeLightBundle->MoveTowardsZ(0u, -0.05f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::RightArrow))
-		cubeLightBundle.MoveTowardsX(0u, 0.05f);
+		cubeLightBundle->MoveTowardsX(0u, 0.05f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::LeftArrow))
-		cubeLightBundle.MoveTowardsX(0u, -0.05f);
+		cubeLightBundle->MoveTowardsX(0u, -0.05f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::W))
 		camera->MoveForward(0.01f).MoveCamera();
@@ -329,27 +337,29 @@ void App::PhysicsUpdate()
 	if (keyboard.IsKeyPressed(SKeyCodes::S))
 		camera->MoveBackward(0.01f).MoveCamera();
 
-	if (keyboard.IsKeyPressed(SKeyCodes::E))
-		assimpModelBundle1.RotatePitchDegree(0u, 1.f);
+	//if (keyboard.IsKeyPressed(SKeyCodes::E))
+	//	assimpModelBundle1->RotatePitchDegree(0u, 1.f);
 
-	if (keyboard.IsKeyPressed(SKeyCodes::Q))
-		assimpModelBundle1.RotatePitchDegree(0u, -1.f);
+	//if (keyboard.IsKeyPressed(SKeyCodes::Q))
+	//	assimpModelBundle1->RotatePitchDegree(0u, -1.f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
-		cubeBundle1.MoveTowardsX(0u, 0.01f);
+		cubeBundle1->MoveTowardsX(0u, 0.01f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::A))
-		cubeBundle1.MoveTowardsX(0u, -0.01f);
+		cubeBundle1->MoveTowardsX(0u, -0.01f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::C))
 	{
 		if (cubeBundleIndex2 == std::numeric_limits<std::uint32_t>::max())
 		{
-			cubeBundle2.AddModel(0.45f).AddModel(0.45f);
+			cubeBundle2 = std::make_shared<ModelBundleBase>();
+
+			cubeBundle2->AddModel(0.45f).AddModel(0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle2.GetModel(0u);
+				ModelBase& model1 = *cubeBundle2->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 				model1.SetMaterialIndex(1u);
@@ -359,7 +369,7 @@ void App::PhysicsUpdate()
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle2.GetModel(1u);
+				ModelBase& model2 = *cubeBundle2->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 				model2.SetMaterialIndex(whiteMatIndex);
@@ -369,12 +379,13 @@ void App::PhysicsUpdate()
 				model2.SetSpecularIndex(atlasBindingIndex);
 				model2.SetPipelineIndex(lightPSOIndex);
 
-				cubeBundle2.MoveTowardsX(1u, -0.75f);
+				cubeBundle2->MoveTowardsX(1u, -0.75f);
 			}
 
-			cubeBundle2.SetMeshBundleIndex(cubeMeshBundleIndex);
-			cubeBundleIndex2 = cubeBundle2.SetModelBundle(
-				*m_renderer, m_blinnPhong->GetLightDstShaderName()
+			cubeBundle2->SetMeshBundleIndex(cubeMeshBundleIndex);
+
+			cubeBundleIndex2 = m_renderer->AddModelBundle(
+				std::make_shared<ModelBundleImpl>(cubeBundle2), m_blinnPhong->GetLightDstShaderName()
 			);
 		}
 	}
@@ -386,7 +397,7 @@ void App::PhysicsUpdate()
 			m_renderer->RemoveModelBundle(cubeBundleIndex2);
 
 			cubeBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
-			cubeBundle2      = ModelBundleBase{};
+			cubeBundle2.reset();
 		}
 	}
 
@@ -394,11 +405,13 @@ void App::PhysicsUpdate()
 	{
 		if (cubeBundleIndex3 == std::numeric_limits<std::uint32_t>::max())
 		{
-			cubeBundle3.AddModel(0.45f).AddModel(0.45f);
+			cubeBundle3 = std::make_shared<ModelBundleBase>();
+
+			cubeBundle3->AddModel(0.45f).AddModel(0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle3.GetModel(0u);
+				ModelBase& model1 = *cubeBundle3->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 				model1.SetMaterialIndex(whiteMatIndex);
@@ -408,11 +421,11 @@ void App::PhysicsUpdate()
 				model1.SetSpecularIndex(atlasBindingIndex);
 				model1.SetPipelineIndex(lightPSOIndex);
 
-				cubeBundle3.MoveModel(0u, DirectX::XMFLOAT3{ -1.4f, -0.75f, 0.f });
+				cubeBundle3->MoveModel(0u, DirectX::XMFLOAT3{ -1.4f, -0.75f, 0.f });
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle3.GetModel(1u);
+				ModelBase& model2 = *cubeBundle3->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 				model2.SetMaterialIndex(whiteMatIndex);
@@ -422,12 +435,13 @@ void App::PhysicsUpdate()
 				model2.SetSpecularIndex(atlasBindingIndex);
 				model2.SetPipelineIndex(lightPSOIndex);
 
-				cubeBundle3.MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
+				cubeBundle3->MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
 			}
 
-			cubeBundle3.SetMeshBundleIndex(cubeMeshBundleIndex);
-			cubeBundleIndex3 = cubeBundle3.SetModelBundle(
-				*m_renderer, m_blinnPhong->GetLightDstShaderName()
+			cubeBundle3->SetMeshBundleIndex(cubeMeshBundleIndex);
+
+			cubeBundleIndex3 = m_renderer->AddModelBundle(
+				std::make_shared<ModelBundleImpl>(cubeBundle3), m_blinnPhong->GetLightDstShaderName()
 			);
 		}
 	}
@@ -439,7 +453,7 @@ void App::PhysicsUpdate()
 			m_renderer->RemoveModelBundle(cubeBundleIndex3);
 
 			cubeBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
-			cubeBundle3      = ModelBundleBase{};
+			cubeBundle3.reset();
 		}
 	}
 
@@ -447,11 +461,13 @@ void App::PhysicsUpdate()
 	{
 		if (cubeBundleIndex4 == std::numeric_limits<std::uint32_t>::max())
 		{
-			cubeBundle4.AddModel(0.45f).AddModel(0.45f);
+			cubeBundle4 = std::make_shared<ModelBundleBase>();
+
+			cubeBundle4->AddModel(0.45f).AddModel(0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle4.GetModel(0u);
+				ModelBase& model1 = *cubeBundle4->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 				model1.SetMaterialIndex(whiteMatIndex);
@@ -461,11 +477,11 @@ void App::PhysicsUpdate()
 				model1.SetSpecularIndex(atlasBindingIndex);
 				model1.SetPipelineIndex(lightPSOIndex);
 
-				cubeBundle4.MoveModel(0u, DirectX::XMFLOAT3{ 1.4f, -0.75f, 0.f });
+				cubeBundle4->MoveModel(0u, DirectX::XMFLOAT3{ 1.4f, -0.75f, 0.f });
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle4.GetModel(1u);
+				ModelBase& model2 = *cubeBundle4->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 				model2.SetMaterialIndex(whiteMatIndex);
@@ -475,12 +491,13 @@ void App::PhysicsUpdate()
 				model2.SetSpecularIndex(atlasBindingIndex);
 				model2.SetPipelineIndex(lightPSOIndex);
 
-				cubeBundle4.MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
+				cubeBundle4->MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
 			}
 
-			cubeBundle4.SetMeshBundleIndex(cubeMeshBundleIndex);
-			cubeBundleIndex4 = cubeBundle4.SetModelBundle(
-				*m_renderer, m_blinnPhong->GetLightDstShaderName()
+			cubeBundle4->SetMeshBundleIndex(cubeMeshBundleIndex);
+
+			cubeBundleIndex4 = m_renderer->AddModelBundle(
+				std::make_shared<ModelBundleImpl>(cubeBundle4), m_blinnPhong->GetLightDstShaderName()
 			);
 		}
 	}
@@ -492,7 +509,7 @@ void App::PhysicsUpdate()
 			m_renderer->RemoveModelBundle(cubeBundleIndex4);
 
 			cubeBundleIndex4 = std::numeric_limits<std::uint32_t>::max();
-			cubeBundle4      = ModelBundleBase{};
+			cubeBundle4.reset();
 		}
 	}
 
@@ -522,7 +539,7 @@ void App::PhysicsUpdate()
 			if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
 				index = tealMatIndex;
 
-			ModelBase& model1 = *cubeBundle2.GetModel(0u);
+			ModelBase& model1 = *cubeBundle2->GetModel(0u);
 
 			model1.SetMaterialIndex(index);
 		}
@@ -558,7 +575,7 @@ void App::PhysicsUpdate()
 
 		if (bundle1Exists && sphereExists)
 		{
-			ModelBase& model1 = *cubeBundle1.GetModel(0u);
+			ModelBase& model1 = *cubeBundle1->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
 			model1.SetDiffuseIndex(0u);
@@ -566,7 +583,7 @@ void App::PhysicsUpdate()
 			model1.SetDiffuseUVInfo(UVInfo{});
 			model1.SetSpecularUVInfo(UVInfo{});
 
-			ModelBase& model2 = *cubeBundle1.GetModel(1u);
+			ModelBase& model2 = *cubeBundle1->GetModel(1u);
 
 			model2.SetMeshIndex(0u);
 			model2.SetDiffuseIndex(0u);
@@ -574,7 +591,7 @@ void App::PhysicsUpdate()
 			model2.SetDiffuseUVInfo(UVInfo{});
 			model2.SetSpecularUVInfo(UVInfo{});
 
-			cubeBundle1.SetMeshBundleIndex(sphereMeshBundleIndex);
+			cubeBundle1->SetMeshBundleIndex(sphereMeshBundleIndex);
 		}
 	}
 
@@ -598,7 +615,7 @@ void App::PhysicsUpdate()
 	{
 		if (secondTextureIndex != std::numeric_limits<size_t>::max())
 		{
-			ModelBase& model1 = *cubeBundle1.GetModel(0u);
+			ModelBase& model1 = *cubeBundle1->GetModel(0u);
 
 			model1.SetDiffuseUVInfo(UVInfo{});
 			model1.SetDiffuseIndex(secondTextureIndex);
