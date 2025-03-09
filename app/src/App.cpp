@@ -50,7 +50,7 @@ App::App(
 	Renderer* renderer, InputManager* inputManager, RenderEngineType engineType,
 	ExtensionManager* extensionManager, std::uint32_t frameCount
 ) : m_renderer{ renderer }, m_blinnPhong{ nullptr }, m_inputManager{ inputManager },
-	m_engineType{ engineType }
+	m_engineType{ engineType }, m_defaultRenderPass{}
 {
 	extensionManager->SetBlinnPhongLight(renderer, frameCount);
 
@@ -66,6 +66,23 @@ void App::Init()
 		cubeMeshBundle.AddMesh(std::move(mesh));
 
 		cubeMeshBundleIndex = m_renderer->AddMeshBundle(cubeMeshBundle.MoveTemporaryData());
+	}
+
+	{
+		m_inputManager->SubscribeToEvent(
+			InputEvent::Resize, &DefaultRenderPass::ResizeCallback, &m_defaultRenderPass
+		);
+
+		m_defaultRenderPass.SetRenderer(m_renderer);
+
+		ExternalResourceFactory* resourceFactory
+			= m_renderer->GetExternalResourceManager()->GetResourceFactory();
+
+		m_defaultRenderPass.SetRenderTarget(*resourceFactory);
+		m_defaultRenderPass.SetDepthBuffer(*resourceFactory);
+		m_defaultRenderPass.FetchRenderPassFromRenderer();
+
+		m_defaultRenderPass.Resize();
 	}
 
 	/*
@@ -87,8 +104,26 @@ void App::Init()
 	}
 	*/
 	{
-		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(m_blinnPhong->GetLightSrcShaderName());
-		lightPSOIndex    = m_renderer->AddGraphicsPipeline(m_blinnPhong->GetLightDstShaderName());
+		ExternalGraphicsPipeline nonLightPipeline{ m_blinnPhong->GetLightSrcShaderName() };
+
+		const ExternalFormat swapchainFormat = m_renderer->GetSwapchainFormat();
+
+		nonLightPipeline.AddRenderTarget(swapchainFormat);
+		nonLightPipeline.EnableDepthTesting(ExternalFormat::D32_SFLOAT);
+		nonLightPipeline.EnableBackfaceCulling();
+
+		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightPipeline);
+
+		ExternalGraphicsPipeline lightPipeline{ m_blinnPhong->GetLightDstShaderName() };
+
+		lightPipeline.AddRenderTarget(swapchainFormat);
+		lightPipeline.EnableDepthTesting(ExternalFormat::D32_SFLOAT);
+		lightPipeline.EnableBackfaceCulling();
+
+		lightPSOIndex    = m_renderer->AddGraphicsPipeline(lightPipeline);
+
+		m_defaultRenderPass.AddPipeline(nonLightPSOIndex);
+		m_defaultRenderPass.AddPipeline(lightPSOIndex);
 	}
 
 	cubeLightBundle = std::make_shared<ModelBundleBase>();
@@ -244,8 +279,10 @@ void App::Init()
 		cubeLightBundle->SetMeshBundleIndex(cubeMeshBundleIndex);
 
 		cubeLightBundleIndex = m_renderer->AddModelBundle(
-			std::make_shared<ModelBundleImpl>(cubeLightBundle), m_blinnPhong->GetLightSrcShaderName()
+			std::make_shared<ModelBundleImpl>(cubeLightBundle)
 		);
+
+		m_defaultRenderPass.AddModelBundle(cubeLightBundleIndex);
 	}
 
 	{
@@ -285,8 +322,10 @@ void App::Init()
 		cubeBundle1->SetMeshBundleIndex(cubeMeshBundleIndex);
 
 		cubeBundleIndex1 = m_renderer->AddModelBundle(
-			std::make_shared<ModelBundleImpl>(cubeBundle1), m_blinnPhong->GetLightDstShaderName()
+			std::make_shared<ModelBundleImpl>(cubeBundle1)
 		);
+
+		m_defaultRenderPass.AddModelBundle(cubeBundleIndex1);
 	}
 
 	/*
@@ -385,8 +424,10 @@ void App::PhysicsUpdate()
 			cubeBundle2->SetMeshBundleIndex(cubeMeshBundleIndex);
 
 			cubeBundleIndex2 = m_renderer->AddModelBundle(
-				std::make_shared<ModelBundleImpl>(cubeBundle2), m_blinnPhong->GetLightDstShaderName()
+				std::make_shared<ModelBundleImpl>(cubeBundle2)
 			);
+
+			m_defaultRenderPass.AddModelBundle(cubeBundleIndex2);
 		}
 	}
 
@@ -395,6 +436,8 @@ void App::PhysicsUpdate()
 		if (cubeBundleIndex2 != std::numeric_limits<std::uint32_t>::max())
 		{
 			m_renderer->RemoveModelBundle(cubeBundleIndex2);
+
+			m_defaultRenderPass.RemoveModelBundle(cubeBundleIndex2);
 
 			cubeBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
 			cubeBundle2.reset();
@@ -441,8 +484,10 @@ void App::PhysicsUpdate()
 			cubeBundle3->SetMeshBundleIndex(cubeMeshBundleIndex);
 
 			cubeBundleIndex3 = m_renderer->AddModelBundle(
-				std::make_shared<ModelBundleImpl>(cubeBundle3), m_blinnPhong->GetLightDstShaderName()
+				std::make_shared<ModelBundleImpl>(cubeBundle3)
 			);
+
+			m_defaultRenderPass.AddModelBundle(cubeBundleIndex3);
 		}
 	}
 
@@ -451,6 +496,7 @@ void App::PhysicsUpdate()
 		if (cubeBundleIndex3 != std::numeric_limits<std::uint32_t>::max())
 		{
 			m_renderer->RemoveModelBundle(cubeBundleIndex3);
+			m_defaultRenderPass.RemoveModelBundle(cubeBundleIndex3);
 
 			cubeBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
 			cubeBundle3.reset();
@@ -497,8 +543,10 @@ void App::PhysicsUpdate()
 			cubeBundle4->SetMeshBundleIndex(cubeMeshBundleIndex);
 
 			cubeBundleIndex4 = m_renderer->AddModelBundle(
-				std::make_shared<ModelBundleImpl>(cubeBundle4), m_blinnPhong->GetLightDstShaderName()
+				std::make_shared<ModelBundleImpl>(cubeBundle4)
 			);
+
+			m_defaultRenderPass.AddModelBundle(cubeBundleIndex4);
 		}
 	}
 
@@ -507,6 +555,7 @@ void App::PhysicsUpdate()
 		if (cubeBundleIndex4 != std::numeric_limits<std::uint32_t>::max())
 		{
 			m_renderer->RemoveModelBundle(cubeBundleIndex4);
+			m_defaultRenderPass.RemoveModelBundle(cubeBundleIndex4);
 
 			cubeBundleIndex4 = std::numeric_limits<std::uint32_t>::max();
 			cubeBundle4.reset();

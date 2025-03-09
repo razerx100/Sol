@@ -3,6 +3,7 @@
 #include <Renderer.hpp>
 #include <InputManager.hpp>
 #include <ExtensionManager.hpp>
+#include <DefaultRenderPass.hpp>
 
 class App
 {
@@ -21,5 +22,6 @@ private:
 	BlinnPhongLightTechnique* m_blinnPhong;
 	InputManager*             m_inputManager;
 	RenderEngineType          m_engineType;
+	DefaultRenderPass         m_defaultRenderPass;
 };
 #endif

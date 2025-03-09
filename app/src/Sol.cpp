@@ -188,7 +188,7 @@ void Sol::FullscreenCallback([[maybe_unused]]void* callbackData, void* extraData
 {
 	auto sol = static_cast<Sol*>(extraData);
 
-	const Renderer::Resolution resolution = sol->m_renderer->GetFirstDisplayCoordinates();
+	const Renderer::Extent resolution = sol->m_renderer->GetFirstDisplayCoordinates();
 
 	sol->m_window->ToggleFullscreen(resolution.width, resolution.height);
 }
