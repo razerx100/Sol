@@ -41,7 +41,6 @@ Sol::Sol(const std::string& appName)
 
 	// Renderer
 	m_renderer->SetShaderPath(L"resources/shaders/");
-	m_renderer->SetBackgroundColour({ 0.01f, 0.01f, 0.01f, 0.01f });
 
 	m_extensionManager.SetBuffers(m_renderer.get());
 	m_extensionManager.SetAllExtensions(m_renderer.get());
