@@ -109,7 +109,7 @@ void App::Init()
 		const ExternalFormat swapchainFormat = m_renderer->GetSwapchainFormat();
 
 		nonLightPipeline.AddRenderTarget(swapchainFormat);
-		nonLightPipeline.EnableDepthTesting(ExternalFormat::D32_SFLOAT);
+		nonLightPipeline.EnableDepthTesting(ExternalFormat::D32_FLOAT);
 		nonLightPipeline.EnableBackfaceCulling();
 
 		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightPipeline);
@@ -117,7 +117,7 @@ void App::Init()
 		ExternalGraphicsPipeline lightPipeline{ m_blinnPhong->GetLightDstShaderName() };
 
 		lightPipeline.AddRenderTarget(swapchainFormat);
-		lightPipeline.EnableDepthTesting(ExternalFormat::D32_SFLOAT);
+		lightPipeline.EnableDepthTesting(ExternalFormat::D32_FLOAT);
 		lightPipeline.EnableBackfaceCulling();
 
 		lightPSOIndex    = m_renderer->AddGraphicsPipeline(lightPipeline);

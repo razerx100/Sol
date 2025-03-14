@@ -47,7 +47,7 @@ void DefaultRenderPass::Resize()
 	);
 
 	m_depthBuffer->Create(
-		renderArea.width, renderArea.height, ExternalFormat::D32_SFLOAT, ExternalTexture2DType::Depth,
+		renderArea.width, renderArea.height, ExternalFormat::D32_FLOAT, ExternalTexture2DType::Depth,
 		false, false
 	);
 
