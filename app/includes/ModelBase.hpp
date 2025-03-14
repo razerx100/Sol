@@ -196,9 +196,10 @@ public:
 	bool IsVisible() const noexcept override { return m_visible; }
 
 	[[nodiscard]]
-	const ModelTransform& GetTransform() const noexcept { return m_transform; }
-	[[nodiscard]]
-	ModelTransform& GetTransform() noexcept { return m_transform; }
+	auto&& GetTransform(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_transform);
+	}
 
 	[[nodiscard]]
 	std::uint32_t GetDiffuseIndex() const noexcept override { return m_diffuseIndex; }
@@ -332,19 +333,21 @@ public:
 	void MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offset) noexcept;
 
 	[[nodiscard]]
-	std::vector<std::shared_ptr<ModelBase>>& GetModels() noexcept { return m_models; }
-	[[nodiscard]]
-	const std::vector<std::shared_ptr<ModelBase>>& GetModels() const noexcept { return m_models; }
-	[[nodiscard]]
-	const std::vector<std::shared_ptr<Model>>& GetModelsNonBase() const noexcept
+	auto&& GetModels(this auto&& self) noexcept
 	{
-		return m_modelsNonBase;
+		return std::forward_like<decltype(self)>(self.m_models);
+	}
+	[[nodiscard]]
+	auto&& GetModelsNonBase(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_modelsNonBase);
 	}
 
 	[[nodiscard]]
-	std::shared_ptr<ModelBase>& GetModel(size_t index) noexcept { return m_models[index]; }
-	[[nodiscard]]
-	const std::shared_ptr<ModelBase>& GetModel(size_t index) const noexcept { return m_models[index]; }
+	auto&& GetModel(this auto&& self, size_t index) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_models[index]);
+	}
 	[[nodiscard]]
 	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
 

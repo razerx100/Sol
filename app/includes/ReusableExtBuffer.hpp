@@ -48,7 +48,10 @@ public:
 	void Remove(size_t index) noexcept { m_elements.RemoveElement(index); }
 
 	[[nodiscard]]
-	const std::shared_ptr<ExternalBuffer>& GetExtBuffer() const noexcept { return m_buffer; }
+	auto&& GetExtBuffer(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_buffer);
+	}
 
 private:
 	void Update(size_t index) noexcept

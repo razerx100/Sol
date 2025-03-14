@@ -26,7 +26,7 @@ set(SOL_PRIVATE_INCLUDES ${SOL_PRIVATE_INCLUDES} PARENT_SCOPE)
 target_include_directories(SolApp PRIVATE ${SOL_PRIVATE_INCLUDES})
 
 if(MSVC)
-    target_compile_options(SolApp PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++20 /Zc:__cplusplus)
+    target_compile_options(SolApp PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++latest /Zc:__cplusplus)
 
    if(NOT ADD_TEST_SOL)
        target_link_options(SolApp PRIVATE /subsystem:windows /ENTRY:mainCRTStartup)

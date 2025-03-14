@@ -36,5 +36,5 @@ To change the executable icon for Windows, add the path to the icon in ***icon/w
 
 ## Requirements
 cmake 3.21+.\
-C++20 Standard supported Compiler.\
+C++23 Standard supported Compiler (deducing this).\
 And requirements of the dependencies.

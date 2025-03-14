@@ -11,7 +11,7 @@ target_include_directories(SolTest PRIVATE ${SOL_PRIVATE_INCLUDES})
 unset(SOL_PRIVATE_INCLUDES)
 
 if(MSVC)
-    target_compile_options(SolTest PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++20 /Zc:__cplusplus)
+    target_compile_options(SolTest PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++latest /Zc:__cplusplus)
 endif()
 
 include(FetchContent)
