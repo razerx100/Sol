@@ -17,7 +17,7 @@ public:
 
 	void AddPipeline(std::uint32_t pipelineIndex)
 	{
-		m_renderPass->AddPipeline(pipelineIndex, false);
+		m_renderPass->AddPipeline(pipelineIndex);
 	}
 
 	void AddModelBundle(std::uint32_t bundleIndex)
