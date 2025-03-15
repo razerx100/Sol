@@ -45,13 +45,12 @@ void DefaultRenderPass::Resize()
 
 	m_renderTarget->Create(
 		renderArea.width, renderArea.height, m_renderer->GetSwapchainFormat(),
-		ExternalTexture2DType::RenderTarget, true, false,
-		ExternalClearColour{ .colour = { 0.005f, 0.005f, 0.005f, 1.f } }
+		ExternalTexture2DType::RenderTarget, true, false
 	);
 
 	m_depthBuffer->Create(
 		renderArea.width, renderArea.height, ExternalFormat::D32_FLOAT, ExternalTexture2DType::Depth,
-		false, false, ExternalClearColour{ .depth{ 1.f } }
+		false, false
 	);
 
 	m_renderPass->ResetAttachmentReferences();
