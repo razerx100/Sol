@@ -93,9 +93,10 @@ public:
 	static const ShaderName& GetLightDstShaderName() noexcept { return s_lightDstShaderName; }
 
 	[[nodiscard]]
-	LightSource& GetLightSource(size_t index) noexcept { return *m_lights[index].source; }
-	[[nodiscard]]
-	const LightSource& GetLightSource(size_t index) const noexcept { return *m_lights[index].source; }
+	auto&& GetLightSource(this auto&& self, size_t index) noexcept
+	{
+		return std::forward_like<decltype(self)>(*self.m_lights[index].source);
+	}
 
 private:
 	struct LightData

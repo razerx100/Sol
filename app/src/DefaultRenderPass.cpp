@@ -32,6 +32,8 @@ void DefaultRenderPass::FetchRenderPassFromRenderer()
 		m_depthBufferIndex, ExternalAttachmentLoadOp::Clear, ExternalAttachmentStoreOp::DontCare
 	);
 
+	m_renderPass->SetDepthClearColour(1.f);
+
 	m_renderPass->SetSwapchainCopySource(renderTargetIndex);
 }
 
