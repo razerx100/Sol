@@ -3,14 +3,15 @@
 #include <Renderer.hpp>
 #include <InputManager.hpp>
 #include <ExtensionManager.hpp>
-#include <DefaultRenderPass.hpp>
+#include <RenderPassManager.hpp>
 
 class App
 {
 public:
 	App(
 		Renderer* renderer, InputManager* inputManager, RenderEngineType engineType,
-		ExtensionManager* extensionManager, std::uint32_t frameCount
+		ExtensionManager* extensionManager, RenderPassManager* renderPassManager,
+		std::uint32_t frameCount
 	);
 
 	void Init();
@@ -22,6 +23,6 @@ private:
 	BlinnPhongLightTechnique* m_blinnPhong;
 	InputManager*             m_inputManager;
 	RenderEngineType          m_engineType;
-	DefaultRenderPass         m_defaultRenderPass;
+	RenderPassManager*        m_renderPassManager;
 };
 #endif

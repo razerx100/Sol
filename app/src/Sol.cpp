@@ -19,11 +19,11 @@ Sol::Sol(const std::string& appName)
 			m_threadPool, m_window->GetWindowHandle(), m_window->GetModuleInstance(),
 			m_configManager.GetRenderEngineType()
 		)
-	}, m_extensionManager{},
+	}, m_extensionManager{}, m_renderPassManager{},
 	m_app{
 		std::make_unique<App>(
 			m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType(),
-			&m_extensionManager, s_frameCount
+			&m_extensionManager, &m_renderPassManager, s_frameCount
 		)
 	}
 {
@@ -31,7 +31,11 @@ Sol::Sol(const std::string& appName)
 	m_inputManager->AddGamepadSupport(1u);
 
 	m_inputManager->SubscribeToEvent(InputEvent::Fullscreen, &FullscreenCallback, this);
+
 	m_inputManager->SubscribeToEvent(InputEvent::Resize, &ResizeCallback, m_renderer.get());
+	m_inputManager->SubscribeToEvent(
+		InputEvent::Resize, &RenderPassManager::ResizeCallback, &m_renderPassManager
+	);
 
 	// Window
 	m_window->SetWindowIcon(L"resources/icon/Sol.ico");
@@ -42,14 +46,23 @@ Sol::Sol(const std::string& appName)
 	// Renderer
 	m_renderer->SetShaderPath(L"resources/shaders/");
 
-	m_extensionManager.SetBuffers(m_renderer.get());
-	m_extensionManager.SetAllExtensions(m_renderer.get());
+	Renderer* rendererRef = m_renderer.get();
+
+	m_renderPassManager.SetRenderer(rendererRef);
+	m_renderPassManager.CreateAttachments();
+
+	m_extensionManager.SetBuffers(rendererRef);
+	m_extensionManager.SetAllExtensions(rendererRef);
 
 	// This function creates the descriptor layouts.
 	m_renderer->FinaliseInitialisation();
 
+	m_renderPassManager.SetupRenderPassesFromRenderer();
+	// Resize to create all the textures.
+	m_renderPassManager.Resize();
+
 	// Since we are binding the texture, it must be after the layouts have been created.
-	AddDefaultTexture(m_renderer.get());
+	AddDefaultTexture(rendererRef);
 
 	// The descriptor layouts should be set with the FinaliseInitialisation function. So,
 	// Create the fixed Descriptors here.

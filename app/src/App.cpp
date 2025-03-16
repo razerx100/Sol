@@ -48,9 +48,9 @@ static std::shared_ptr<PerspectiveCameraEuler> camera{};
 
 App::App(
 	Renderer* renderer, InputManager* inputManager, RenderEngineType engineType,
-	ExtensionManager* extensionManager, std::uint32_t frameCount
+	ExtensionManager* extensionManager, RenderPassManager* renderPassManager, std::uint32_t frameCount
 ) : m_renderer{ renderer }, m_blinnPhong{ nullptr }, m_inputManager{ inputManager },
-	m_engineType{ engineType }, m_defaultRenderPass{}
+	m_engineType{ engineType }, m_renderPassManager{ renderPassManager }
 {
 	extensionManager->SetBlinnPhongLight(renderer, frameCount);
 
@@ -66,23 +66,6 @@ void App::Init()
 		cubeMeshBundle.AddMesh(std::move(mesh));
 
 		cubeMeshBundleIndex = m_renderer->AddMeshBundle(cubeMeshBundle.MoveTemporaryData());
-	}
-
-	{
-		m_inputManager->SubscribeToEvent(
-			InputEvent::Resize, &DefaultRenderPass::ResizeCallback, &m_defaultRenderPass
-		);
-
-		m_defaultRenderPass.SetRenderer(m_renderer);
-
-		ExternalResourceFactory* resourceFactory
-			= m_renderer->GetExternalResourceManager()->GetResourceFactory();
-
-		m_defaultRenderPass.SetRenderTarget(*resourceFactory);
-		m_defaultRenderPass.SetDepthBuffer(*resourceFactory);
-		m_defaultRenderPass.FetchRenderPassFromRenderer();
-
-		m_defaultRenderPass.Resize();
 	}
 
 	/*
@@ -104,26 +87,23 @@ void App::Init()
 	}
 	*/
 	{
-		ExternalGraphicsPipeline nonLightPipeline{ m_blinnPhong->GetLightSrcShaderName() };
+		const GraphicsPipelineManager& renderPipelineManager
+			= m_renderPassManager->GetRenderPipelineManager();
 
-		const ExternalFormat swapchainFormat = m_renderer->GetSwapchainFormat();
+		ExternalGraphicsPipeline nonLightPipeline = renderPipelineManager.GetAlphaBlendingSignature();
 
-		nonLightPipeline.AddRenderTarget(swapchainFormat);
-		nonLightPipeline.EnableDepthTesting(ExternalFormat::D32_FLOAT);
-		nonLightPipeline.EnableBackfaceCulling();
+		nonLightPipeline.SetFragmentShader(m_blinnPhong->GetLightSrcShaderName());
 
 		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightPipeline);
 
-		ExternalGraphicsPipeline lightPipeline{ m_blinnPhong->GetLightDstShaderName() };
+		ExternalGraphicsPipeline lightPipeline = renderPipelineManager.GetAlphaBlendingSignature();;
 
-		lightPipeline.AddRenderTarget(swapchainFormat);
-		lightPipeline.EnableDepthTesting(ExternalFormat::D32_FLOAT);
-		lightPipeline.EnableBackfaceCulling();
+		lightPipeline.SetFragmentShader(m_blinnPhong->GetLightDstShaderName());
 
 		lightPSOIndex    = m_renderer->AddGraphicsPipeline(lightPipeline);
 
-		m_defaultRenderPass.AddPipeline(nonLightPSOIndex);
-		m_defaultRenderPass.AddPipeline(lightPSOIndex);
+		m_renderPassManager->AddPipeline(nonLightPSOIndex);
+		m_renderPassManager->AddPipeline(lightPSOIndex);
 	}
 
 	cubeLightBundle = std::make_shared<ModelBundleBase>();
@@ -282,7 +262,7 @@ void App::Init()
 			std::make_shared<ModelBundleImpl>(cubeLightBundle)
 		);
 
-		m_defaultRenderPass.AddModelBundle(cubeLightBundleIndex);
+		m_renderPassManager->AddModelBundle(cubeLightBundleIndex);
 	}
 
 	{
@@ -325,7 +305,7 @@ void App::Init()
 			std::make_shared<ModelBundleImpl>(cubeBundle1)
 		);
 
-		m_defaultRenderPass.AddModelBundle(cubeBundleIndex1);
+		m_renderPassManager->AddModelBundle(cubeBundleIndex1);
 	}
 
 	/*
@@ -427,7 +407,7 @@ void App::PhysicsUpdate()
 				std::make_shared<ModelBundleImpl>(cubeBundle2)
 			);
 
-			m_defaultRenderPass.AddModelBundle(cubeBundleIndex2);
+			m_renderPassManager->AddModelBundle(cubeBundleIndex2);
 		}
 	}
 
@@ -437,7 +417,7 @@ void App::PhysicsUpdate()
 		{
 			m_renderer->RemoveModelBundle(cubeBundleIndex2);
 
-			m_defaultRenderPass.RemoveModelBundle(cubeBundleIndex2);
+			m_renderPassManager->RemoveModelBundle(cubeBundleIndex2);
 
 			cubeBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
 			cubeBundle2.reset();
@@ -487,7 +467,7 @@ void App::PhysicsUpdate()
 				std::make_shared<ModelBundleImpl>(cubeBundle3)
 			);
 
-			m_defaultRenderPass.AddModelBundle(cubeBundleIndex3);
+			m_renderPassManager->AddModelBundle(cubeBundleIndex3);
 		}
 	}
 
@@ -496,7 +476,7 @@ void App::PhysicsUpdate()
 		if (cubeBundleIndex3 != std::numeric_limits<std::uint32_t>::max())
 		{
 			m_renderer->RemoveModelBundle(cubeBundleIndex3);
-			m_defaultRenderPass.RemoveModelBundle(cubeBundleIndex3);
+			m_renderPassManager->RemoveModelBundle(cubeBundleIndex3);
 
 			cubeBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
 			cubeBundle3.reset();
@@ -546,7 +526,7 @@ void App::PhysicsUpdate()
 				std::make_shared<ModelBundleImpl>(cubeBundle4)
 			);
 
-			m_defaultRenderPass.AddModelBundle(cubeBundleIndex4);
+			m_renderPassManager->AddModelBundle(cubeBundleIndex4);
 		}
 	}
 
@@ -555,7 +535,7 @@ void App::PhysicsUpdate()
 		if (cubeBundleIndex4 != std::numeric_limits<std::uint32_t>::max())
 		{
 			m_renderer->RemoveModelBundle(cubeBundleIndex4);
-			m_defaultRenderPass.RemoveModelBundle(cubeBundleIndex4);
+			m_renderPassManager->RemoveModelBundle(cubeBundleIndex4);
 
 			cubeBundleIndex4 = std::numeric_limits<std::uint32_t>::max();
 			cubeBundle4.reset();

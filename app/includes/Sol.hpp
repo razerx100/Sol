@@ -12,6 +12,7 @@
 #include <TextureAtlas.hpp>
 #include <CameraManagerSol.hpp>
 #include <ExtensionManager.hpp>
+#include <RenderPassManager.hpp>
 
 class Sol
 {
@@ -62,6 +63,7 @@ private:
 	std::unique_ptr<InputManager> m_inputManager;
 	std::unique_ptr<Window>       m_window;
 	std::unique_ptr<Renderer>     m_renderer;
+	RenderPassManager             m_renderPassManager;
 	ExtensionManager              m_extensionManager;
 	std::unique_ptr<App>          m_app;
 
@@ -77,20 +79,22 @@ public:
 		m_inputManager{ std::move(other.m_inputManager) },
 		m_window{ std::move(other.m_window) },
 		m_renderer{ std::move(other.m_renderer) },
+		m_renderPassManager{ std::move(other.m_renderPassManager) },
 		m_extensionManager{ std::move(other.m_extensionManager) },
 		m_app{ std::move(other.m_app) }
 	{}
 	Sol& operator=(Sol&& other) noexcept
 	{
-		m_appName          = std::move(other.m_appName);
-		m_configManager    = std::move(other.m_configManager);
-		m_frameTime        = std::move(other.m_frameTime);
-		m_threadPool       = std::move(other.m_threadPool);
-		m_inputManager     = std::move(other.m_inputManager);
-		m_window           = std::move(other.m_window);
-		m_renderer         = std::move(other.m_renderer);
-		m_extensionManager = std::move(other.m_extensionManager);
-		m_app              = std::move(other.m_app);
+		m_appName           = std::move(other.m_appName);
+		m_configManager     = std::move(other.m_configManager);
+		m_frameTime         = std::move(other.m_frameTime);
+		m_threadPool        = std::move(other.m_threadPool);
+		m_inputManager      = std::move(other.m_inputManager);
+		m_window            = std::move(other.m_window);
+		m_renderer          = std::move(other.m_renderer);
+		m_renderPassManager = std::move(other.m_renderPassManager);
+		m_extensionManager  = std::move(other.m_extensionManager);
+		m_app               = std::move(other.m_app);
 
 		return *this;
 	}
