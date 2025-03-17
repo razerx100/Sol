@@ -90,13 +90,13 @@ void App::Init()
 		const GraphicsPipelineManager& renderPipelineManager
 			= m_renderPassManager->GetRenderPipelineManager();
 
-		ExternalGraphicsPipeline nonLightPipeline = renderPipelineManager.GetAlphaBlendingSignature();
+		ExternalGraphicsPipeline nonLightPipeline = renderPipelineManager.GetNonAlphaClippingSignature();
 
 		nonLightPipeline.SetFragmentShader(m_blinnPhong->GetLightSrcShaderName());
 
 		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightPipeline);
 
-		ExternalGraphicsPipeline lightPipeline = renderPipelineManager.GetAlphaBlendingSignature();;
+		ExternalGraphicsPipeline lightPipeline = renderPipelineManager.GetNonAlphaClippingSignature();;
 
 		lightPipeline.SetFragmentShader(m_blinnPhong->GetLightDstShaderName());
 

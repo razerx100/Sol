@@ -12,27 +12,27 @@ public:
 	void SetStencilTarget(ExternalFormat format);
 
 	[[nodiscard]]
-	const ExternalGraphicsPipeline& GetAlphaBlendingSignature() const noexcept
+	const ExternalGraphicsPipeline& GetNonAlphaClippingSignature() const noexcept
 	{
-		return m_alphaBlendingSignature;
+		return m_nonAlphaClippingSignature;
 	}
 
 private:
-	void SetupAlphaBlending() noexcept;
+	void SetupNonAlphaClipping() noexcept;
 
 private:
-	ExternalGraphicsPipeline m_alphaBlendingSignature;
+	ExternalGraphicsPipeline m_nonAlphaClippingSignature;
 
 public:
 	GraphicsPipelineManager(const GraphicsPipelineManager&) = delete;
 	GraphicsPipelineManager& operator=(const GraphicsPipelineManager&) = delete;
 
 	GraphicsPipelineManager(GraphicsPipelineManager&& other) noexcept
-		: m_alphaBlendingSignature{ std::move(other.m_alphaBlendingSignature) }
+		: m_nonAlphaClippingSignature{ std::move(other.m_nonAlphaClippingSignature) }
 	{}
 	GraphicsPipelineManager& operator=(GraphicsPipelineManager&& other) noexcept
 	{
-		m_alphaBlendingSignature = std::move(other.m_alphaBlendingSignature);
+		m_nonAlphaClippingSignature = std::move(other.m_nonAlphaClippingSignature);
 
 		return *this;
 	}

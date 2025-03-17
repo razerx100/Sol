@@ -1,27 +1,27 @@
 #include <GraphicsPipelineManager.hpp>
 
 GraphicsPipelineManager::GraphicsPipelineManager()
-	: m_alphaBlendingSignature{}
+	: m_nonAlphaClippingSignature{}
 {
-	SetupAlphaBlending();
+	SetupNonAlphaClipping();
 }
 
-void GraphicsPipelineManager::SetupAlphaBlending() noexcept
+void GraphicsPipelineManager::SetupNonAlphaClipping() noexcept
 {
-	m_alphaBlendingSignature.EnableBackfaceCulling();
+	m_nonAlphaClippingSignature.EnableBackfaceCulling();
 }
 
 void GraphicsPipelineManager::AddRenderTarget(ExternalFormat format)
 {
-	m_alphaBlendingSignature.AddRenderTarget(format);
+	m_nonAlphaClippingSignature.AddRenderTarget(format, ExternalBlendState{});
 }
 
 void GraphicsPipelineManager::SetDepthTarget(ExternalFormat format)
 {
-	m_alphaBlendingSignature.EnableDepthTesting(format);
+	m_nonAlphaClippingSignature.EnableDepthTesting(format);
 }
 
 void GraphicsPipelineManager::SetStencilTarget(ExternalFormat format)
 {
-	m_alphaBlendingSignature.EnableStencilTesting(format);
+	m_nonAlphaClippingSignature.EnableStencilTesting(format);
 }
