@@ -650,9 +650,4 @@ void App::PhysicsUpdate()
 			model1.SetDiffuseIndex(secondTextureIndex);
 		}
 	}
-
-	if (keyboard.IsKeyPressed(SKeyCodes::Four))
-	{
-		m_renderer->UnbindTexture(0u);
-	}
 }
