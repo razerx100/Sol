@@ -2,6 +2,7 @@
 #define BLINN_PHONG_LIGHT_TECHNIQUE_HPP_
 #include <GraphicsTechniqueExtensionBase.hpp>
 #include <ExternalResourceFactory.hpp>
+#include <GraphicsPipelineManager.hpp>
 #include <LightSource.hpp>
 #include <ReusableVector.hpp>
 #include <ReusableExtBuffer.hpp>
@@ -11,7 +12,7 @@
 struct BlinnPhongLightProperties
 {
 	DirectX::XMFLOAT3 direction{ 0.f, 0.f, 0.f };
-	float             padding;
+	float             padding = 0.f;
 	DirectX::XMFLOAT3 ambient{ 1.f, 1.f, 1.f };
 	float             innerCutoff = 1.f;
 	DirectX::XMFLOAT3 diffuse{ 1.f, 1.f, 1.f };
@@ -34,9 +35,9 @@ enum class BlinnPhongLightType
 
 struct BlinnPhongMaterial
 {
-	DirectX::XMFLOAT4 ambient;
-	DirectX::XMFLOAT4 diffuse;
-	DirectX::XMFLOAT4 specular;
+	DirectX::XMFLOAT4 ambient{};
+	DirectX::XMFLOAT4 diffuse{};
+	DirectX::XMFLOAT4 specular{};
 	float             shininess = 1.f;
 	float             padding[3] = {};
 };
@@ -87,10 +88,27 @@ public:
 
 	void SetBuffers(ExternalResourceFactory* resourceFactory);
 
+	// For generic opaque light objects without light shading. With the main pass' signature.
 	[[nodiscard]]
-	static const ShaderName& GetLightSrcShaderName() noexcept { return s_lightSrcShaderName; }
+	static ExternalGraphicsPipeline GetOpaqueLightSrcPipeline(
+		const GraphicsPipelineManager& graphicsPipelineManager
+	) noexcept;
+	// For generic opaque light objects with light shading. With the main pass' signature.
 	[[nodiscard]]
-	static const ShaderName& GetLightDstShaderName() noexcept { return s_lightDstShaderName; }
+	static ExternalGraphicsPipeline GetOpaqueLightDstPipeline(
+		const GraphicsPipelineManager& graphicsPipelineManager
+	) noexcept;
+
+	// For transparent light objects without light shading. Requires the transparency extension.
+	[[nodiscard]]
+	static ExternalGraphicsPipeline GetTransparentLightSrcPipeline(
+		const GraphicsPipelineManager& graphicsPipelineManager
+	) noexcept;
+	// For transparent light objects wit light shading. Requires the transparency extension.
+	[[nodiscard]]
+	static ExternalGraphicsPipeline GetTransparentLightDstPipeline(
+		const GraphicsPipelineManager& graphicsPipelineManager
+	) noexcept;
 
 	[[nodiscard]]
 	auto&& GetLightSource(this auto&& self, size_t index) noexcept
@@ -121,8 +139,10 @@ private:
 	size_t                                   m_lightInfoInstanceSize;
 	std::uint32_t                            m_frameCount;
 
-	static ShaderName s_lightSrcShaderName;
-	static ShaderName s_lightDstShaderName;
+	static ShaderName s_opaqueLightSrcShaderName;
+	static ShaderName s_opaqueLightDstShaderName;
+	static ShaderName s_transparentLightSrcShaderName;
+	static ShaderName s_transparentLightDstShaderName;
 
 	static constexpr std::uint32_t s_lightCountBufferIndex = 0u;
 	static constexpr std::uint32_t s_lightInfoBufferIndex  = 1u;

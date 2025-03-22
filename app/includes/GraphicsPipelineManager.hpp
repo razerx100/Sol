@@ -7,32 +7,47 @@ class GraphicsPipelineManager
 public:
 	GraphicsPipelineManager();
 
-	void AddRenderTarget(ExternalFormat format);
-	void SetDepthTarget(ExternalFormat format);
-	void SetStencilTarget(ExternalFormat format);
+	void SetMainPassOpaqueSignature(ExternalGraphicsPipeline&& pipelineSignature) noexcept;
+
+	void SetTransparencyPassSignature(ExternalGraphicsPipeline&& pipelineSignature) noexcept;
+
+	void SetTransparencyCombinePassSignature(ExternalGraphicsPipeline&& pipelineSignature) noexcept;
 
 	[[nodiscard]]
-	const ExternalGraphicsPipeline& GetNonAlphaClippingSignature() const noexcept
+	const ExternalGraphicsPipeline& GetMainPassOpaqueSignature() const noexcept
 	{
-		return m_nonAlphaClippingSignature;
+		return m_mainPassOpaqueSignature;
+	}
+	[[nodiscard]]
+	const ExternalGraphicsPipeline& GetTransparencyPassSignature() const noexcept
+	{
+		return m_transparencyPassSignature;
+	}
+	[[nodiscard]]
+	const ExternalGraphicsPipeline& GetTransparencyCombinePassSignature() const noexcept
+	{
+		return m_transparencyCombinePassSignature;
 	}
 
 private:
-	void SetupNonAlphaClipping() noexcept;
-
-private:
-	ExternalGraphicsPipeline m_nonAlphaClippingSignature;
+	ExternalGraphicsPipeline m_mainPassOpaqueSignature;
+	ExternalGraphicsPipeline m_transparencyPassSignature;
+	ExternalGraphicsPipeline m_transparencyCombinePassSignature;
 
 public:
 	GraphicsPipelineManager(const GraphicsPipelineManager&) = delete;
 	GraphicsPipelineManager& operator=(const GraphicsPipelineManager&) = delete;
 
 	GraphicsPipelineManager(GraphicsPipelineManager&& other) noexcept
-		: m_nonAlphaClippingSignature{ std::move(other.m_nonAlphaClippingSignature) }
+		: m_mainPassOpaqueSignature{ std::move(other.m_mainPassOpaqueSignature) },
+		m_transparencyPassSignature{ std::move(other.m_transparencyPassSignature) },
+		m_transparencyCombinePassSignature{ std::move(other.m_transparencyCombinePassSignature) }
 	{}
 	GraphicsPipelineManager& operator=(GraphicsPipelineManager&& other) noexcept
 	{
-		m_nonAlphaClippingSignature = std::move(other.m_nonAlphaClippingSignature);
+		m_mainPassOpaqueSignature          = std::move(other.m_mainPassOpaqueSignature);
+		m_transparencyPassSignature        = std::move(other.m_transparencyPassSignature);
+		m_transparencyCombinePassSignature = std::move(other.m_transparencyCombinePassSignature);
 
 		return *this;
 	}

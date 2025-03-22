@@ -1,27 +1,23 @@
 #include <GraphicsPipelineManager.hpp>
 
 GraphicsPipelineManager::GraphicsPipelineManager()
-	: m_nonAlphaClippingSignature{}
-{
-	SetupNonAlphaClipping();
+	: m_mainPassOpaqueSignature{}, m_transparencyPassSignature{}, m_transparencyCombinePassSignature{}
+{}
+
+void GraphicsPipelineManager::SetMainPassOpaqueSignature(
+	ExternalGraphicsPipeline&& pipelineSignature
+) noexcept {
+	m_mainPassOpaqueSignature = std::move(pipelineSignature);
 }
 
-void GraphicsPipelineManager::SetupNonAlphaClipping() noexcept
-{
-	m_nonAlphaClippingSignature.EnableBackfaceCulling();
+void GraphicsPipelineManager::SetTransparencyPassSignature(
+	ExternalGraphicsPipeline&& pipelineSignature
+) noexcept {
+	m_transparencyPassSignature = std::move(pipelineSignature);
 }
 
-void GraphicsPipelineManager::AddRenderTarget(ExternalFormat format)
-{
-	m_nonAlphaClippingSignature.AddRenderTarget(format, ExternalBlendState{});
-}
-
-void GraphicsPipelineManager::SetDepthTarget(ExternalFormat format)
-{
-	m_nonAlphaClippingSignature.EnableDepthTesting(format);
-}
-
-void GraphicsPipelineManager::SetStencilTarget(ExternalFormat format)
-{
-	m_nonAlphaClippingSignature.EnableStencilTesting(format);
+void GraphicsPipelineManager::SetTransparencyCombinePassSignature(
+	ExternalGraphicsPipeline&& pipelineSignature
+) noexcept {
+	m_transparencyCombinePassSignature = std::move(pipelineSignature);
 }

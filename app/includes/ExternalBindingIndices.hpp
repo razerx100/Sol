@@ -11,5 +11,6 @@ namespace ExternalBinding
 	static constexpr std::uint32_t s_lightCount = 0u;
 	static constexpr std::uint32_t s_lightInfo  = 1u;
 	static constexpr std::uint32_t s_material   = 2u;
+	static constexpr std::uint32_t s_transparencyRenderTargetBindingData = 3u;
 }
 #endif

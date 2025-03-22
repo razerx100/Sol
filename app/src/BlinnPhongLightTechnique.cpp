@@ -2,8 +2,11 @@
 #include <ExternalBindingIndices.hpp>
 #include <ConversionUtilities.hpp>
 
-ShaderName BlinnPhongLightTechnique::s_lightSrcShaderName = L"NoLightShader";
-ShaderName BlinnPhongLightTechnique::s_lightDstShaderName = L"BlinnPhongShader";
+ShaderName BlinnPhongLightTechnique::s_opaqueLightSrcShaderName      = L"NoLightOpaqueShader";
+ShaderName BlinnPhongLightTechnique::s_opaqueLightDstShaderName      = L"BlinnPhongOpaqueShader";
+
+ShaderName BlinnPhongLightTechnique::s_transparentLightSrcShaderName = L"NoLightTransparentShader";
+ShaderName BlinnPhongLightTechnique::s_transparentLightDstShaderName = L"BlinnPhongTransparentShader";
 
 BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount)
 	: GraphicsTechniqueExtensionBase{ renderer }, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
@@ -286,4 +289,46 @@ void BlinnPhongLightTechnique::UpdateMaterialDescriptor()
 void BlinnPhongLightTechnique::SetFixedDescriptors()
 {
 	UpdateLightCountDescriptors();
+}
+
+ExternalGraphicsPipeline BlinnPhongLightTechnique::GetOpaqueLightSrcPipeline(
+	const GraphicsPipelineManager& graphicsPipelineManager
+) noexcept {
+	ExternalGraphicsPipeline opaqueNoLightPipeline = graphicsPipelineManager.GetMainPassOpaqueSignature();
+
+	opaqueNoLightPipeline.SetFragmentShader(s_opaqueLightSrcShaderName);
+
+	return opaqueNoLightPipeline;
+}
+
+ExternalGraphicsPipeline BlinnPhongLightTechnique::GetOpaqueLightDstPipeline(
+	const GraphicsPipelineManager& graphicsPipelineManager
+) noexcept {
+	ExternalGraphicsPipeline opaqueLightPipeline = graphicsPipelineManager.GetMainPassOpaqueSignature();
+
+	opaqueLightPipeline.SetFragmentShader(s_opaqueLightDstShaderName);
+
+	return opaqueLightPipeline;
+}
+
+ExternalGraphicsPipeline BlinnPhongLightTechnique::GetTransparentLightSrcPipeline(
+	const GraphicsPipelineManager& graphicsPipelineManager
+) noexcept {
+	ExternalGraphicsPipeline transparentNoLightPipeline
+		= graphicsPipelineManager.GetTransparencyPassSignature();
+
+	transparentNoLightPipeline.SetFragmentShader(s_transparentLightSrcShaderName);
+
+	return transparentNoLightPipeline;
+}
+
+ExternalGraphicsPipeline BlinnPhongLightTechnique::GetTransparentLightDstPipeline(
+	const GraphicsPipelineManager& graphicsPipelineManager
+) noexcept {
+	ExternalGraphicsPipeline transparentLightPipeline
+		= graphicsPipelineManager.GetTransparencyPassSignature();
+
+	transparentLightPipeline.SetFragmentShader(s_transparentLightDstShaderName);
+
+	return transparentLightPipeline;
 }

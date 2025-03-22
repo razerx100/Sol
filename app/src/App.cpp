@@ -53,6 +53,9 @@ App::App(
 	m_engineType{ engineType }, m_renderPassManager{ renderPassManager }
 {
 	extensionManager->SetBlinnPhongLight(renderer, frameCount);
+	//extensionManager->SetWeightedTransparency(renderer);
+
+	//m_renderPassManager->SetTransparencyPass(extensionManager->GetWeightedTransparencySP());
 
 	m_blinnPhong = extensionManager->GetBlinnPhongLight();
 }
@@ -87,20 +90,17 @@ void App::Init()
 	}
 	*/
 	{
-		const GraphicsPipelineManager& renderPipelineManager
-			= m_renderPassManager->GetRenderPipelineManager();
+		const ExternalGraphicsPipeline nonLightOpaquePipeline = m_blinnPhong->GetOpaqueLightSrcPipeline(
+			m_renderPassManager->GetGraphicsPipelineManager()
+		);
 
-		ExternalGraphicsPipeline nonLightPipeline = renderPipelineManager.GetNonAlphaClippingSignature();
+		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightOpaquePipeline);
 
-		nonLightPipeline.SetFragmentShader(m_blinnPhong->GetLightSrcShaderName());
+		const ExternalGraphicsPipeline lightOpaquePipeline = m_blinnPhong->GetOpaqueLightDstPipeline(
+			m_renderPassManager->GetGraphicsPipelineManager()
+		);
 
-		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightPipeline);
-
-		ExternalGraphicsPipeline lightPipeline = renderPipelineManager.GetNonAlphaClippingSignature();;
-
-		lightPipeline.SetFragmentShader(m_blinnPhong->GetLightDstShaderName());
-
-		lightPSOIndex    = m_renderer->AddGraphicsPipeline(lightPipeline);
+		lightPSOIndex    = m_renderer->AddGraphicsPipeline(lightOpaquePipeline);
 
 		m_renderPassManager->AddPipeline(nonLightPSOIndex);
 		m_renderPassManager->AddPipeline(lightPSOIndex);

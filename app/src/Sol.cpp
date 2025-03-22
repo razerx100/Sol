@@ -49,7 +49,7 @@ Sol::Sol(const std::string& appName)
 	Renderer* rendererRef = m_renderer.get();
 
 	m_renderPassManager.SetRenderer(rendererRef);
-	m_renderPassManager.CreateAttachments();
+	m_renderPassManager.CreateResources();
 
 	m_extensionManager.SetBuffers(rendererRef);
 	m_extensionManager.SetAllExtensions(rendererRef);
