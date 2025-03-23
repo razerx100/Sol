@@ -147,9 +147,6 @@ void RenderPassManager::SetupRenderPassesFromRenderer()
 		m_transparencyExt->SetupCompositePassPipeline(
 			m_postProcessingPass.get(), m_graphicsPipelineManager
 		);
-
-		// Need to bind the two render targets to combine in post-processing.
-		m_transparencyExt->BindRenderTargetTextures();
 	}
 
 	swapchainPass->SetSwapchainCopySource(swapchainCopySourceIndex);
@@ -222,4 +219,11 @@ void RenderPassManager::SetTransparencyPass(
 	std::shared_ptr<WeightedTransparencyTechnique> transparencyExt
 ) {
 	m_transparencyExt = std::move(transparencyExt);
+}
+
+void RenderPassManager::SetPostCreationReferences()
+{
+	if (m_transparencyExt)
+		// Need to bind the two render targets to combine in post-processing.
+		m_transparencyExt->BindRenderTargetTextures();
 }

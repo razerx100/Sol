@@ -60,6 +60,9 @@ Sol::Sol(const std::string& appName)
 	m_renderPassManager.SetupRenderPassesFromRenderer();
 	// Resize to create all the textures.
 	m_renderPassManager.Resize();
+	// Some resources are created in setup render passes and the buffers are created in Resize.
+	// So, need to do stuff like binding textures afterwards.
+	m_renderPassManager.SetPostCreationReferences();
 
 	// Since we are binding the texture, it must be after the layouts have been created.
 	AddDefaultTexture(rendererRef);
