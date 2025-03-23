@@ -116,65 +116,65 @@ void WeightedTransparencyTechnique::SetupTransparencyPass(std::uint32_t depthTex
 void WeightedTransparencyTechnique::SetupTransparencyGraphicsPipelineSignatures(
 	GraphicsPipelineManager& graphicsPipelineManager, ExternalFormat depthFormat
 ) {
-	{
-		ExternalGraphicsPipeline transparencyPassSignature{};
+	ExternalGraphicsPipeline transparencyPassSignature{};
 
-		transparencyPassSignature.EnableBackfaceCulling();
+	transparencyPassSignature.EnableBackfaceCulling();
 
-		transparencyPassSignature.AddRenderTarget(
-			ExternalFormat::R16G16B16A16_FLOAT,
-			ExternalBlendState
-			{
-				.enabled        = true,
-				.alphaBlendOP   = ExternalBlendOP::Add,
-				.colourBlendOP  = ExternalBlendOP::Add,
-				.alphaBlendSrc  = ExternalBlendFactor::One,
-				.alphaBlendDst  = ExternalBlendFactor::One,
-				.colourBlendSrc = ExternalBlendFactor::One,
-				.colourBlendDst = ExternalBlendFactor::One
-			}
-		);
+	transparencyPassSignature.AddRenderTarget(
+		ExternalFormat::R16G16B16A16_FLOAT,
+		ExternalBlendState
+		{
+			.enabled        = true,
+			.alphaBlendOP   = ExternalBlendOP::Add,
+			.colourBlendOP  = ExternalBlendOP::Add,
+			.alphaBlendSrc  = ExternalBlendFactor::One,
+			.alphaBlendDst  = ExternalBlendFactor::One,
+			.colourBlendSrc = ExternalBlendFactor::One,
+			.colourBlendDst = ExternalBlendFactor::One
+		}
+	);
 
-		transparencyPassSignature.AddRenderTarget(
-			ExternalFormat::R8_UNORM,
-			ExternalBlendState
-			{
-				.enabled        = true,
-				.alphaBlendOP   = ExternalBlendOP::Add,
-				.colourBlendOP  = ExternalBlendOP::Add,
-				.alphaBlendSrc  = ExternalBlendFactor::One,
-				.alphaBlendDst  = ExternalBlendFactor::One,
-				.colourBlendSrc = ExternalBlendFactor::Zero,
-				.colourBlendDst = ExternalBlendFactor::OneMinusSrcColour
-			}
-		);
+	transparencyPassSignature.AddRenderTarget(
+		ExternalFormat::R8_UNORM,
+		ExternalBlendState
+		{
+			.enabled        = true,
+			.alphaBlendOP   = ExternalBlendOP::Add,
+			.colourBlendOP  = ExternalBlendOP::Add,
+			.alphaBlendSrc  = ExternalBlendFactor::One,
+			.alphaBlendDst  = ExternalBlendFactor::One,
+			.colourBlendSrc = ExternalBlendFactor::Zero,
+			.colourBlendDst = ExternalBlendFactor::OneMinusSrcColour
+		}
+	);
 
-		transparencyPassSignature.EnableDepthTesting(depthFormat, false);
+	transparencyPassSignature.EnableDepthTesting(depthFormat, false);
 
-		graphicsPipelineManager.SetTransparencyPassSignature(std::move(transparencyPassSignature));
-	}
+	graphicsPipelineManager.SetTransparencyPassSignature(std::move(transparencyPassSignature));
+}
 
-	{
-		ExternalGraphicsPipeline transparencyCombineSignature{};
+void WeightedTransparencyTechnique::SetupTransparencyCompositePipelineSignature(
+	GraphicsPipelineManager& graphicsPipelineManager
+) {
+	ExternalGraphicsPipeline transparencyCombineSignature{};
 
-		transparencyCombineSignature.AddRenderTarget(
-			m_renderer->GetSwapchainFormat(),
-			ExternalBlendState
-			{
-				.enabled        = true,
-				.alphaBlendOP   = ExternalBlendOP::Add,
-				.colourBlendOP  = ExternalBlendOP::Add,
-				.alphaBlendSrc  = ExternalBlendFactor::SrcAlpha,
-				.alphaBlendDst  = ExternalBlendFactor::OneMinusSrcAlpha,
-				.colourBlendSrc = ExternalBlendFactor::One,
-				.colourBlendDst = ExternalBlendFactor::One
-			}
-		);
+	transparencyCombineSignature.AddRenderTarget(
+		m_renderer->GetSwapchainFormat(),
+		ExternalBlendState
+		{
+			.enabled        = true,
+			.alphaBlendOP   = ExternalBlendOP::Add,
+			.colourBlendOP  = ExternalBlendOP::Add,
+			.alphaBlendSrc  = ExternalBlendFactor::SrcAlpha,
+			.alphaBlendDst  = ExternalBlendFactor::OneMinusSrcAlpha,
+			.colourBlendSrc = ExternalBlendFactor::One,
+			.colourBlendDst = ExternalBlendFactor::One
+		}
+	);
 
-		graphicsPipelineManager.SetTransparencyCombinePassSignature(
-			std::move(transparencyCombineSignature)
-		);
-	}
+	graphicsPipelineManager.SetTransparencyCombinePassSignature(
+		std::move(transparencyCombineSignature)
+	);
 }
 
 void WeightedTransparencyTechnique::ResizeRenderTargets(std::uint32_t width, std::uint32_t height)

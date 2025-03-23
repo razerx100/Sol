@@ -75,9 +75,7 @@ void RenderPassManager::SetupMainPassSignatures()
 void RenderPassManager::SetupPostProcessingSignatures()
 {
 	if (m_transparencyExt)
-		m_transparencyExt->SetupTransparencyGraphicsPipelineSignatures(
-			m_graphicsPipelineManager, s_renderDepthFormat
-		);
+		m_transparencyExt->SetupTransparencyCompositePipelineSignature(m_graphicsPipelineManager);
 }
 
 void RenderPassManager::SetupRenderPassesFromRenderer()
@@ -144,6 +142,10 @@ void RenderPassManager::SetupRenderPassesFromRenderer()
 	{
 		m_transparencyExt->SetupTransparencyPass(m_depthTargetIndex);
 
+		m_transparencyExt->SetupTransparencyGraphicsPipelineSignatures(
+			m_graphicsPipelineManager, s_renderDepthFormat
+		);
+
 		m_transparencyExt->SetupCompositePassPipeline(
 			m_postProcessingPass.get(), m_graphicsPipelineManager
 		);
@@ -172,6 +174,9 @@ void RenderPassManager::Resize()
 
 	if (m_transparencyExt)
 		m_transparencyExt->ResizeRenderTargets(renderArea.width, renderArea.height);
+
+	if (m_postProcessingPass)
+		m_postProcessingPass->ResetAttachmentReferences();
 }
 
 void RenderPassManager::ResizeCallback([[maybe_unused]] void* callbackData, void* extraData)

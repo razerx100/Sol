@@ -53,9 +53,9 @@ App::App(
 	m_engineType{ engineType }, m_renderPassManager{ renderPassManager }
 {
 	extensionManager->SetBlinnPhongLight(renderer, frameCount);
-	//extensionManager->SetWeightedTransparency(renderer);
+	extensionManager->SetWeightedTransparency(renderer);
 
-	//m_renderPassManager->SetTransparencyPass(extensionManager->GetWeightedTransparencySP());
+	m_renderPassManager->SetTransparencyPass(extensionManager->GetWeightedTransparencySP());
 
 	m_blinnPhong = extensionManager->GetBlinnPhongLight();
 }

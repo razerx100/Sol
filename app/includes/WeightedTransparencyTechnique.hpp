@@ -26,6 +26,7 @@ public:
 	void SetupTransparencyGraphicsPipelineSignatures(
 		GraphicsPipelineManager& graphicsPipelineManager, ExternalFormat depthFormat
 	);
+	void SetupTransparencyCompositePipelineSignature(GraphicsPipelineManager& graphicsPipelineManager);
 
 	void SetBuffers(ExternalResourceFactory* resourceFactory);
 
