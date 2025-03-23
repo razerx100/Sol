@@ -67,7 +67,7 @@ void RenderPassManager::SetupMainPassSignatures()
 		m_renderer->GetSwapchainFormat(), ExternalBlendState { .enabled = false }
 	);
 
-	opaqueSignature.EnableDepthTesting(s_renderDepthFormat);
+	opaqueSignature.EnableDepthTesting(s_renderDepthFormat, true);
 
 	m_graphicsPipelineManager.SetMainPassOpaqueSignature(std::move(opaqueSignature));
 }

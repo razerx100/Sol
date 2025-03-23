@@ -1,7 +1,7 @@
 #include <WeightedTransparencyTechnique.hpp>
 #include <ExternalBindingIndices.hpp>
 
-ShaderName WeightedTransparencyTechnique::s_compositePassShaderName = L"WeightedCompositeShader";
+ShaderName WeightedTransparencyTechnique::s_compositePassShaderName = L"WeightedTransparencyCompositeShader";
 
 WeightedTransparencyTechnique::WeightedTransparencyTechnique(Renderer* renderer)
 	: GraphicsTechniqueExtensionBase{ renderer }, m_accumulationRenderTarget{},
@@ -149,7 +149,7 @@ void WeightedTransparencyTechnique::SetupTransparencyGraphicsPipelineSignatures(
 			}
 		);
 
-		transparencyPassSignature.EnableDepthTesting(depthFormat);
+		transparencyPassSignature.EnableDepthTesting(depthFormat, false);
 
 		graphicsPipelineManager.SetTransparencyPassSignature(std::move(transparencyPassSignature));
 	}
