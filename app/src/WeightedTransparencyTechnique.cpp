@@ -6,7 +6,11 @@ ShaderName WeightedTransparencyTechnique::s_compositePassShaderName = L"Weighted
 WeightedTransparencyTechnique::WeightedTransparencyTechnique(Renderer* renderer)
 	: GraphicsTechniqueExtensionBase{ renderer }, m_accumulationRenderTarget{},
 	m_revealageRenderTarget{}, m_renderTargetBindingDataExtBuffer{}, m_transparencyPass{},
-	m_accumulationTextureIndex{ 0u }, m_revealageTextureIndex{ 0u }
+	m_accumulationTextureIndex{ 0u }, m_revealageTextureIndex{ 0u },
+	m_bindingData{
+		.accumulationRTBindingIndex = std::numeric_limits<std::uint32_t>::max(),
+		.revealageRTBindingIndex    = std::numeric_limits<std::uint32_t>::max()
+	}
 {
 	constexpr size_t bufferBindingCount = 1u;
 
@@ -73,15 +77,31 @@ void WeightedTransparencyTechnique::SetBuffers(ExternalResourceFactory* resource
 
 void WeightedTransparencyTechnique::BindRenderTargetTextures()
 {
-	RenderTargetBindingData bindingData
+	constexpr auto uint32Max    = std::numeric_limits<std::uint32_t>::max();
+
+	const bool areTexturesBound = m_bindingData.accumulationRTBindingIndex != uint32Max
+		&& m_bindingData.revealageRTBindingIndex != uint32Max;
+
+	if (areTexturesBound)
 	{
-		.accumulationRTBindingIndex = m_renderer->BindExternalTexture(m_accumulationTextureIndex),
-		.revealageRTBindingIndex    = m_renderer->BindExternalTexture(m_revealageTextureIndex)
-	};
+		m_renderer->RebindExternalTexture(
+			m_accumulationTextureIndex, m_bindingData.accumulationRTBindingIndex
+		);
+		m_renderer->RebindExternalTexture(
+			m_revealageTextureIndex, m_bindingData.revealageRTBindingIndex
+		);
+	}
+	else
+	{
+		m_bindingData.accumulationRTBindingIndex = m_renderer->BindExternalTexture(
+			m_accumulationTextureIndex
+		);
+		m_bindingData.revealageRTBindingIndex = m_renderer->BindExternalTexture(m_revealageTextureIndex);
 
-	std::uint8_t* bindingDataCpuStart = m_renderTargetBindingDataExtBuffer->CPUHandle();
+		std::uint8_t* bindingDataCpuStart = m_renderTargetBindingDataExtBuffer->CPUHandle();
 
-	memcpy(bindingDataCpuStart, &bindingData, sizeof(RenderTargetBindingData));
+		memcpy(bindingDataCpuStart, &m_bindingData, sizeof(RenderTargetBindingData));
+	}
 }
 
 void WeightedTransparencyTechnique::SetTransparencyPass(
@@ -189,6 +209,8 @@ void WeightedTransparencyTechnique::ResizeRenderTargets(std::uint32_t width, std
 	);
 
 	m_transparencyPass->ResetAttachmentReferences();
+
+	BindRenderTargetTextures();
 }
 
 ExternalGraphicsPipeline WeightedTransparencyTechnique::GetCompositePassPipeline(

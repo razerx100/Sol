@@ -50,8 +50,6 @@ public:
 
 	void SetupRenderPassesFromRenderer();
 
-	void SetPostCreationReferences();
-
 	static void ResizeCallback(void* callbackData, void* extraData);
 
 	// The render area might be a bit

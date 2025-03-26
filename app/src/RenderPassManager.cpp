@@ -225,10 +225,3 @@ void RenderPassManager::SetTransparencyPass(
 ) {
 	m_transparencyExt = std::move(transparencyExt);
 }
-
-void RenderPassManager::SetPostCreationReferences()
-{
-	if (m_transparencyExt)
-		// Need to bind the two render targets to combine in post-processing.
-		m_transparencyExt->BindRenderTargetTextures();
-}

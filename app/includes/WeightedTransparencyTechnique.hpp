@@ -32,8 +32,6 @@ public:
 
 	void ResizeRenderTargets(std::uint32_t width, std::uint32_t height);
 
-	void BindRenderTargetTextures();
-
 	void SetupCompositePassPipeline(
 		ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager
 	);
@@ -47,6 +45,8 @@ private:
 		const GraphicsPipelineManager& graphicsPipelineManager
 	) noexcept;
 
+	void BindRenderTargetTextures();
+
 private:
 	std::shared_ptr<ExternalTexture>    m_accumulationRenderTarget;
 	std::shared_ptr<ExternalTexture>    m_revealageRenderTarget;
@@ -54,6 +54,7 @@ private:
 	std::shared_ptr<ExternalRenderPass> m_transparencyPass;
 	std::uint32_t                       m_accumulationTextureIndex;
 	std::uint32_t                       m_revealageTextureIndex;
+	RenderTargetBindingData             m_bindingData;
 
 	static constexpr std::uint32_t s_rtBindingDataBufferIndex = 0u;
 
@@ -70,7 +71,8 @@ public:
 		m_renderTargetBindingDataExtBuffer{ std::move(other.m_renderTargetBindingDataExtBuffer) },
 		m_transparencyPass{ std::move(other.m_transparencyPass) },
 		m_accumulationTextureIndex{ other.m_accumulationTextureIndex },
-		m_revealageTextureIndex{ other.m_revealageTextureIndex }
+		m_revealageTextureIndex{ other.m_revealageTextureIndex },
+		m_bindingData{ other.m_bindingData }
 	{}
 	WeightedTransparencyTechnique& operator=(WeightedTransparencyTechnique&& other) noexcept
 	{
@@ -81,6 +83,7 @@ public:
 		m_transparencyPass                 = std::move(other.m_transparencyPass);
 		m_accumulationTextureIndex         = other.m_accumulationTextureIndex;
 		m_revealageTextureIndex            = other.m_revealageTextureIndex;
+		m_bindingData                      = other.m_bindingData;
 
 		return *this;
 	}
