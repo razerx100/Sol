@@ -57,12 +57,13 @@ Sol::Sol(const std::string& appName)
 	// This function creates the descriptor layouts.
 	m_renderer->FinaliseInitialisation();
 
+	// Since we are binding the texture, it must be after the layouts have been created.
+	// And before any other textures have been bound.
+	AddDefaultTexture(rendererRef);
+
 	m_renderPassManager.SetupRenderPassesFromRenderer();
 	// Resize to create all the textures.
 	m_renderPassManager.Resize();
-
-	// Since we are binding the texture, it must be after the layouts have been created.
-	AddDefaultTexture(rendererRef);
 
 	// The descriptor layouts should be set with the FinaliseInitialisation function. So,
 	// Create the fixed Descriptors here.
