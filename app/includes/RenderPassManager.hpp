@@ -80,6 +80,8 @@ private:
 	void SetupMainPassSignatures();
 	void SetupPostProcessingSignatures();
 
+	void AddRenderTargetQuadToPostProcessing();
+
 private:
 	std::shared_ptr<ExternalRenderPass> m_mainPass;
 	std::shared_ptr<ExternalRenderPass> m_postProcessingPass;
@@ -101,6 +103,9 @@ private:
 
 	Renderer*                           m_renderer;
 	ExternalResourceFactory*            m_resourceFactory;
+
+	static constexpr float s_renderTargetQuadScale             = 2.f;
+	static constexpr std::uint32_t s_renderTargetQuadMeshIndex = 0u;
 
 public:
 	RenderPassManager(const RenderPassManager&) = delete;

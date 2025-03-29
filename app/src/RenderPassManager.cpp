@@ -49,12 +49,12 @@ std::uint32_t RenderPassManager::SetupPostProcessingPass()
 
 	SetupPostProcessingSignatures();
 
-	// Since in the post processing pass, our main purpose is to combine/apply effects to the already
-	// drawn main renderTarget, we would only need to draw a quad of the same extent as the render target.
-	// So, we can just add that model here.
-	m_postProcessingPass->AddModelBundle(m_renderTargetQuadModelBundleIndex);
-
 	return renderTargetIndex;
+}
+
+void RenderPassManager::AddRenderTargetQuadToPostProcessing()
+{
+	m_postProcessingPass->AddModelBundle(m_renderTargetQuadModelBundleIndex);
 }
 
 void RenderPassManager::SetupMainPassSignatures()
@@ -146,8 +146,25 @@ void RenderPassManager::SetupRenderPassesFromRenderer()
 			m_graphicsPipelineManager, s_renderDepthFormat
 		);
 
-		m_transparencyExt->SetupCompositePassPipeline(m_postProcessingPass, m_graphicsPipelineManager);
+		m_transparencyExt->SetCompositePass(m_postProcessingPass);
+
+		m_transparencyExt->SetupCompositePassPipeline(
+			m_postProcessingPass.get(), m_graphicsPipelineManager, *m_renderTargetQuadModelBundle,
+			s_renderTargetQuadScale, s_renderTargetQuadMeshIndex
+		);
 	}
+
+	// This must be done at the end so all the other passes using the render target quad modelBundle
+	// can add their instance of the quad model with their own pipeline.
+	// And we also must add the model bundle to the renderer before adding them to the render passes.
+	m_renderTargetQuadModelBundleIndex = m_renderer->AddModelBundle(
+		std::make_shared<ModelBundleImpl>(m_renderTargetQuadModelBundle)
+	);
+
+	// This must be done at the end so all the other passes using the post processing pass
+	// can add their pipelines before we add the model bundle to the pass.
+	if (hasPostProcessingPass)
+		AddRenderTargetQuadToPostProcessing();
 
 	swapchainPass->SetSwapchainCopySource(swapchainCopySourceIndex);
 }
@@ -202,19 +219,7 @@ void RenderPassManager::SetupRenderTargetQuad()
 
 	m_renderTargetQuadModelBundle = std::make_shared<ModelBundleBase>();
 
-	m_renderTargetQuadModelBundle->AddModel(2.f);
-
-	{
-		ModelBase& quadModel = *m_renderTargetQuadModelBundle->GetModel(0u);
-
-		quadModel.SetMeshIndex(0u);
-	}
-
 	m_renderTargetQuadModelBundle->SetMeshBundleIndex(m_quadMeshBundleIndex);
-
-	m_renderTargetQuadModelBundleIndex = m_renderer->AddModelBundle(
-		std::make_shared<ModelBundleImpl>(m_renderTargetQuadModelBundle)
-	);
 }
 
 void RenderPassManager::SetTransparencyPass(

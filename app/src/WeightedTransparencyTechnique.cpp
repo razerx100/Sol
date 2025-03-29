@@ -233,13 +233,35 @@ ExternalGraphicsPipeline WeightedTransparencyTechnique::GetCompositePassPipeline
 }
 
 void WeightedTransparencyTechnique::SetupCompositePassPipeline(
-	std::shared_ptr<ExternalRenderPass> postProcessingPass,
-	const GraphicsPipelineManager& graphicsPipelineManager
+	ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager,
+	ModelBundleBase& renderTargetQuadBundle, float renderTargetQuadScale,
+	std::uint32_t renderTargetQuadMeshIndex
 ) {
 	const std::uint32_t compositePipelineIndex = m_renderer->AddGraphicsPipeline(
 		GetCompositePassPipeline(graphicsPipelineManager)
 	);
 
+	postProcessingPass->AddPipeline(compositePipelineIndex);
+
+	auto quadModel = std::make_shared<ModelBase>();
+
+	const auto& models = renderTargetQuadBundle.GetModels();
+
+	// Copy the shared values if exists. As we just need a different instance with a different pipeline.
+	if (!std::empty(models))
+		quadModel->CopySharedValues(*models[0]);
+	else
+		quadModel->GetTransform().Scale(renderTargetQuadScale);
+
+	quadModel->SetMeshIndex(renderTargetQuadMeshIndex);
+	quadModel->SetPipelineIndex(compositePipelineIndex);
+
+	renderTargetQuadBundle.AddModel(std::move(quadModel));
+}
+
+void WeightedTransparencyTechnique::SetCompositePass(
+	std::shared_ptr<ExternalRenderPass> postProcessingPass
+) {
 	m_accumulationBarrierIndex = postProcessingPass->AddStartBarrier(
 		m_accumulationTextureIndex, ExternalTextureTransition::FragmentShaderReadOnly
 	);
@@ -247,8 +269,6 @@ void WeightedTransparencyTechnique::SetupCompositePassPipeline(
 	m_revealageBarrierIndex = postProcessingPass->AddStartBarrier(
 		m_revealageTextureIndex, ExternalTextureTransition::FragmentShaderReadOnly
 	);
-
-	postProcessingPass->AddPipeline(compositePipelineIndex);
 
 	m_postProcessingPass = std::move(postProcessingPass);
 }

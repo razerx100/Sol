@@ -4,6 +4,7 @@
 #include <ExternalResourceFactory.hpp>
 #include <ExternalRenderPass.hpp>
 #include <GraphicsPipelineManager.hpp>
+#include <ModelBase.hpp>
 
 class WeightedTransparencyTechnique : public GraphicsTechniqueExtensionBase
 {
@@ -52,9 +53,12 @@ public:
 	void ResizeRenderTargets(std::uint32_t width, std::uint32_t height);
 
 	void SetupCompositePassPipeline(
-		std::shared_ptr<ExternalRenderPass> postProcessingPass,
-		const GraphicsPipelineManager& graphicsPipelineManager
+		ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager,
+		ModelBundleBase& renderTargetQuadBundle, float renderTargetQuadScale,
+		std::uint32_t renderTargetQuadMeshIndex
 	);
+
+	void SetCompositePass(std::shared_ptr<ExternalRenderPass> postProcessingPass);
 
 	[[nodiscard]]
 	static constexpr size_t GetExtraRequiredPassCount() noexcept { return 1u; }
