@@ -146,9 +146,7 @@ void RenderPassManager::SetupRenderPassesFromRenderer()
 			m_graphicsPipelineManager, s_renderDepthFormat
 		);
 
-		m_transparencyExt->SetupCompositePassPipeline(
-			m_postProcessingPass.get(), m_graphicsPipelineManager
-		);
+		m_transparencyExt->SetupCompositePassPipeline(m_postProcessingPass, m_graphicsPipelineManager);
 	}
 
 	swapchainPass->SetSwapchainCopySource(swapchainCopySourceIndex);
@@ -162,12 +160,11 @@ void RenderPassManager::Resize()
 
 	m_mainRenderTarget->Create(
 		renderArea.width, renderArea.height, m_renderer->GetSwapchainFormat(),
-		ExternalTexture2DType::RenderTarget, true, false
+		ExternalTexture2DType::RenderTarget, ExternalTextureCreationFlags{ .copySrc = true }
 	);
 
 	m_depthTarget->Create(
-		renderArea.width, renderArea.height, s_renderDepthFormat, ExternalTexture2DType::Depth,
-		false, false
+		renderArea.width, renderArea.height, s_renderDepthFormat, ExternalTexture2DType::Depth
 	);
 
 	m_mainPass->ResetAttachmentReferences();

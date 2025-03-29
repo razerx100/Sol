@@ -33,7 +33,8 @@ public:
 	void ResizeRenderTargets(std::uint32_t width, std::uint32_t height);
 
 	void SetupCompositePassPipeline(
-		ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager
+		std::shared_ptr<ExternalRenderPass> postProcessingPass,
+		const GraphicsPipelineManager& graphicsPipelineManager
 	);
 
 	[[nodiscard]]
@@ -52,9 +53,12 @@ private:
 	std::shared_ptr<ExternalTexture>    m_revealageRenderTarget;
 	std::shared_ptr<ExternalBuffer>     m_renderTargetBindingDataExtBuffer;
 	std::shared_ptr<ExternalRenderPass> m_transparencyPass;
+	std::shared_ptr<ExternalRenderPass> m_postProcessingPass;
 	std::uint32_t                       m_accumulationTextureIndex;
 	std::uint32_t                       m_revealageTextureIndex;
 	RenderTargetBindingData             m_bindingData;
+	std::uint32_t                       m_accumulationBarrierIndex;
+	std::uint32_t                       m_revealageBarrierIndex;
 
 	static constexpr std::uint32_t s_rtBindingDataBufferIndex = 0u;
 
@@ -70,9 +74,12 @@ public:
 		m_revealageRenderTarget{ std::move(other.m_revealageRenderTarget) },
 		m_renderTargetBindingDataExtBuffer{ std::move(other.m_renderTargetBindingDataExtBuffer) },
 		m_transparencyPass{ std::move(other.m_transparencyPass) },
+		m_postProcessingPass{ std::move(other.m_postProcessingPass) },
 		m_accumulationTextureIndex{ other.m_accumulationTextureIndex },
 		m_revealageTextureIndex{ other.m_revealageTextureIndex },
-		m_bindingData{ other.m_bindingData }
+		m_bindingData{ other.m_bindingData },
+		m_accumulationBarrierIndex{ other.m_accumulationBarrierIndex },
+		m_revealageBarrierIndex{ other.m_revealageBarrierIndex }
 	{}
 	WeightedTransparencyTechnique& operator=(WeightedTransparencyTechnique&& other) noexcept
 	{
@@ -81,9 +88,12 @@ public:
 		m_revealageRenderTarget            = std::move(other.m_revealageRenderTarget);
 		m_renderTargetBindingDataExtBuffer = std::move(other.m_renderTargetBindingDataExtBuffer);
 		m_transparencyPass                 = std::move(other.m_transparencyPass);
+		m_postProcessingPass               = std::move(other.m_postProcessingPass);
 		m_accumulationTextureIndex         = other.m_accumulationTextureIndex;
 		m_revealageTextureIndex            = other.m_revealageTextureIndex;
 		m_bindingData                      = other.m_bindingData;
+		m_accumulationBarrierIndex         = other.m_accumulationBarrierIndex;
+		m_revealageBarrierIndex            = other.m_revealageBarrierIndex;
 
 		return *this;
 	}

@@ -6,11 +6,11 @@ ShaderName WeightedTransparencyTechnique::s_compositePassShaderName = L"Weighted
 WeightedTransparencyTechnique::WeightedTransparencyTechnique(Renderer* renderer)
 	: GraphicsTechniqueExtensionBase{ renderer }, m_accumulationRenderTarget{},
 	m_revealageRenderTarget{}, m_renderTargetBindingDataExtBuffer{}, m_transparencyPass{},
-	m_accumulationTextureIndex{ 0u }, m_revealageTextureIndex{ 0u },
+	m_postProcessingPass{}, m_accumulationTextureIndex{ 0u }, m_revealageTextureIndex{ 0u },
 	m_bindingData{
 		.accumulationRTBindingIndex = std::numeric_limits<std::uint32_t>::max(),
 		.revealageRTBindingIndex    = std::numeric_limits<std::uint32_t>::max()
-	}
+	}, m_accumulationBarrierIndex{ 0u }, m_revealageBarrierIndex{ 0u }
 {
 	constexpr size_t bufferBindingCount = 1u;
 
@@ -201,16 +201,24 @@ void WeightedTransparencyTechnique::ResizeRenderTargets(std::uint32_t width, std
 {
 	m_accumulationRenderTarget->Create(
 		width, height, ExternalFormat::R16G16B16A16_FLOAT,
-		ExternalTexture2DType::RenderTarget, false, false
+		ExternalTexture2DType::RenderTarget, ExternalTextureCreationFlags{ .sampleTexture = true }
 	);
 
 	m_revealageRenderTarget->Create(
-		width, height, ExternalFormat::R8_UNORM, ExternalTexture2DType::RenderTarget, false, false
+		width, height, ExternalFormat::R8_UNORM, ExternalTexture2DType::RenderTarget,
+		ExternalTextureCreationFlags{ .sampleTexture = true }
 	);
 
 	m_transparencyPass->ResetAttachmentReferences();
 
 	BindRenderTargetTextures();
+
+	m_postProcessingPass->UpdateStartBarrierResource(
+		m_accumulationBarrierIndex, m_accumulationTextureIndex
+	);
+	m_postProcessingPass->UpdateStartBarrierResource(
+		m_revealageBarrierIndex, m_revealageTextureIndex
+	);
 }
 
 ExternalGraphicsPipeline WeightedTransparencyTechnique::GetCompositePassPipeline(
@@ -225,11 +233,22 @@ ExternalGraphicsPipeline WeightedTransparencyTechnique::GetCompositePassPipeline
 }
 
 void WeightedTransparencyTechnique::SetupCompositePassPipeline(
-	ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager
+	std::shared_ptr<ExternalRenderPass> postProcessingPass,
+	const GraphicsPipelineManager& graphicsPipelineManager
 ) {
 	const std::uint32_t compositePipelineIndex = m_renderer->AddGraphicsPipeline(
 		GetCompositePassPipeline(graphicsPipelineManager)
 	);
 
+	m_accumulationBarrierIndex = postProcessingPass->AddStartBarrier(
+		m_accumulationTextureIndex, ExternalTextureTransition::FragmentShaderReadOnly
+	);
+
+	m_revealageBarrierIndex = postProcessingPass->AddStartBarrier(
+		m_revealageTextureIndex, ExternalTextureTransition::FragmentShaderReadOnly
+	);
+
 	postProcessingPass->AddPipeline(compositePipelineIndex);
+
+	m_postProcessingPass = std::move(postProcessingPass);
 }
