@@ -19,10 +19,11 @@ public:
 	void PhysicsUpdate();
 
 private:
-	Renderer*                 m_renderer;
-	BlinnPhongLightTechnique* m_blinnPhong;
-	InputManager*             m_inputManager;
-	RenderEngineType          m_engineType;
-	RenderPassManager*        m_renderPassManager;
+	Renderer*                      m_renderer;
+	BlinnPhongLightTechnique*      m_blinnPhong;
+	WeightedTransparencyTechnique* m_transparencyPass;
+	InputManager*                  m_inputManager;
+	RenderEngineType               m_engineType;
+	RenderPassManager*             m_renderPassManager;
 };
 #endif

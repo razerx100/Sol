@@ -25,6 +25,7 @@ static std::shared_ptr<ModelBundleBase> assimpModelBundle3{};
 static std::shared_ptr<ModelBundleBase> cubeBundle2{};
 static std::shared_ptr<ModelBundleBase> cubeBundle3{};
 static std::shared_ptr<ModelBundleBase> cubeBundle4{};
+static std::shared_ptr<ModelBundleBase> quadBundleT{};
 static std::shared_ptr<ModelBundleBase> cubeLightBundle{};
 static std::uint32_t cubeBundleIndex1     = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t assimpBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
@@ -33,6 +34,7 @@ static std::uint32_t assimpBundleIndex3   = std::numeric_limits<std::uint32_t>::
 static std::uint32_t cubeBundleIndex2     = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeBundleIndex3     = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeBundleIndex4     = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t quadBundleIndexT     = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t cubeLightBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
 static std::uint32_t whiteMatIndex      = 0u;
@@ -41,19 +43,22 @@ static size_t secondTextureIndex        = std::numeric_limits<size_t>::max();
 static TextureAtlas atlas{};
 static std::uint32_t atlasBindingIndex  = 0u;
 
-static std::uint32_t nonLightPSOIndex   = std::numeric_limits<std::uint32_t>::max();
-static std::uint32_t lightPSOIndex      = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t nonLightPSOIndex         = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t lightPSOIndex            = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t lightTransparentPSOIndex = std::numeric_limits<std::uint32_t>::max();
 
 static std::shared_ptr<PerspectiveCameraEuler> camera{};
 
 App::App(
 	Renderer* renderer, InputManager* inputManager, RenderEngineType engineType,
 	ExtensionManager* extensionManager, RenderPassManager* renderPassManager, std::uint32_t frameCount
-) : m_renderer{ renderer }, m_blinnPhong{ nullptr }, m_inputManager{ inputManager },
-	m_engineType{ engineType }, m_renderPassManager{ renderPassManager }
+) : m_renderer{ renderer }, m_blinnPhong{ nullptr }, m_transparencyPass{ nullptr },
+	m_inputManager{ inputManager }, m_engineType{ engineType }, m_renderPassManager{ renderPassManager }
 {
 	extensionManager->SetBlinnPhongLight(renderer, frameCount);
 	extensionManager->SetWeightedTransparency(renderer);
+
+	m_transparencyPass = extensionManager->GetWeightedTransparency();
 
 	m_renderPassManager->SetTransparencyPass(extensionManager->GetWeightedTransparencySP());
 
@@ -104,6 +109,16 @@ void App::Init()
 
 		m_renderPassManager->AddPipeline(nonLightPSOIndex);
 		m_renderPassManager->AddPipeline(lightPSOIndex);
+
+		const ExternalGraphicsPipeline lightTransparentPipeline
+			= m_blinnPhong->GetTransparentLightDstPipeline(
+				m_renderPassManager->GetGraphicsPipelineManager()
+			);
+
+		lightTransparentPSOIndex = m_renderer->AddGraphicsPipeline(lightTransparentPipeline);
+
+		if (m_transparencyPass)
+			m_transparencyPass->AddTransparentPipeline(lightTransparentPSOIndex);
 	}
 
 	cubeLightBundle = std::make_shared<ModelBundleBase>();
@@ -228,15 +243,16 @@ void App::Init()
 	}
 
 	{
-		atlas.AddTexture("Narrative",    "resources/textures/NTHead.jpg")
-			.AddTexture("Panda",         "resources/textures/Panda.png")
-			.AddTexture("Unicorn",       "resources/textures/unicorn.jpeg")
-			.AddTexture("Katarin",       "resources/textures/Katarin.png")
-			.AddTexture("Monika",        "resources/textures/MonikaGun.png")
-			.AddTexture("UltraMarine",   "resources/textures/UltraMarine.jpg")
-			.AddTexture("Goku",          "resources/textures/Goku.jpg")
-			.AddTexture("Container",     "resources/textures/container.png")
-			.AddTexture("ContainerSpec", "resources/textures/container_specular.png");
+		atlas.AddTexture("Narrative",        "resources/textures/NTHead.jpg")
+			.AddTexture("Panda",             "resources/textures/Panda.png")
+			.AddTexture("Unicorn",           "resources/textures/unicorn.jpeg")
+			.AddTexture("Katarin",           "resources/textures/Katarin.png")
+			.AddTexture("Monika",            "resources/textures/MonikaGun.png")
+			.AddTexture("UltraMarine",       "resources/textures/UltraMarine.jpg")
+			.AddTexture("Goku",              "resources/textures/Goku.jpg")
+			.AddTexture("Container",         "resources/textures/container.png")
+			.AddTexture("ContainerSpec",     "resources/textures/container_specular.png")
+			.AddTexture("TransparentWindow", "resources/textures/blending_transparent_window.png");
 
 		atlas.CreateAtlas();
 
@@ -306,6 +322,50 @@ void App::Init()
 		);
 
 		m_renderPassManager->AddModelBundle(cubeBundleIndex1);
+	}
+
+	{
+		quadBundleT = std::make_shared<ModelBundleBase>();
+
+		quadBundleT->AddModel(0.45f).AddModel(0.45f);
+
+		// We have only a single mesh in the bundle.
+		{
+			ModelBase& model1 = *quadBundleT->GetModel(0u);
+
+			model1.SetMeshIndex(0u);
+			model1.SetMaterialIndex(whiteMatIndex);
+			model1.SetDiffuseUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			model1.SetDiffuseIndex(atlasBindingIndex);
+			model1.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			model1.SetSpecularIndex(atlasBindingIndex);
+			model1.SetPipelineIndex(lightTransparentPSOIndex);
+
+			quadBundleT->MoveTowardsX(0u, 0.75f);
+		}
+
+		{
+			ModelBase& model2 = *quadBundleT->GetModel(1u);
+
+			model2.SetMeshIndex(0u);
+			model2.SetMaterialIndex(whiteMatIndex);
+			model2.SetDiffuseUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			model2.SetDiffuseIndex(atlasBindingIndex);
+			model2.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			model2.SetSpecularIndex(atlasBindingIndex);
+			model2.SetPipelineIndex(lightTransparentPSOIndex);
+
+			quadBundleT->MoveTowardsY(1u, 0.75f);
+		}
+
+		quadBundleT->SetMeshBundleIndex(m_renderPassManager->GetQuadMeshBundleIndex());
+
+		quadBundleIndexT = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(quadBundleT)
+		);
+
+		if (m_transparencyPass)
+			m_transparencyPass->AddTransparentModelBundle(quadBundleIndexT);
 	}
 
 	/*

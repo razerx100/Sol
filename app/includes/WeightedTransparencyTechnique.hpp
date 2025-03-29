@@ -17,6 +17,25 @@ public:
 public:
 	WeightedTransparencyTechnique(Renderer* renderer);
 
+	void AddTransparentPipeline(std::uint32_t pipelineIndex)
+	{
+		m_transparencyPass->AddPipeline(pipelineIndex);
+	}
+
+	void AddTransparentModelBundle(std::uint32_t bundleIndex)
+	{
+		m_transparencyPass->AddModelBundle(bundleIndex);
+	}
+
+	void RemoveTransparentModelBundle(std::uint32_t bundleIndex) noexcept
+	{
+		m_transparencyPass->RemoveModelBundle(bundleIndex);
+	}
+	void RemoveTransparentPipeline(std::uint32_t pipelineIndex) noexcept
+	{
+		m_transparencyPass->RemovePipeline(pipelineIndex);
+	}
+
 	void SetFixedDescriptors();
 
 	void SetTransparencyPass(std::shared_ptr<ExternalRenderPass> transparencyPass) noexcept;
