@@ -267,9 +267,12 @@ void App::Init()
 			ModelBase& model1 = *cubeLightBundle->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
-			model1.SetMaterialIndex(whiteMatIndex);
-			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
-			model1.SetDiffuseIndex(atlasBindingIndex);
+
+			ModelMaterial& modelMaterial = model1.GetMaterial();
+
+			modelMaterial.SetMaterialIndex(whiteMatIndex);
+			modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Narrative"));
+			modelMaterial.SetDiffuseIndex(atlasBindingIndex);
 		}
 
 		cubeLightBundle->SetMeshBundleIndex(cubeMeshBundleIndex);
@@ -291,12 +294,15 @@ void App::Init()
 			ModelBase& model1 = *cubeBundle1->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
-			model1.SetMaterialIndex(whiteMatIndex);
-			model1.SetDiffuseUVInfo(atlas.GetUVInfo("Container"));
-			model1.SetDiffuseIndex(atlasBindingIndex);
-			model1.SetSpecularUVInfo(atlas.GetUVInfo("ContainerSpec"));
-			model1.SetSpecularIndex(atlasBindingIndex);
 			model1.SetPipelineIndex(lightPSOIndex);
+
+			ModelMaterial& modelMaterial = model1.GetMaterial();
+
+			modelMaterial.SetMaterialIndex(whiteMatIndex);
+			modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Container"));
+			modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+			modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("ContainerSpec"));
+			modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 			cubeBundle1->MoveTowardsX(0u, 0.75f);
 		}
@@ -305,12 +311,15 @@ void App::Init()
 			ModelBase& model2 = *cubeBundle1->GetModel(1u);
 
 			model2.SetMeshIndex(0u);
-			model2.SetMaterialIndex(whiteMatIndex);
-			model2.SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
-			model2.SetDiffuseIndex(atlasBindingIndex);
-			model2.SetSpecularUVInfo(atlas.GetUVInfo("Katarin"));
-			model2.SetSpecularIndex(atlasBindingIndex);
 			model2.SetPipelineIndex(lightPSOIndex);
+
+			ModelMaterial& modelMaterial = model2.GetMaterial();
+
+			modelMaterial.SetMaterialIndex(whiteMatIndex);
+			modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Katarin"));
+			modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+			modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("Katarin"));
+			modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 			cubeBundle1->MoveTowardsY(1u, 0.75f);
 		}
@@ -334,12 +343,15 @@ void App::Init()
 			ModelBase& model1 = *quadBundleT->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
-			model1.SetMaterialIndex(whiteMatIndex);
-			model1.SetDiffuseUVInfo(atlas.GetUVInfo("TransparentWindow"));
-			model1.SetDiffuseIndex(atlasBindingIndex);
-			model1.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
-			model1.SetSpecularIndex(atlasBindingIndex);
 			model1.SetPipelineIndex(lightTransparentPSOIndex);
+
+			ModelMaterial& modelMaterial = model1.GetMaterial();
+
+			modelMaterial.SetMaterialIndex(whiteMatIndex);
+			modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+			modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 			quadBundleT->MoveTowardsX(0u, 0.75f);
 		}
@@ -348,12 +360,15 @@ void App::Init()
 			ModelBase& model2 = *quadBundleT->GetModel(1u);
 
 			model2.SetMeshIndex(0u);
-			model2.SetMaterialIndex(whiteMatIndex);
-			model2.SetDiffuseUVInfo(atlas.GetUVInfo("TransparentWindow"));
-			model2.SetDiffuseIndex(atlasBindingIndex);
-			model2.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
-			model2.SetSpecularIndex(atlasBindingIndex);
 			model2.SetPipelineIndex(lightTransparentPSOIndex);
+
+			ModelMaterial& modelMaterial = model2.GetMaterial();
+
+			modelMaterial.SetMaterialIndex(whiteMatIndex);
+			modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+			modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
+			modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 			quadBundleT->MoveTowardsY(1u, 0.75f);
 		}
@@ -441,22 +456,28 @@ void App::PhysicsUpdate()
 				ModelBase& model1 = *cubeBundle2->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
-				model1.SetMaterialIndex(1u);
-				model1.SetDiffuseIndex(atlasBindingIndex);
-				model1.SetSpecularIndex(atlasBindingIndex);
 				model1.SetPipelineIndex(lightPSOIndex);
+
+				ModelMaterial& modelMaterial = model1.GetMaterial();
+
+				modelMaterial.SetMaterialIndex(1u);
+				modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+				modelMaterial.SetSpecularIndex(atlasBindingIndex);
 			}
 
 			{
 				ModelBase& model2 = *cubeBundle2->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
-				model2.SetMaterialIndex(whiteMatIndex);
-				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
-				model2.SetDiffuseIndex(atlasBindingIndex);
-				model2.SetSpecularUVInfo(atlas.GetUVInfo("Monika"));
-				model2.SetSpecularIndex(atlasBindingIndex);
 				model2.SetPipelineIndex(lightPSOIndex);
+
+				ModelMaterial& modelMaterial = model2.GetMaterial();
+
+				modelMaterial.SetMaterialIndex(whiteMatIndex);
+				modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Monika"));
+				modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+				modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("Monika"));
+				modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle2->MoveTowardsX(1u, -0.75f);
 			}
@@ -497,12 +518,15 @@ void App::PhysicsUpdate()
 				ModelBase& model1 = *cubeBundle3->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
-				model1.SetMaterialIndex(whiteMatIndex);
-				model1.SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
-				model1.SetDiffuseIndex(atlasBindingIndex);
-				model1.SetSpecularUVInfo(atlas.GetUVInfo("Unicorn"));
-				model1.SetSpecularIndex(atlasBindingIndex);
 				model1.SetPipelineIndex(lightPSOIndex);
+
+				ModelMaterial& modelMaterial = model1.GetMaterial();
+
+				modelMaterial.SetMaterialIndex(whiteMatIndex);
+				modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Unicorn"));
+				modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+				modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("Unicorn"));
+				modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle3->MoveModel(0u, DirectX::XMFLOAT3{ -1.4f, -0.75f, 0.f });
 			}
@@ -511,12 +535,15 @@ void App::PhysicsUpdate()
 				ModelBase& model2 = *cubeBundle3->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
-				model2.SetMaterialIndex(whiteMatIndex);
-				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
-				model2.SetDiffuseIndex(atlasBindingIndex);
-				model2.SetSpecularUVInfo(atlas.GetUVInfo("Panda"));
-				model2.SetSpecularIndex(atlasBindingIndex);
 				model2.SetPipelineIndex(lightPSOIndex);
+
+				ModelMaterial& modelMaterial = model2.GetMaterial();
+
+				modelMaterial.SetMaterialIndex(whiteMatIndex);
+				modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Panda"));
+				modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+				modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("Panda"));
+				modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle3->MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
 			}
@@ -556,12 +583,15 @@ void App::PhysicsUpdate()
 				ModelBase& model1 = *cubeBundle4->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
-				model1.SetMaterialIndex(whiteMatIndex);
-				model1.SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
-				model1.SetDiffuseIndex(atlasBindingIndex);
-				model1.SetSpecularUVInfo(atlas.GetUVInfo("UltraMarine"));
-				model1.SetSpecularIndex(atlasBindingIndex);
 				model1.SetPipelineIndex(lightPSOIndex);
+
+				ModelMaterial& modelMaterial = model1.GetMaterial();
+
+				modelMaterial.SetMaterialIndex(whiteMatIndex);
+				modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("UltraMarine"));
+				modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+				modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("UltraMarine"));
+				modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle4->MoveModel(0u, DirectX::XMFLOAT3{ 1.4f, -0.75f, 0.f });
 			}
@@ -570,12 +600,15 @@ void App::PhysicsUpdate()
 				ModelBase& model2 = *cubeBundle4->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
-				model2.SetMaterialIndex(whiteMatIndex);
-				model2.SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
-				model2.SetDiffuseIndex(atlasBindingIndex);
-				model2.SetSpecularUVInfo(atlas.GetUVInfo("Goku"));
-				model2.SetSpecularIndex(atlasBindingIndex);
 				model2.SetPipelineIndex(lightPSOIndex);
+
+				ModelMaterial& modelMaterial = model2.GetMaterial();
+
+				modelMaterial.SetMaterialIndex(whiteMatIndex);
+				modelMaterial.SetDiffuseUVInfo(atlas.GetUVInfo("Goku"));
+				modelMaterial.SetDiffuseIndex(atlasBindingIndex);
+				modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("Goku"));
+				modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
 				cubeBundle4->MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
 			}
@@ -630,7 +663,7 @@ void App::PhysicsUpdate()
 
 			ModelBase& model1 = *cubeBundle2->GetModel(0u);
 
-			model1.SetMaterialIndex(index);
+			model1.GetMaterial().SetMaterialIndex(index);
 		}
 	}
 
@@ -667,18 +700,24 @@ void App::PhysicsUpdate()
 			ModelBase& model1 = *cubeBundle1->GetModel(0u);
 
 			model1.SetMeshIndex(0u);
-			model1.SetDiffuseIndex(0u);
-			model1.SetSpecularIndex(0u);
-			model1.SetDiffuseUVInfo(UVInfo{});
-			model1.SetSpecularUVInfo(UVInfo{});
+
+			ModelMaterial& modelMaterial = model1.GetMaterial();
+
+			modelMaterial.SetDiffuseIndex(0u);
+			modelMaterial.SetSpecularIndex(0u);
+			modelMaterial.SetDiffuseUVInfo(UVInfo{});
+			modelMaterial.SetSpecularUVInfo(UVInfo{});
 
 			ModelBase& model2 = *cubeBundle1->GetModel(1u);
 
 			model2.SetMeshIndex(0u);
-			model2.SetDiffuseIndex(0u);
-			model2.SetSpecularIndex(0u);
-			model2.SetDiffuseUVInfo(UVInfo{});
-			model2.SetSpecularUVInfo(UVInfo{});
+
+			ModelMaterial& modelMaterial2 = model2.GetMaterial();
+
+			modelMaterial2.SetDiffuseIndex(0u);
+			modelMaterial2.SetSpecularIndex(0u);
+			modelMaterial2.SetDiffuseUVInfo(UVInfo{});
+			modelMaterial2.SetSpecularUVInfo(UVInfo{});
 
 			cubeBundle1->SetMeshBundleIndex(sphereMeshBundleIndex);
 		}
@@ -706,8 +745,10 @@ void App::PhysicsUpdate()
 		{
 			ModelBase& model1 = *cubeBundle1->GetModel(0u);
 
-			model1.SetDiffuseUVInfo(UVInfo{});
-			model1.SetDiffuseIndex(secondTextureIndex);
+			ModelMaterial& modelMaterial = model1.GetMaterial();
+
+			modelMaterial.SetDiffuseUVInfo(UVInfo{});
+			modelMaterial.SetDiffuseIndex(secondTextureIndex);
 		}
 	}
 }

@@ -82,6 +82,11 @@ static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shar
 // Model Bundle Base
 ModelBundleBase& ModelBundleBase::AddModel(float scale) noexcept
 {
+	return AddModel(std::make_shared<ModelBase>(scale));
+}
+
+ModelBundleBase& ModelBundleBase::AddModel(std::shared_ptr<ModelBase> model) noexcept
+{
 	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_models));
 
 	m_modelNodeData.emplace_back(
@@ -92,8 +97,6 @@ ModelBundleBase& ModelBundleBase::AddModel(float scale) noexcept
 			.childrenData = MeshChildrenData{.count = 0u, .startingIndex = 0u }
 		}
 	);
-
-	auto model = std::make_shared<ModelBase>(scale);
 
 	m_models.emplace_back(model);
 	m_modelsNonBase.emplace_back(std::move(model));
@@ -165,9 +168,11 @@ void ModelBundleBase::ChangeMeshBundle(
 			// Base Colour
 			const MeshTextureDetails& baseColourDetails = meshDetails.baseTextureDetails;
 
-			model->SetDiffuseIndex(baseColourDetails.baseTextureBindingIndex);
-			model->SetDiffuseUVInfo(baseColourDetails.uvInfo);
-			model->SetMaterialIndex(baseColourDetails.materialIndex);
+			ModelMaterial& material = model->GetMaterial();
+
+			material.SetDiffuseIndex(baseColourDetails.baseTextureBindingIndex);
+			material.SetDiffuseUVInfo(baseColourDetails.uvInfo);
+			material.SetMaterialIndex(baseColourDetails.materialIndex);
 
 			// Transform
 			ModelTransform& transform = model->GetTransform();

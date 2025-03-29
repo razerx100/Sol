@@ -131,28 +131,15 @@ private:
 	float             m_modelScale;
 };
 
-class ModelBase : public Model
+class ModelMaterial
 {
-	friend class ModelBundleBase;
-
 public:
-	ModelBase()
-		: m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u }, m_meshIndex{ 0u },
-		m_pipelineIndex{ 0u }, m_visible{ true }, m_transform{}, m_diffuseUVInfo{0.f, 0.f, 1.f, 1.f},
-		m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
+	ModelMaterial()
+		: m_materialIndex{ 0u }, m_diffuseIndex{ 0u }, m_specularIndex{ 0u },
+		m_diffuseUVInfo{ 0.f, 0.f, 1.f, 1.f }, m_specularUVInfo{ 0.f, 0.f, 1.f, 1.f }
 	{}
-	ModelBase(float scale) : ModelBase{}
-	{
-		Scale(scale);
-	}
 
 	void SetMaterialIndex(std::uint32_t index) noexcept { m_materialIndex = index; }
-	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
-
-	void Scale(float scale) noexcept
-	{
-		GetTransform().Scale(scale);
-	}
 
 	void SetDiffuseIndex(size_t index) noexcept
 	{
@@ -177,49 +164,137 @@ public:
 		);
 	}
 	void SetSpecularUVInfo(const UVInfo& uvInfo) noexcept { m_specularUVInfo = uvInfo; }
+
+	[[nodiscard]]
+	std::uint32_t GetMaterialIndex() const noexcept { return m_materialIndex; }
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept { return m_diffuseIndex; }
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept { return m_diffuseUVInfo; }
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept { return m_specularIndex; }
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept { return m_specularUVInfo; }
+
+private:
+	std::uint32_t m_materialIndex;
+	std::uint32_t m_diffuseIndex;
+	std::uint32_t m_specularIndex;
+	UVInfo        m_diffuseUVInfo;
+	UVInfo        m_specularUVInfo;
+};
+
+class ModelBase : public Model
+{
+	friend class ModelBundleBase;
+
+public:
+	ModelBase()
+		: m_transform{ std::make_shared<ModelTransform>() },
+		m_material{ std::make_shared<ModelMaterial>() },
+		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+	{}
+	ModelBase(float scale) : ModelBase{}
+	{
+		Scale(scale);
+	}
+	ModelBase(std::shared_ptr<ModelTransform> transform, std::shared_ptr<ModelMaterial> material)
+		: m_transform{ std::move(transform) },
+		m_material{ std::move(material) },
+		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+	{}
+	ModelBase(std::shared_ptr<ModelTransform> transform)
+		: m_transform{ std::move(transform) },
+		m_material{ std::make_shared<ModelMaterial>() },
+		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+	{}
+	ModelBase(std::shared_ptr<ModelMaterial> material)
+		: m_transform{ std::make_shared<ModelTransform>() },
+		m_material{ std::move(material) },
+		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+	{}
+
+	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
+
+	void Scale(float scale) noexcept
+	{
+		GetTransform().Scale(scale);
+	}
+
 	void SetPipelineIndex(std::uint32_t pipelineIndex) noexcept { m_pipelineIndex = pipelineIndex; }
 	void SetVisibility(bool value) noexcept { m_visible = value; }
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept override { return m_transform.GetModelMatrix(); }
+	DirectX::XMMATRIX GetModelMatrix() const noexcept override { return m_transform->GetModelMatrix(); }
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept override { return m_transform.GetModelOffset(); }
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept override { return m_transform->GetModelOffset(); }
 	[[nodiscard]]
-	std::uint32_t GetMaterialIndex() const noexcept override { return m_materialIndex; }
+	std::uint32_t GetMaterialIndex() const noexcept override { return m_material->GetMaterialIndex(); }
 	[[nodiscard]]
 	std::uint32_t GetMeshIndex() const noexcept override { return m_meshIndex; }
 	[[nodiscard]]
-	float GetModelScale() const noexcept override { return m_transform.GetModelScale(); }
+	float GetModelScale() const noexcept override { return m_transform->GetModelScale(); }
 	[[nodiscard]]
 	std::uint32_t GetPipelineIndex() const noexcept override { return m_pipelineIndex; }
 	[[nodiscard]]
 	bool IsVisible() const noexcept override { return m_visible; }
 
 	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept override { return m_material->GetDiffuseIndex(); }
+	[[nodiscard]]
+	UVInfo GetDiffuseUVInfo() const noexcept override { return m_material->GetDiffuseUVInfo(); }
+	[[nodiscard]]
+	std::uint32_t GetSpecularIndex() const noexcept override { return m_material->GetSpecularIndex(); }
+	[[nodiscard]]
+	UVInfo GetSpecularUVInfo() const noexcept override { return m_material->GetSpecularUVInfo(); }
+
+	[[nodiscard]]
 	auto&& GetTransform(this auto&& self) noexcept
 	{
-		return std::forward_like<decltype(self)>(self.m_transform);
+		return std::forward_like<decltype(self)>(*self.m_transform);
 	}
 
 	[[nodiscard]]
-	std::uint32_t GetDiffuseIndex() const noexcept override { return m_diffuseIndex; }
-	[[nodiscard]]
-	UVInfo GetDiffuseUVInfo() const noexcept override { return m_diffuseUVInfo; }
-	[[nodiscard]]
-	std::uint32_t GetSpecularIndex() const noexcept override { return m_specularIndex; }
-	[[nodiscard]]
-	UVInfo GetSpecularUVInfo() const noexcept override { return m_specularUVInfo; }
+	auto&& GetMaterial(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(*self.m_material);
+	}
+
+	void CopySharedValues(const ModelBase& other) noexcept
+	{
+		m_transform = other.m_transform;
+		m_material  = other.m_material;
+	}
 
 private:
-	std::uint32_t  m_materialIndex;
-	std::uint32_t  m_diffuseIndex;
-	std::uint32_t  m_specularIndex;
-	std::uint32_t  m_meshIndex;
-	std::uint32_t  m_pipelineIndex;
-	bool           m_visible;
-	ModelTransform m_transform;
-	UVInfo         m_diffuseUVInfo;
-	UVInfo         m_specularUVInfo;
+	std::shared_ptr<ModelTransform> m_transform;
+	std::shared_ptr<ModelMaterial>  m_material;
+
+	std::uint32_t m_meshIndex;
+	std::uint32_t m_pipelineIndex;
+	bool          m_visible;
+
+public:
+	ModelBase(const ModelBase&) = delete;
+	ModelBase& operator=(const ModelBase&) = delete;
+
+	ModelBase(ModelBase&& other) noexcept
+		: m_transform{ std::move(other.m_transform) },
+		m_material{ std::move(other.m_material) },
+		m_meshIndex{ other.m_meshIndex },
+		m_pipelineIndex{ other.m_pipelineIndex },
+		m_visible{ other.m_visible }
+	{}
+	ModelBase& operator=(ModelBase&& other) noexcept
+	{
+		m_transform     = std::move(other.m_transform);
+		m_material      = std::move(other.m_material);
+		m_meshIndex     = other.m_meshIndex;
+		m_pipelineIndex = other.m_pipelineIndex;
+		m_visible       = other.m_visible;
+
+		return *this;
+	}
 };
 
 class ModelBundleBase
@@ -228,6 +303,7 @@ public:
 	ModelBundleBase() : m_modelNodeData{}, m_models{}, m_modelsNonBase{}, m_meshBundleIndex { 0u } {}
 
 	ModelBundleBase& AddModel(float scale) noexcept;
+	ModelBundleBase& AddModel(std::shared_ptr<ModelBase> model) noexcept;
 
 	void SetMeshBundleIndex(std::uint32_t index) noexcept
 	{
