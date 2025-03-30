@@ -36,6 +36,12 @@ public:
 	static void SetMesh(Mesh& mesh) noexcept;
 };
 
+class RenderTargetQuadMesh
+{
+public:
+	static void SetMesh(Mesh& mesh) noexcept;
+};
+
 class SphereMesh
 {
 public:

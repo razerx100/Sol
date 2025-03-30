@@ -168,6 +168,35 @@ void QuadMesh::SetMesh(Mesh& mesh) noexcept
 	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
 }
 
+// Render Target Quad Mesh
+void RenderTargetQuadMesh::SetMesh(Mesh& mesh) noexcept
+{
+	std::vector<Vertex>& vertices = mesh.vertices;
+
+	constexpr float side = 1.0f;
+
+	vertices.resize(4u);
+
+	vertices[0].position = { -side, side, 0.f };
+	vertices[1].position = { side, side, 0.f };
+	vertices[2].position = { -side, -side, 0.f };
+	vertices[3].position = { side, -side, 0.f };
+
+	std::vector<DirectX::XMFLOAT2> uvs
+	{
+		{ 0.f, 0.f }, { 1.f, 0.f },
+		{ 0.f, 1.f }, { 1.f, 1.f }
+	};
+
+	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+
+	std::vector<std::uint32_t>& indices = mesh.indices;
+
+	indices = { 0u, 1u, 2u, 2u, 1u, 3u };
+
+	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
+}
+
 // Sphere
 std::string SphereMesh::GetName(std::uint32_t latDiv, std::uint32_t longDiv) noexcept
 {

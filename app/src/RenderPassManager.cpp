@@ -209,7 +209,7 @@ void RenderPassManager::SetupRenderTargetQuad()
 	// combine or do some other stuff.
 	Mesh mesh{};
 
-	QuadMesh{}.SetMesh(mesh);
+	RenderTargetQuadMesh{}.SetMesh(mesh);
 
 	MeshBundleImpl quadMesh{ true };
 

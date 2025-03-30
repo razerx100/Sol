@@ -104,7 +104,7 @@ private:
 	Renderer*                           m_renderer;
 	ExternalResourceFactory*            m_resourceFactory;
 
-	static constexpr float s_renderTargetQuadScale             = 2.f;
+	static constexpr float s_renderTargetQuadScale             = 1.f;
 	static constexpr std::uint32_t s_renderTargetQuadMeshIndex = 0u;
 
 public:
