@@ -11,10 +11,10 @@
 #include <SceneMaterialProcessor.hpp>
 #include <AllocationLiterals.hpp>
 
-static MeshBundleImpl cubeMeshBundle{ true };
-static std::uint32_t cubeMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
+static MeshBundleImpl testMeshBundle{ true };
+static std::uint32_t testMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
 static MeshBundleImpl assimpMeshBundle{ false };
-static std::uint32_t assimpMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
+static std::uint32_t assimpMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 static MeshBundleImpl sphereMeshBundle{ true };
 static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
@@ -71,9 +71,14 @@ void App::Init()
 		Mesh mesh{};
 
 		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
-		cubeMeshBundle.AddMesh(std::move(mesh));
+		testMeshBundle.AddMesh(std::move(mesh));
 
-		cubeMeshBundleIndex = m_renderer->AddMeshBundle(cubeMeshBundle.MoveTemporaryData());
+		Mesh quadMesh{};
+
+		QuadMesh{}.SetMesh(quadMesh);
+		testMeshBundle.AddMesh(std::move(quadMesh));
+
+		testMeshBundleIndex = m_renderer->AddMeshBundle(testMeshBundle.MoveTemporaryData());
 	}
 
 	/*
@@ -275,7 +280,7 @@ void App::Init()
 			modelMaterial.SetDiffuseIndex(atlasBindingIndex);
 		}
 
-		cubeLightBundle->SetMeshBundleIndex(cubeMeshBundleIndex);
+		cubeLightBundle->SetMeshBundleIndex(testMeshBundleIndex);
 
 		cubeLightBundleIndex = m_renderer->AddModelBundle(
 			std::make_shared<ModelBundleImpl>(cubeLightBundle)
@@ -324,7 +329,7 @@ void App::Init()
 			cubeBundle1->MoveTowardsY(1u, 0.75f);
 		}
 
-		cubeBundle1->SetMeshBundleIndex(cubeMeshBundleIndex);
+		cubeBundle1->SetMeshBundleIndex(testMeshBundleIndex);
 
 		cubeBundleIndex1 = m_renderer->AddModelBundle(
 			std::make_shared<ModelBundleImpl>(cubeBundle1)
@@ -342,7 +347,7 @@ void App::Init()
 		{
 			ModelBase& model1 = *quadBundleT->GetModel(0u);
 
-			model1.SetMeshIndex(0u);
+			model1.SetMeshIndex(1u);
 			model1.SetPipelineIndex(lightTransparentPSOIndex);
 
 			ModelMaterial& modelMaterial = model1.GetMaterial();
@@ -359,7 +364,7 @@ void App::Init()
 		{
 			ModelBase& model2 = *quadBundleT->GetModel(1u);
 
-			model2.SetMeshIndex(0u);
+			model2.SetMeshIndex(1u);
 			model2.SetPipelineIndex(lightTransparentPSOIndex);
 
 			ModelMaterial& modelMaterial = model2.GetMaterial();
@@ -373,7 +378,7 @@ void App::Init()
 			quadBundleT->MoveTowardsY(1u, 0.75f);
 		}
 
-		quadBundleT->SetMeshBundleIndex(m_renderPassManager->GetQuadMeshBundleIndex());
+		quadBundleT->SetMeshBundleIndex(testMeshBundleIndex);
 
 		quadBundleIndexT = m_renderer->AddModelBundle(
 			std::make_shared<ModelBundleImpl>(quadBundleT)
@@ -482,7 +487,7 @@ void App::PhysicsUpdate()
 				cubeBundle2->MoveTowardsX(1u, -0.75f);
 			}
 
-			cubeBundle2->SetMeshBundleIndex(cubeMeshBundleIndex);
+			cubeBundle2->SetMeshBundleIndex(testMeshBundleIndex);
 
 			cubeBundleIndex2 = m_renderer->AddModelBundle(
 				std::make_shared<ModelBundleImpl>(cubeBundle2)
@@ -548,7 +553,7 @@ void App::PhysicsUpdate()
 				cubeBundle3->MoveModel(1u, DirectX::XMFLOAT3{ -0.45f, -0.75f, 0.f });
 			}
 
-			cubeBundle3->SetMeshBundleIndex(cubeMeshBundleIndex);
+			cubeBundle3->SetMeshBundleIndex(testMeshBundleIndex);
 
 			cubeBundleIndex3 = m_renderer->AddModelBundle(
 				std::make_shared<ModelBundleImpl>(cubeBundle3)
@@ -613,7 +618,7 @@ void App::PhysicsUpdate()
 				cubeBundle4->MoveModel(1u, DirectX::XMFLOAT3{ 0.45f, -0.75f, 0.f });
 			}
 
-			cubeBundle4->SetMeshBundleIndex(cubeMeshBundleIndex);
+			cubeBundle4->SetMeshBundleIndex(testMeshBundleIndex);
 
 			cubeBundleIndex4 = m_renderer->AddModelBundle(
 				std::make_shared<ModelBundleImpl>(cubeBundle4)
