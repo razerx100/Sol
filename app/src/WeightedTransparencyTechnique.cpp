@@ -227,6 +227,7 @@ ExternalGraphicsPipeline WeightedTransparencyTechnique::GetCompositePassPipeline
 	ExternalGraphicsPipeline compositePassPipeline
 		= graphicsPipelineManager.GetTransparencyCombinePassSignature();
 
+	compositePassPipeline.SetVertexShader(graphicsPipelineManager.GetNoTransformVertexShader());
 	compositePassPipeline.SetFragmentShader(s_compositePassShaderName);
 
 	return compositePassPipeline;

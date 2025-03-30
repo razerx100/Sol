@@ -296,6 +296,7 @@ ExternalGraphicsPipeline BlinnPhongLightTechnique::GetOpaqueLightSrcPipeline(
 ) noexcept {
 	ExternalGraphicsPipeline opaqueNoLightPipeline = graphicsPipelineManager.GetMainPassOpaqueSignature();
 
+	opaqueNoLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
 	opaqueNoLightPipeline.SetFragmentShader(s_opaqueLightSrcShaderName);
 
 	return opaqueNoLightPipeline;
@@ -306,6 +307,7 @@ ExternalGraphicsPipeline BlinnPhongLightTechnique::GetOpaqueLightDstPipeline(
 ) noexcept {
 	ExternalGraphicsPipeline opaqueLightPipeline = graphicsPipelineManager.GetMainPassOpaqueSignature();
 
+	opaqueLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
 	opaqueLightPipeline.SetFragmentShader(s_opaqueLightDstShaderName);
 
 	return opaqueLightPipeline;
@@ -317,6 +319,7 @@ ExternalGraphicsPipeline BlinnPhongLightTechnique::GetTransparentLightSrcPipelin
 	ExternalGraphicsPipeline transparentNoLightPipeline
 		= graphicsPipelineManager.GetTransparencyPassSignature();
 
+	transparentNoLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
 	transparentNoLightPipeline.SetFragmentShader(s_transparentLightSrcShaderName);
 
 	return transparentNoLightPipeline;
@@ -328,6 +331,7 @@ ExternalGraphicsPipeline BlinnPhongLightTechnique::GetTransparentLightDstPipelin
 	ExternalGraphicsPipeline transparentLightPipeline
 		= graphicsPipelineManager.GetTransparencyPassSignature();
 
+	transparentLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
 	transparentLightPipeline.SetFragmentShader(s_transparentLightDstShaderName);
 
 	return transparentLightPipeline;

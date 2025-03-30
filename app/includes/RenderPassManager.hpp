@@ -15,11 +15,11 @@ class RenderPassManager
 	using TransparencyExt_t = std::shared_ptr<WeightedTransparencyTechnique>;
 
 public:
-	RenderPassManager()
+	RenderPassManager(RenderEngineType engineType)
 		: m_mainPass{}, m_postProcessingPass{}, m_mainRenderTarget{}, m_depthTarget{},
 		m_mainRenderTargetIndex{ 0u }, m_depthTargetIndex{ 0u }, m_quadMeshBundleIndex{ 0u },
 		m_renderTargetQuadModelBundleIndex{ 0u }, m_renderTargetQuadModelBundle{},
-		m_transparencyExt{}, m_graphicsPipelineManager{}, m_renderer{ nullptr },
+		m_transparencyExt{}, m_graphicsPipelineManager{ engineType }, m_renderer{ nullptr },
 		m_resourceFactory{ nullptr }
 	{}
 

@@ -19,7 +19,7 @@ Sol::Sol(const std::string& appName)
 			m_threadPool, m_window->GetWindowHandle(), m_window->GetModuleInstance(),
 			m_configManager.GetRenderEngineType()
 		)
-	}, m_extensionManager{}, m_renderPassManager{},
+	}, m_extensionManager{}, m_renderPassManager{ m_configManager.GetRenderEngineType() },
 	m_app{
 		std::make_unique<App>(
 			m_renderer.get(), m_inputManager.get(), m_configManager.GetRenderEngineType(),

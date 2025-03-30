@@ -1,7 +1,8 @@
 #include <GraphicsPipelineManager.hpp>
 
-GraphicsPipelineManager::GraphicsPipelineManager()
-	: m_mainPassOpaqueSignature{}, m_transparencyPassSignature{}, m_transparencyCombinePassSignature{}
+GraphicsPipelineManager::GraphicsPipelineManager(RenderEngineType engineType)
+	: m_mainPassOpaqueSignature{}, m_transparencyPassSignature{}, m_transparencyCombinePassSignature{},
+	m_engineType{ engineType }
 {}
 
 void GraphicsPipelineManager::SetMainPassOpaqueSignature(
@@ -20,4 +21,23 @@ void GraphicsPipelineManager::SetTransparencyCombinePassSignature(
 	ExternalGraphicsPipeline&& pipelineSignature
 ) noexcept {
 	m_transparencyCombinePassSignature = std::move(pipelineSignature);
+}
+
+ShaderName GraphicsPipelineManager::GetDefaultVertexShader() const noexcept
+{
+	ShaderName vertexShader{};
+
+	if (m_engineType == RenderEngineType::MeshDraw)
+		vertexShader.SetName(L"MeshShaderMSIndividual");
+	else if (m_engineType == RenderEngineType::IndirectDraw)
+		vertexShader.SetName(L"VertexShaderIndirect");
+	else if (m_engineType == RenderEngineType::IndividualDraw)
+		vertexShader.SetName(L"VertexShaderIndividual");
+
+	return vertexShader;
+}
+
+ShaderName GraphicsPipelineManager::GetNoTransformVertexShader() const noexcept
+{
+	return GetDefaultVertexShader();
 }
