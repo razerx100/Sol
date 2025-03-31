@@ -192,6 +192,8 @@ void WeightedTransparencyTechnique::SetupTransparencyCompositePipelineSignature(
 		}
 	);
 
+	transparencyCombineSignature.DisableGPUCulling();
+
 	graphicsPipelineManager.SetTransparencyCombinePassSignature(
 		std::move(transparencyCombineSignature)
 	);

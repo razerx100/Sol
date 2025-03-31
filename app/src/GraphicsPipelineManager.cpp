@@ -39,5 +39,14 @@ ShaderName GraphicsPipelineManager::GetDefaultVertexShader() const noexcept
 
 ShaderName GraphicsPipelineManager::GetNoTransformVertexShader() const noexcept
 {
-	return GetDefaultVertexShader();
+	ShaderName vertexShader{};
+
+	if (m_engineType == RenderEngineType::MeshDraw)
+		vertexShader.SetName(L"MeshShaderMSIndividualNoTransform");
+	else if (m_engineType == RenderEngineType::IndirectDraw)
+		vertexShader.SetName(L"VertexShaderIndirectNoTransform");
+	else if (m_engineType == RenderEngineType::IndividualDraw)
+		vertexShader.SetName(L"VertexShaderIndividualNoTransform");
+
+	return vertexShader;
 }

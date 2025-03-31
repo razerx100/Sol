@@ -436,11 +436,11 @@ void App::PhysicsUpdate()
 	if (keyboard.IsKeyPressed(SKeyCodes::S))
 		camera->MoveBackward(0.01f).MoveCamera();
 
-	//if (keyboard.IsKeyPressed(SKeyCodes::E))
-	//	assimpModelBundle1->RotatePitchDegree(0u, 1.f);
+	if (keyboard.IsKeyPressed(SKeyCodes::E))
+		camera->LookAround(0.01f, 0.f);
 
-	//if (keyboard.IsKeyPressed(SKeyCodes::Q))
-	//	assimpModelBundle1->RotatePitchDegree(0u, -1.f);
+	if (keyboard.IsKeyPressed(SKeyCodes::Q))
+		camera->LookAround(-0.01f, 0.f);
 
 	if (keyboard.IsKeyPressed(SKeyCodes::D))
 		cubeBundle1->MoveTowardsX(0u, 0.01f);
