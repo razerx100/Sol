@@ -54,8 +54,7 @@ public:
 
 	void SetupCompositePassPipeline(
 		ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager,
-		ModelBundleBase& renderTargetQuadBundle, float renderTargetQuadScale,
-		std::uint32_t renderTargetQuadMeshIndex
+		ModelBundleBase& renderTargetQuadBundle, std::uint32_t renderTargetQuadMeshIndex
 	);
 
 	void SetCompositePass(std::shared_ptr<ExternalRenderPass> postProcessingPass);

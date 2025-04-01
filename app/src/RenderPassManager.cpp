@@ -150,7 +150,7 @@ void RenderPassManager::SetupRenderPassesFromRenderer()
 
 		m_transparencyExt->SetupCompositePassPipeline(
 			m_postProcessingPass.get(), m_graphicsPipelineManager, *m_renderTargetQuadModelBundle,
-			s_renderTargetQuadScale, s_renderTargetQuadMeshIndex
+			s_renderTargetQuadMeshIndex
 		);
 	}
 

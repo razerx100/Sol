@@ -237,8 +237,7 @@ ExternalGraphicsPipeline WeightedTransparencyTechnique::GetCompositePassPipeline
 
 void WeightedTransparencyTechnique::SetupCompositePassPipeline(
 	ExternalRenderPass* postProcessingPass, const GraphicsPipelineManager& graphicsPipelineManager,
-	ModelBundleBase& renderTargetQuadBundle, float renderTargetQuadScale,
-	std::uint32_t renderTargetQuadMeshIndex
+	ModelBundleBase& renderTargetQuadBundle, std::uint32_t renderTargetQuadMeshIndex
 ) {
 	const std::uint32_t compositePipelineIndex = m_renderer->AddGraphicsPipeline(
 		GetCompositePassPipeline(graphicsPipelineManager)
@@ -253,8 +252,6 @@ void WeightedTransparencyTechnique::SetupCompositePassPipeline(
 	// Copy the shared values if exists. As we just need a different instance with a different pipeline.
 	if (!std::empty(models))
 		quadModel->CopySharedValues(*models[0]);
-	else
-		quadModel->GetTransform().Scale(renderTargetQuadScale);
 
 	quadModel->SetMeshIndex(renderTargetQuadMeshIndex);
 	quadModel->SetPipelineIndex(compositePipelineIndex);
