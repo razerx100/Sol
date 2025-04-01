@@ -155,7 +155,7 @@ void WeightedTransparencyTechnique::SetupTransparencyGraphicsPipelineSignatures(
 	);
 
 	transparencyPassSignature.AddRenderTarget(
-		ExternalFormat::R8_UNORM,
+		ExternalFormat::R16_FLOAT,
 		ExternalBlendState
 		{
 			.enabled        = true,
@@ -207,7 +207,7 @@ void WeightedTransparencyTechnique::ResizeRenderTargets(std::uint32_t width, std
 	);
 
 	m_revealageRenderTarget->Create(
-		width, height, ExternalFormat::R8_UNORM, ExternalTexture2DType::RenderTarget,
+		width, height, ExternalFormat::R16_FLOAT, ExternalTexture2DType::RenderTarget,
 		ExternalTextureCreationFlags{ .sampleTexture = true }
 	);
 
