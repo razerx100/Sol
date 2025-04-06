@@ -1,6 +1,7 @@
 #ifndef CONVERSION_UTILITIES_HPP_
 #define CONVERSION_UTILITIES_HPP_
 #include <cstring>
+#include <limits>
 #include <DirectXMath.h>
 #include <assimp/matrix4x4.h>
 #include <assimp/types.h>
@@ -67,5 +68,13 @@ inline DirectX::XMFLOAT3 NormaliseFloat3(const DirectX::XMFLOAT3& vec) noexcept
 	XMStoreFloat3(&nFloat3, vVec);
 
 	return nFloat3;
+}
+
+[[nodiscard]]
+inline bool isApproximatelyEqual(float a, float b)
+{
+	constexpr float epsilon = std::numeric_limits<float>::epsilon();
+
+    return std::abs(a - b) <= std::max(std::abs(a), std::abs(b)) * epsilon;
 }
 #endif

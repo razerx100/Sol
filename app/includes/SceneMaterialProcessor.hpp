@@ -28,6 +28,7 @@ public:
 		std::string   name{};
 		// The indices from the renderer.
 		std::uint32_t materialIndex = std::numeric_limits<std::uint32_t>::max();
+		bool          transparent   = false;
 	};
 
 public:

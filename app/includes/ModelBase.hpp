@@ -191,8 +191,8 @@ class ModelBase : public Model
 public:
 	ModelBase()
 		: m_transform{ std::make_shared<ModelTransform>() },
-		m_material{ std::make_shared<ModelMaterial>() },
-		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+		m_material{ std::make_shared<ModelMaterial>() }, m_meshIndex{ 0u },
+		m_modelIndexInBuffer{ 0u }, m_visible{ true }
 	{}
 	ModelBase(float scale) : ModelBase{}
 	{
@@ -200,18 +200,18 @@ public:
 	}
 	ModelBase(std::shared_ptr<ModelTransform> transform, std::shared_ptr<ModelMaterial> material)
 		: m_transform{ std::move(transform) },
-		m_material{ std::move(material) },
-		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+		m_material{ std::move(material) }, m_meshIndex{ 0u }, m_modelIndexInBuffer{ 0u },
+		m_visible{ true }
 	{}
 	ModelBase(std::shared_ptr<ModelTransform> transform)
 		: m_transform{ std::move(transform) },
-		m_material{ std::make_shared<ModelMaterial>() },
-		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+		m_material{ std::make_shared<ModelMaterial>() }, m_meshIndex{ 0u },
+		m_modelIndexInBuffer{ 0u }, m_visible{ true }
 	{}
 	ModelBase(std::shared_ptr<ModelMaterial> material)
 		: m_transform{ std::make_shared<ModelTransform>() },
-		m_material{ std::move(material) },
-		m_meshIndex{ 0u }, m_pipelineIndex{ 0u }, m_visible{ true }
+		m_material{ std::move(material) }, m_meshIndex{ 0u }, m_modelIndexInBuffer{ 0u },
+		m_visible{ true }
 	{}
 
 	void SetMeshIndex(std::uint32_t index) noexcept { m_meshIndex = index; }
@@ -221,30 +221,49 @@ public:
 		GetTransform().Scale(scale);
 	}
 
-	void SetPipelineIndex(std::uint32_t pipelineIndex) noexcept { m_pipelineIndex = pipelineIndex; }
 	void SetVisibility(bool value) noexcept { m_visible = value; }
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept override { return m_transform->GetModelMatrix(); }
+	DirectX::XMMATRIX GetModelMatrix() const noexcept override
+	{
+		return m_transform->GetModelMatrix();
+	}
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept override { return m_transform->GetModelOffset(); }
+	DirectX::XMFLOAT3 GetModelOffset() const noexcept override
+	{
+		return m_transform->GetModelOffset();
+	}
 	[[nodiscard]]
-	std::uint32_t GetMaterialIndex() const noexcept override { return m_material->GetMaterialIndex(); }
+	std::uint32_t GetMaterialIndex() const noexcept override
+	{
+		return m_material->GetMaterialIndex();
+	}
 	[[nodiscard]]
 	std::uint32_t GetMeshIndex() const noexcept override { return m_meshIndex; }
 	[[nodiscard]]
 	float GetModelScale() const noexcept override { return m_transform->GetModelScale(); }
 	[[nodiscard]]
-	std::uint32_t GetPipelineIndex() const noexcept override { return m_pipelineIndex; }
-	[[nodiscard]]
 	bool IsVisible() const noexcept override { return m_visible; }
 
+	void SetModelIndexInBuffer(std::uint32_t index) noexcept override
+	{
+		m_modelIndexInBuffer = index;
+	}
 	[[nodiscard]]
-	std::uint32_t GetDiffuseIndex() const noexcept override { return m_material->GetDiffuseIndex(); }
+	std::uint32_t GetModelIndexInBuffer() const noexcept override { return m_modelIndexInBuffer; }
+
+	[[nodiscard]]
+	std::uint32_t GetDiffuseIndex() const noexcept override
+	{
+		return m_material->GetDiffuseIndex();
+	}
 	[[nodiscard]]
 	UVInfo GetDiffuseUVInfo() const noexcept override { return m_material->GetDiffuseUVInfo(); }
 	[[nodiscard]]
-	std::uint32_t GetSpecularIndex() const noexcept override { return m_material->GetSpecularIndex(); }
+	std::uint32_t GetSpecularIndex() const noexcept override
+	{
+		return m_material->GetSpecularIndex();
+	}
 	[[nodiscard]]
 	UVInfo GetSpecularUVInfo() const noexcept override { return m_material->GetSpecularUVInfo(); }
 
@@ -271,7 +290,7 @@ private:
 	std::shared_ptr<ModelMaterial>  m_material;
 
 	std::uint32_t m_meshIndex;
-	std::uint32_t m_pipelineIndex;
+	std::uint32_t m_modelIndexInBuffer;
 	bool          m_visible;
 
 public:
@@ -282,16 +301,55 @@ public:
 		: m_transform{ std::move(other.m_transform) },
 		m_material{ std::move(other.m_material) },
 		m_meshIndex{ other.m_meshIndex },
-		m_pipelineIndex{ other.m_pipelineIndex },
+		m_modelIndexInBuffer{ other.m_modelIndexInBuffer },
 		m_visible{ other.m_visible }
 	{}
 	ModelBase& operator=(ModelBase&& other) noexcept
 	{
-		m_transform     = std::move(other.m_transform);
-		m_material      = std::move(other.m_material);
-		m_meshIndex     = other.m_meshIndex;
-		m_pipelineIndex = other.m_pipelineIndex;
-		m_visible       = other.m_visible;
+		m_transform          = std::move(other.m_transform);
+		m_material           = std::move(other.m_material);
+		m_meshIndex          = other.m_meshIndex;
+		m_modelIndexInBuffer = other.m_modelIndexInBuffer;
+		m_visible            = other.m_visible;
+
+		return *this;
+	}
+};
+
+class PipelineModelBundleBase : public PipelineModelBundle
+{
+public:
+	PipelineModelBundleBase() : m_modelIndicesInBundle{}, m_pipelineIndex{ 0u } {}
+
+	void SetPipelineIndex(std::uint32_t index) noexcept { m_pipelineIndex = index; }
+
+	void AddModelIndex(std::uint32_t indexInBundle) noexcept;
+	void RemoveModelIndex(std::uint32_t indexInBundle) noexcept;
+
+	[[nodiscard]]
+	std::uint32_t GetPipelineIndex() const noexcept override { return m_pipelineIndex; }
+	[[nodiscard]]
+	const std::vector<std::uint32_t>& GetModelIndicesInBundle() const noexcept override
+	{
+		return m_modelIndicesInBundle;
+	}
+
+private:
+	std::vector<std::uint32_t> m_modelIndicesInBundle;
+	std::uint32_t              m_pipelineIndex;
+
+public:
+	PipelineModelBundleBase(const PipelineModelBundleBase&) = delete;
+	PipelineModelBundleBase& operator=(const PipelineModelBundleBase&) = delete;
+
+	PipelineModelBundleBase(PipelineModelBundleBase&& other) noexcept
+		: m_modelIndicesInBundle{ std::move(other.m_modelIndicesInBundle) },
+		m_pipelineIndex{ other.m_pipelineIndex }
+	{}
+	PipelineModelBundleBase& operator=(PipelineModelBundleBase&& other) noexcept
+	{
+		m_modelIndicesInBundle = std::move(other.m_modelIndicesInBundle);
+		m_pipelineIndex        = other.m_pipelineIndex;
 
 		return *this;
 	}
@@ -299,16 +357,33 @@ public:
 
 class ModelBundleBase
 {
-public:
-	ModelBundleBase() : m_modelNodeData{}, m_models{}, m_modelsNonBase{}, m_meshBundleIndex { 0u } {}
+	using ModelContainer_t        = ModelBundle::ModelContainer_t;
+	using PipelineContainer_t     = ModelBundle::PipelineContainer_t;
+	using ModelContainerBase_t    = std::vector<std::shared_ptr<ModelBase>>;
+	using PipelineContainerBase_t = std::vector<std::shared_ptr<PipelineModelBundleBase>>;
 
-	ModelBundleBase& AddModel(float scale) noexcept;
-	ModelBundleBase& AddModel(std::shared_ptr<ModelBase> model) noexcept;
+public:
+	ModelBundleBase()
+		: m_modelNodeData{}, m_basePipelines{}, m_baseModels{}, m_models{}, m_pipelines{},
+		m_meshBundleIndex{ 0u }
+	{}
+
+	ModelBundleBase& AddModel(std::uint32_t pipelineIndex, float scale) noexcept;
+	ModelBundleBase& AddModel(
+		std::uint32_t pipelineIndex, std::shared_ptr<ModelBase> model
+	) noexcept;
+
+	void ChangeModelPipeline(
+		std::uint32_t modelIndexInBundle, std::uint32_t oldPipelineIndex,
+		std::uint32_t newPipelineIndex
+	) noexcept;
 
 	void SetMeshBundleIndex(std::uint32_t index) noexcept
 	{
 		m_meshBundleIndex = index;
 	}
+
+	std::uint32_t AddPipeline(std::uint32_t pipelineIndex) noexcept;
 
 	// Because of circular inclusion, can't include the MeshBundleBase header in this header.
 	// So, have to do some template stuff to figure that out.
@@ -316,8 +391,9 @@ public:
 	void SetMeshBundle(
 		std::uint32_t meshBundleIndex, float modelScale, const T& meshBundle
 	) {
-		const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
-		const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
+		const std::vector<MeshNodeData>& newNodeData = meshBundle.GetMeshNodeData();
+		const std::vector<MeshPermanentDetails>& permanentDetails
+			= meshBundle.GetPermanentDetails();
 
 		SetMeshBundle(meshBundleIndex, modelScale, newNodeData, permanentDetails);
 	}
@@ -332,12 +408,16 @@ public:
 	// So, have to do some template stuff to figure that out.
 	template<class T>
 	void ChangeMeshBundle(
-		std::uint32_t meshBundleIndex, const T& meshBundle, bool discardExistingTransformation = true
+		std::uint32_t meshBundleIndex, const T& meshBundle,
+		bool discardExistingTransformation = true
 	) {
-		const std::vector<MeshNodeData>& newNodeData              = meshBundle.GetMeshNodeData();
-		const std::vector<MeshPermanentDetails>& permanentDetails = meshBundle.GetPermanentDetails();
+		const std::vector<MeshNodeData>& newNodeData = meshBundle.GetMeshNodeData();
+		const std::vector<MeshPermanentDetails>& permanentDetails
+			= meshBundle.GetPermanentDetails();
 
-		ChangeMeshBundle(meshBundleIndex, newNodeData, permanentDetails, discardExistingTransformation);
+		ChangeMeshBundle(
+			meshBundleIndex, newNodeData, permanentDetails, discardExistingTransformation
+		);
 	}
 
 	// Can only be changed if the new mesh count is the same as before.
@@ -414,15 +494,20 @@ public:
 		return std::forward_like<decltype(self)>(self.m_models);
 	}
 	[[nodiscard]]
-	auto&& GetModelsNonBase(this auto&& self) noexcept
+	auto&& GetPipelines(this auto&& self) noexcept
 	{
-		return std::forward_like<decltype(self)>(self.m_modelsNonBase);
+		return std::forward_like<decltype(self)>(self.m_pipelines);
+	}
+	[[nodiscard]]
+	auto&& GetBaseModels(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_baseModels);
 	}
 
 	[[nodiscard]]
-	auto&& GetModel(this auto&& self, size_t index) noexcept
+	auto&& GetBaseModel(this auto&& self, size_t index) noexcept
 	{
-		return std::forward_like<decltype(self)>(self.m_models[index]);
+		return std::forward_like<decltype(self)>(self.m_baseModels[index]);
 	}
 	[[nodiscard]]
 	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
@@ -431,26 +516,34 @@ private:
 	void SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData);
 
 private:
-	std::vector<MeshNodeData>               m_modelNodeData;
-	std::vector<std::shared_ptr<ModelBase>> m_models;
+	std::vector<MeshNodeData> m_modelNodeData;
+	PipelineContainerBase_t   m_basePipelines;
+	ModelContainerBase_t      m_baseModels;
 	// This is just so it could be shared in the interface. And would be the same pointers as above
 	// so won't have to do all the operations.
-	std::vector<std::shared_ptr<Model>>     m_modelsNonBase;
-	std::uint32_t                           m_meshBundleIndex;
+	ModelContainer_t          m_models;
+	PipelineContainer_t       m_pipelines;
+	std::uint32_t             m_meshBundleIndex;
 
 public:
 	ModelBundleBase(const ModelBundleBase&) = delete;
 	ModelBundleBase& operator=(const ModelBundleBase&) = delete;
 
 	ModelBundleBase(ModelBundleBase&& other) noexcept
-		: m_modelNodeData{ std::move(other.m_modelNodeData) }, m_models{ std::move(other.m_models) },
-		m_modelsNonBase{ std::move(other.m_modelsNonBase) }, m_meshBundleIndex{ other.m_meshBundleIndex }
+		: m_modelNodeData{ std::move(other.m_modelNodeData) },
+		m_basePipelines{ std::move(other.m_basePipelines) },
+		m_baseModels{ std::move(other.m_baseModels) },
+		m_models{ std::move(other.m_models) },
+		m_pipelines{ std::move(other.m_pipelines) },
+		m_meshBundleIndex{ other.m_meshBundleIndex }
 	{}
 	ModelBundleBase& operator=(ModelBundleBase&& other) noexcept
 	{
 		m_modelNodeData   = std::move(other.m_modelNodeData);
+		m_basePipelines   = std::move(other.m_basePipelines);
+		m_baseModels      = std::move(other.m_baseModels);
 		m_models          = std::move(other.m_models);
-		m_modelsNonBase   = std::move(other.m_modelsNonBase);
+		m_pipelines       = std::move(other.m_pipelines);
 		m_meshBundleIndex = other.m_meshBundleIndex;
 
 		return *this;
@@ -465,10 +558,21 @@ public:
 	{}
 
 	[[nodiscard]]
-	const std::vector<std::shared_ptr<Model>>& GetModels() const noexcept override
+	const ModelContainer_t& GetModels() const noexcept override
 	{
-		return m_modelBundleBase->GetModelsNonBase();
+		return m_modelBundleBase->GetModels();
 	}
+	[[nodiscard]]
+	ModelContainer_t& GetModels() noexcept override
+	{
+		return m_modelBundleBase->GetModels();
+	}
+	[[nodiscard]]
+	const PipelineContainer_t& GetPipelineBundles() const noexcept override
+	{
+		return m_modelBundleBase->GetPipelines();
+	}
+
 	[[nodiscard]]
 	std::uint32_t GetMeshBundleIndex() const noexcept override
 	{

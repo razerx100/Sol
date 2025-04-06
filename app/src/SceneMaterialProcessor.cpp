@@ -25,6 +25,7 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		aiColor3D specular{ 0.f, 0.f, 0.f };
 		aiColor3D ambient{ 0.f, 0.f, 0.f };
 		float shininess = 1.f;
+		float opacity   = 1.f;
 		aiString name{};
 
 		material->Get(AI_MATKEY_NAME, name);
@@ -32,6 +33,7 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 		material->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
 		material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess);
+		material->Get(AI_MATKEY_OPACITY, opacity);
 
 		m_materialData.emplace_back(
 			BlinnPhongMaterial
@@ -43,7 +45,13 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 			}
 		);
 
-		m_materialDetails.emplace_back(MaterialDetails{ .name = name.C_Str() });
+		m_materialDetails.emplace_back(
+			MaterialDetails
+			{
+				.name        = name.C_Str(),
+				.transparent = !isApproximatelyEqual(opacity, 1.f)
+			}
+		);
 
 		// Base Colour
 		constexpr aiTextureType baseColour = aiTextureType_BASE_COLOR;
@@ -76,7 +84,9 @@ void SceneMaterialProcessor::LoadBlinnPhongMaterials(BlinnPhongLightTechnique& b
 	const size_t materialCount = std::size(m_materialData);
 
 	for (size_t index = 0u; index < materialCount; ++index)
-		m_materialDetails[index].materialIndex = blinnPhongTechnique.AddMaterial(m_materialData[index]);
+		m_materialDetails[index].materialIndex = blinnPhongTechnique.AddMaterial(
+			m_materialData[index]
+		);
 }
 
 void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)

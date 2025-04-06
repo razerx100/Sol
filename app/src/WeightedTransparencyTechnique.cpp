@@ -247,16 +247,15 @@ void WeightedTransparencyTechnique::SetupCompositePassPipeline(
 
 	auto quadModel = std::make_shared<ModelBase>();
 
-	const auto& models = renderTargetQuadBundle.GetModels();
+	const auto& models = renderTargetQuadBundle.GetBaseModels();
 
 	// Copy the shared values if exists. As we just need a different instance with a different pipeline.
 	if (!std::empty(models))
 		quadModel->CopySharedValues(*models[0]);
 
 	quadModel->SetMeshIndex(renderTargetQuadMeshIndex);
-	quadModel->SetPipelineIndex(compositePipelineIndex);
 
-	renderTargetQuadBundle.AddModel(std::move(quadModel));
+	renderTargetQuadBundle.AddModel(compositePipelineIndex, std::move(quadModel));
 }
 
 void WeightedTransparencyTechnique::SetCompositePass(

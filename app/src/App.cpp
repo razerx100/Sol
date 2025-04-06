@@ -84,7 +84,7 @@ void App::Init()
 	/*
 	{
 		auto sceneProcessor = std::make_shared<SceneProcessor>(
-			"resources/meshes/emd_gp7_western_pacific_713/scene.gltf"
+			"resources/meshes/nissan_titan_2017_transparent/scene.gltf"
 		);
 
 		SceneMaterialProcessor materialProcessor{ sceneProcessor };
@@ -128,13 +128,11 @@ void App::Init()
 
 	cubeLightBundle = std::make_shared<ModelBundleBase>();
 
-	cubeLightBundle->AddModel(0.1f);
+	cubeLightBundle->AddModel(nonLightPSOIndex, 0.1f);
 
 	constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Spotlight;
 
-	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle->GetModel(0u);
-
-	lightModel->SetPipelineIndex(nonLightPSOIndex);
+	std::shared_ptr<ModelBase> lightModel   = cubeLightBundle->GetBaseModel(0u);
 
 	std::uint32_t lightIndex = m_blinnPhong->AddLight(
 		std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
@@ -269,7 +267,7 @@ void App::Init()
 
 	{
 		{
-			ModelBase& model1 = *cubeLightBundle->GetModel(0u);
+			ModelBase& model1 = *cubeLightBundle->GetBaseModel(0u);
 
 			model1.SetMeshIndex(0u);
 
@@ -292,14 +290,13 @@ void App::Init()
 	{
 		cubeBundle1 = std::make_shared<ModelBundleBase>();
 
-		cubeBundle1->AddModel(0.45f).AddModel(0.45f);
+		cubeBundle1->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
 		// We have only a single mesh in the bundle.
 		{
-			ModelBase& model1 = *cubeBundle1->GetModel(0u);
+			ModelBase& model1 = *cubeBundle1->GetBaseModel(0u);
 
 			model1.SetMeshIndex(0u);
-			model1.SetPipelineIndex(lightPSOIndex);
 
 			ModelMaterial& modelMaterial = model1.GetMaterial();
 
@@ -313,10 +310,9 @@ void App::Init()
 		}
 
 		{
-			ModelBase& model2 = *cubeBundle1->GetModel(1u);
+			ModelBase& model2 = *cubeBundle1->GetBaseModel(1u);
 
 			model2.SetMeshIndex(0u);
-			model2.SetPipelineIndex(lightPSOIndex);
 
 			ModelMaterial& modelMaterial = model2.GetMaterial();
 
@@ -341,14 +337,14 @@ void App::Init()
 	{
 		quadBundleT = std::make_shared<ModelBundleBase>();
 
-		quadBundleT->AddModel(0.45f).AddModel(0.45f);
+		quadBundleT->AddModel(lightTransparentPSOIndex, 0.45f)
+			.AddModel(lightTransparentPSOIndex, 0.45f);
 
 		// We have only a single mesh in the bundle.
 		{
-			ModelBase& model1 = *quadBundleT->GetModel(0u);
+			ModelBase& model1 = *quadBundleT->GetBaseModel(0u);
 
 			model1.SetMeshIndex(1u);
-			model1.SetPipelineIndex(lightTransparentPSOIndex);
 
 			ModelMaterial& modelMaterial = model1.GetMaterial();
 
@@ -362,10 +358,9 @@ void App::Init()
 		}
 
 		{
-			ModelBase& model2 = *quadBundleT->GetModel(1u);
+			ModelBase& model2 = *quadBundleT->GetBaseModel(1u);
 
 			model2.SetMeshIndex(1u);
-			model2.SetPipelineIndex(lightTransparentPSOIndex);
 
 			ModelMaterial& modelMaterial = model2.GetMaterial();
 
@@ -375,7 +370,7 @@ void App::Init()
 			modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("TransparentWindow"));
 			modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
-			quadBundleT->MoveTowardsY(1u, 0.75f);
+			quadBundleT->MoveTowardsX(1u, 1.0f);
 		}
 
 		quadBundleT->SetMeshBundleIndex(testMeshBundleIndex);
@@ -390,23 +385,23 @@ void App::Init()
 
 	/*
 	{
-		assimpModelBundle1.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
-		assimpModelBundle1.MoveTowardsZ(0u, 1.f);
-		assimpModelBundle1.SetMeshBundleIndex(assimpMeshBundleIndex);
+		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
+		assimpModelBundle1->MoveTowardsZ(0u, 1.f);
+		assimpModelBundle1->SetMeshBundleIndex(assimpMeshBundleIndex);
 		assimpBundleIndex1 = assimpModelBundle1.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
 
 	{
-		assimpModelBundle2.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
-		assimpModelBundle2.MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, 10.f);
-		assimpModelBundle2.SetMeshBundleIndex(assimpMeshBundleIndex);
+		assimpModelBundle2->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
+		assimpModelBundle2->MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, 10.f);
+		assimpModelBundle2->SetMeshBundleIndex(assimpMeshBundleIndex);
 		assimpBundleIndex2 = assimpModelBundle2.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
 
 	{
-		assimpModelBundle3.SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
-		assimpModelBundle3.MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, -10.f);
-		assimpModelBundle3.SetMeshBundleIndex(assimpMeshBundleIndex);
+		assimpModelBundle3->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
+		assimpModelBundle3->MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, -10.f);
+		assimpModelBundle3->SetMeshBundleIndex(assimpMeshBundleIndex);
 		assimpBundleIndex3 = assimpModelBundle3.SetModelBundle(*m_renderer, L"TestFragmentShader");
 	}
 	*/
@@ -454,14 +449,13 @@ void App::PhysicsUpdate()
 		{
 			cubeBundle2 = std::make_shared<ModelBundleBase>();
 
-			cubeBundle2->AddModel(0.45f).AddModel(0.45f);
+			cubeBundle2->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle2->GetModel(0u);
+				ModelBase& model1 = *cubeBundle2->GetBaseModel(0u);
 
 				model1.SetMeshIndex(0u);
-				model1.SetPipelineIndex(lightPSOIndex);
 
 				ModelMaterial& modelMaterial = model1.GetMaterial();
 
@@ -471,10 +465,9 @@ void App::PhysicsUpdate()
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle2->GetModel(1u);
+				ModelBase& model2 = *cubeBundle2->GetBaseModel(1u);
 
 				model2.SetMeshIndex(0u);
-				model2.SetPipelineIndex(lightPSOIndex);
 
 				ModelMaterial& modelMaterial = model2.GetMaterial();
 
@@ -516,14 +509,13 @@ void App::PhysicsUpdate()
 		{
 			cubeBundle3 = std::make_shared<ModelBundleBase>();
 
-			cubeBundle3->AddModel(0.45f).AddModel(0.45f);
+			cubeBundle3->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle3->GetModel(0u);
+				ModelBase& model1 = *cubeBundle3->GetBaseModel(0u);
 
 				model1.SetMeshIndex(0u);
-				model1.SetPipelineIndex(lightPSOIndex);
 
 				ModelMaterial& modelMaterial = model1.GetMaterial();
 
@@ -537,10 +529,9 @@ void App::PhysicsUpdate()
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle3->GetModel(1u);
+				ModelBase& model2 = *cubeBundle3->GetBaseModel(1u);
 
 				model2.SetMeshIndex(0u);
-				model2.SetPipelineIndex(lightPSOIndex);
 
 				ModelMaterial& modelMaterial = model2.GetMaterial();
 
@@ -581,14 +572,13 @@ void App::PhysicsUpdate()
 		{
 			cubeBundle4 = std::make_shared<ModelBundleBase>();
 
-			cubeBundle4->AddModel(0.45f).AddModel(0.45f);
+			cubeBundle4->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle4->GetModel(0u);
+				ModelBase& model1 = *cubeBundle4->GetBaseModel(0u);
 
 				model1.SetMeshIndex(0u);
-				model1.SetPipelineIndex(lightPSOIndex);
 
 				ModelMaterial& modelMaterial = model1.GetMaterial();
 
@@ -602,10 +592,9 @@ void App::PhysicsUpdate()
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle4->GetModel(1u);
+				ModelBase& model2 = *cubeBundle4->GetBaseModel(1u);
 
 				model2.SetMeshIndex(0u);
-				model2.SetPipelineIndex(lightPSOIndex);
 
 				ModelMaterial& modelMaterial = model2.GetMaterial();
 
@@ -666,7 +655,7 @@ void App::PhysicsUpdate()
 			if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
 				index = tealMatIndex;
 
-			ModelBase& model1 = *cubeBundle2->GetModel(0u);
+			ModelBase& model1 = *cubeBundle2->GetBaseModel(0u);
 
 			model1.GetMaterial().SetMaterialIndex(index);
 		}
@@ -702,7 +691,7 @@ void App::PhysicsUpdate()
 
 		if (bundle1Exists && sphereExists)
 		{
-			ModelBase& model1 = *cubeBundle1->GetModel(0u);
+			ModelBase& model1 = *cubeBundle1->GetBaseModel(0u);
 
 			model1.SetMeshIndex(0u);
 
@@ -713,7 +702,7 @@ void App::PhysicsUpdate()
 			modelMaterial.SetDiffuseUVInfo(UVInfo{});
 			modelMaterial.SetSpecularUVInfo(UVInfo{});
 
-			ModelBase& model2 = *cubeBundle1->GetModel(1u);
+			ModelBase& model2 = *cubeBundle1->GetBaseModel(1u);
 
 			model2.SetMeshIndex(0u);
 
@@ -748,7 +737,7 @@ void App::PhysicsUpdate()
 	{
 		if (secondTextureIndex != std::numeric_limits<size_t>::max())
 		{
-			ModelBase& model1 = *cubeBundle1->GetModel(0u);
+			ModelBase& model1 = *cubeBundle1->GetBaseModel(0u);
 
 			ModelMaterial& modelMaterial = model1.GetMaterial();
 

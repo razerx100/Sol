@@ -79,29 +79,107 @@ static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shar
 	return to;
 }
 
-// Model Bundle Base
-ModelBundleBase& ModelBundleBase::AddModel(float scale) noexcept
+// Pipeline Model Bundle Base
+void PipelineModelBundleBase::AddModelIndex(std::uint32_t indexInBundle) noexcept
 {
-	return AddModel(std::make_shared<ModelBase>(scale));
+	m_modelIndicesInBundle.emplace_back(indexInBundle);
 }
 
-ModelBundleBase& ModelBundleBase::AddModel(std::shared_ptr<ModelBase> model) noexcept
+void PipelineModelBundleBase::RemoveModelIndex(std::uint32_t indexInBundle) noexcept
 {
-	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_models));
+	std::erase(m_modelIndicesInBundle, indexInBundle);
+}
+
+// Model Bundle Base
+ModelBundleBase& ModelBundleBase::AddModel(
+	std::uint32_t pipelineIndex, float scale
+) noexcept {
+	return AddModel(pipelineIndex, std::make_shared<ModelBase>(scale));
+}
+
+ModelBundleBase& ModelBundleBase::AddModel(
+	std::uint32_t pipelineIndex, std::shared_ptr<ModelBase> model
+) noexcept {
+	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_baseModels));
 
 	m_modelNodeData.emplace_back(
 		MeshNodeData
 		{
 			.modelIndex   = modelIndex,
 			.meshIndex    = modelIndex,
-			.childrenData = MeshChildrenData{.count = 0u, .startingIndex = 0u }
+			.childrenData = MeshChildrenData{ .count = 0u, .startingIndex = 0u }
 		}
 	);
 
-	m_models.emplace_back(model);
-	m_modelsNonBase.emplace_back(std::move(model));
+	auto result = std::ranges::find(
+		m_basePipelines, pipelineIndex,
+		[](const std::shared_ptr<PipelineModelBundleBase>& pipeline)
+		{
+			return pipeline->GetPipelineIndex();
+		}
+	);
+
+	PipelineModelBundleBase* targetPipeline = nullptr;
+
+	if (result != std::end(m_basePipelines))
+		targetPipeline = result->get();
+	else
+	{
+		const size_t targetPipelineIndex = AddPipeline(pipelineIndex);
+
+		targetPipeline = m_basePipelines[targetPipelineIndex].get();
+	}
+
+	targetPipeline->AddModelIndex(static_cast<std::uint32_t>(std::size(m_baseModels)));
+
+	m_baseModels.emplace_back(model);
+	m_models.emplace_back(std::move(model));
 
 	return *this;
+}
+
+std::uint32_t ModelBundleBase::AddPipeline(std::uint32_t pipelineIndex) noexcept
+{
+	const auto pipelineIndexInBundle = static_cast<std::uint32_t>(std::size(m_basePipelines));
+
+	auto basePipeline = std::make_shared<PipelineModelBundleBase>();
+
+	basePipeline->SetPipelineIndex(pipelineIndex);
+
+	m_basePipelines.emplace_back(basePipeline);
+	m_pipelines.emplace_back(std::move(basePipeline));
+
+	return pipelineIndexInBundle;
+}
+
+void ModelBundleBase::ChangeModelPipeline(
+	std::uint32_t modelIndexInBundle, std::uint32_t oldPipelineIndex,
+	std::uint32_t newPipelineIndex
+) noexcept {
+	size_t oldPipelineIndexInBundle = std::numeric_limits<size_t>::max();
+	size_t newPipelineIndexInBundle = std::numeric_limits<size_t>::max();
+
+	const size_t pipelineCount = std::size(m_basePipelines);
+
+	for (size_t index = 0u; index < pipelineCount; ++index)
+	{
+		const size_t currentPipelineIndex = m_basePipelines[index]->GetPipelineIndex();
+
+		if (currentPipelineIndex == oldPipelineIndex)
+			oldPipelineIndexInBundle = index;
+
+		if (currentPipelineIndex == newPipelineIndex)
+			newPipelineIndexInBundle = index;
+
+		const bool bothFound = oldPipelineIndexInBundle != std::numeric_limits<size_t>::max()
+			&& newPipelineIndexInBundle != std::numeric_limits<size_t>::max();
+
+		if (bothFound)
+			break;
+	}
+
+	m_basePipelines[oldPipelineIndexInBundle]->RemoveModelIndex(modelIndexInBundle);
+	m_basePipelines[newPipelineIndexInBundle]->AddModelIndex(modelIndexInBundle);
 }
 
 void ModelBundleBase::SetMeshBundle(
@@ -128,7 +206,7 @@ void ModelBundleBase::SetModels(float modelScale, const std::vector<MeshNodeData
 		// be the same ast the model index.
 		if (currentNodeData.HasMesh())
 		{
-			std::shared_ptr<ModelBase>& model = m_models.emplace_back(
+			std::shared_ptr<ModelBase>& model = m_baseModels.emplace_back(
 				std::make_shared<ModelBase>(modelScale)
 			);
 
@@ -146,7 +224,7 @@ void ModelBundleBase::ChangeMeshBundle(
 	m_meshBundleIndex         = meshBundleIndex;
 	const size_t newNodeCount = std::size(newNodeData);
 
-	assert(!std::empty(m_models) && "The models haven't been set yet.");
+	assert(!std::empty(m_baseModels) && "The models haven't been set yet.");
 
 	assert(
 		newNodeCount == std::size(m_modelNodeData)
@@ -162,7 +240,7 @@ void ModelBundleBase::ChangeMeshBundle(
 		{
 			const size_t modelIndex = currentNodeData.modelIndex;
 
-			std::shared_ptr<ModelBase>& model       = m_models[modelIndex];
+			std::shared_ptr<ModelBase>& model       = m_baseModels[modelIndex];
 			const MeshPermanentDetails& meshDetails = permanentDetails[modelIndex];
 
 			// Base Colour
@@ -192,7 +270,7 @@ void ModelBundleBase::Rotate(
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_models[nodeData.modelIndex];
+		std::shared_ptr<ModelBase>& model = m_baseModels[nodeData.modelIndex];
 
 		model->GetTransform().Rotate(rotationAxis, angleRadian);
 	}
@@ -215,7 +293,7 @@ void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_models[nodeData.modelIndex];
+		std::shared_ptr<ModelBase>& model = m_baseModels[nodeData.modelIndex];
 
 		model->GetTransform().Scale(scale);
 	}
@@ -238,7 +316,7 @@ void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offse
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_models[nodeData.modelIndex];
+		std::shared_ptr<ModelBase>& model = m_baseModels[nodeData.modelIndex];
 
 		model->GetTransform().MoveModel(offset);
 	}
