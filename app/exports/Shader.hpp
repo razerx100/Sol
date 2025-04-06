@@ -2,7 +2,7 @@
 #define SHADER_SOL_HPP_
 #include <string>
 
-enum class ShaderType
+enum class ShaderBinaryType
 {
 	SPIRV,
 	DXIL
@@ -20,13 +20,13 @@ public:
 	[[nodiscard]]
 	std::wstring GetName() const noexcept { return m_name; }
 	[[nodiscard]]
-	std::wstring GetNameWithExtension(ShaderType type) const noexcept
+	std::wstring GetNameWithExtension(ShaderBinaryType type) const noexcept
 	{
 		std::wstring extension{};
 
-		if (type == ShaderType::SPIRV)
+		if (type == ShaderBinaryType::SPIRV)
 			extension = L".spv";
-		else if (type == ShaderType::DXIL)
+		else if (type == ShaderBinaryType::DXIL)
 			extension = L".cso";
 
 		return m_name + extension;
