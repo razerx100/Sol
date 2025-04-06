@@ -111,31 +111,38 @@ ModelBundleBase& ModelBundleBase::AddModel(
 		}
 	);
 
-	auto result = std::ranges::find(
-		m_basePipelines, pipelineIndex,
-		[](const std::shared_ptr<PipelineModelBundleBase>& pipeline)
-		{
-			return pipeline->GetPipelineIndex();
-		}
+	const size_t pipelineLocalIndex = GetLocalPipelineIndex(pipelineIndex);
+
+	m_basePipelines[pipelineLocalIndex]->AddModelIndex(
+		static_cast<std::uint32_t>(std::size(m_baseModels))
 	);
-
-	PipelineModelBundleBase* targetPipeline = nullptr;
-
-	if (result != std::end(m_basePipelines))
-		targetPipeline = result->get();
-	else
-	{
-		const size_t targetPipelineIndex = AddPipeline(pipelineIndex);
-
-		targetPipeline = m_basePipelines[targetPipelineIndex].get();
-	}
-
-	targetPipeline->AddModelIndex(static_cast<std::uint32_t>(std::size(m_baseModels)));
 
 	m_baseModels.emplace_back(model);
 	m_models.emplace_back(std::move(model));
 
 	return *this;
+}
+
+size_t ModelBundleBase::GetLocalPipelineIndex(std::uint32_t pipelineIndex)
+{
+	const size_t pipelineCount = std::size(m_basePipelines);
+
+	size_t pipelineLocalIndex  = std::numeric_limits<size_t>::max();
+
+	// Can replace this search with an unordered_map but I don't think there will be too
+	// many pipelines, so gonna keep it a linear search for now.
+	for (size_t index = 0u; index < pipelineCount; ++index)
+		if (m_basePipelines[index]->GetPipelineIndex() == pipelineIndex)
+		{
+			pipelineLocalIndex = index;
+
+			break;
+		}
+
+	if (pipelineLocalIndex == std::numeric_limits<size_t>::max())
+		pipelineLocalIndex = AddPipeline(pipelineIndex);
+
+	return pipelineLocalIndex;
 }
 
 std::uint32_t ModelBundleBase::AddPipeline(std::uint32_t pipelineIndex) noexcept
@@ -206,11 +213,12 @@ void ModelBundleBase::SetModels(float modelScale, const std::vector<MeshNodeData
 		// be the same ast the model index.
 		if (currentNodeData.HasMesh())
 		{
-			std::shared_ptr<ModelBase>& model = m_baseModels.emplace_back(
-				std::make_shared<ModelBase>(modelScale)
-			);
+			auto model = std::make_shared<ModelBase>(modelScale);
 
 			model->SetMeshIndex(currentNodeData.meshIndex);
+
+			m_baseModels.emplace_back(model);
+			m_models.emplace_back(std::move(model));
 		}
 	}
 }
@@ -251,6 +259,15 @@ void ModelBundleBase::ChangeMeshBundle(
 			material.SetDiffuseIndex(baseColourDetails.baseTextureBindingIndex);
 			material.SetDiffuseUVInfo(baseColourDetails.uvInfo);
 			material.SetMaterialIndex(baseColourDetails.materialIndex);
+
+			// Set Pipeline
+			const size_t pipelineLocalIndex = GetLocalPipelineIndex(
+				baseColourDetails.pipelineIndex
+			);
+
+			m_basePipelines[pipelineLocalIndex]->AddModelIndex(
+				static_cast<std::uint32_t>(modelIndex)
+			);
 
 			// Transform
 			ModelTransform& transform = model->GetTransform();

@@ -1,9 +1,27 @@
 #include <SceneMaterialProcessor.hpp>
 #include <ConversionUtilities.hpp>
 #include <TextureAtlas.hpp>
+#include <array>
 #include <ranges>
 #include <algorithm>
 
+namespace PSOIndexMap
+{
+	// Shader Type indices
+	static std::array<std::uint32_t, static_cast<size_t>(ShaderType::Count)> s_pipelineIndexMap{};
+
+	void SetPipelineIndex(ShaderType type, std::uint32_t psoIndex) noexcept
+	{
+		s_pipelineIndexMap[static_cast<size_t>(type)] = psoIndex;
+	}
+
+	std::uint32_t GetPipelineIndex(ShaderType type) noexcept
+	{
+		return s_pipelineIndexMap[static_cast<size_t>(type)];
+	}
+}
+
+// Scene Material Processor
 void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 {
 	aiScene const* scene = m_scene->GetScene();
@@ -35,6 +53,8 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess);
 		material->Get(AI_MATKEY_OPACITY, opacity);
 
+		const bool isTransparent = !isApproximatelyEqual(opacity, 1.f);
+
 		m_materialData.emplace_back(
 			BlinnPhongMaterial
 			{
@@ -48,8 +68,10 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		m_materialDetails.emplace_back(
 			MaterialDetails
 			{
-				.name        = name.C_Str(),
-				.transparent = !isApproximatelyEqual(opacity, 1.f)
+				.name          = name.C_Str(),
+				.pipelineIndex = PSOIndexMap::GetPipelineIndex(
+					isTransparent ? ShaderType::TransparentLight : ShaderType::OpaqueLight
+				)
 			}
 		);
 

@@ -7,6 +7,21 @@
 #include <SceneProcessor.hpp>
 #include <Renderer.hpp>
 
+enum class ShaderType
+{
+	OpaqueLight,
+	TransparentLight,
+	Count
+};
+
+namespace PSOIndexMap
+{
+	void SetPipelineIndex(ShaderType type, std::uint32_t psoIndex) noexcept;
+
+	[[nodiscard]]
+	std::uint32_t GetPipelineIndex(ShaderType type) noexcept;
+}
+
 class SceneMaterialProcessor
 {
 public:
@@ -28,7 +43,7 @@ public:
 		std::string   name{};
 		// The indices from the renderer.
 		std::uint32_t materialIndex = std::numeric_limits<std::uint32_t>::max();
-		bool          transparent   = false;
+		std::uint32_t pipelineIndex = std::numeric_limits<std::uint32_t>::max();
 	};
 
 public:

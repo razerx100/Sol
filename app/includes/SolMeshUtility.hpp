@@ -50,6 +50,7 @@ struct MeshTextureDetails
 	// Use this one to actually use it.
 	std::uint32_t baseTextureBindingIndex;
 	std::uint32_t materialIndex;
+	std::uint32_t pipelineIndex;
 	UVInfo        uvInfo;
 };
 

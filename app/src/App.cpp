@@ -68,47 +68,17 @@ App::App(
 void App::Init()
 {
 	{
-		Mesh mesh{};
-
-		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
-		testMeshBundle.AddMesh(std::move(mesh));
-
-		Mesh quadMesh{};
-
-		QuadMesh{}.SetMesh(quadMesh);
-		testMeshBundle.AddMesh(std::move(quadMesh));
-
-		testMeshBundleIndex = m_renderer->AddMeshBundle(testMeshBundle.MoveTemporaryData());
-	}
-
-	/*
-	{
-		auto sceneProcessor = std::make_shared<SceneProcessor>(
-			"resources/meshes/nissan_titan_2017_transparent/scene.gltf"
-		);
-
-		SceneMaterialProcessor materialProcessor{ sceneProcessor };
-		materialProcessor.ProcessMeshAndMaterialData();
-
-		materialProcessor.LoadBlinnPhongMaterials(*m_blinnPhong);
-		//materialProcessor.LoadTextures(*m_renderer);
-		materialProcessor.LoadTexturesAsAtlas(*m_renderer);
-
-		assimpMeshBundle.SetMeshBundle(sceneProcessor, materialProcessor);
-
-		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
-	}
-	*/
-	{
-		const ExternalGraphicsPipeline nonLightOpaquePipeline = m_blinnPhong->GetOpaqueLightSrcPipeline(
-			m_renderPassManager->GetGraphicsPipelineManager()
-		);
+		const ExternalGraphicsPipeline nonLightOpaquePipeline
+			= m_blinnPhong->GetOpaqueLightSrcPipeline(
+				m_renderPassManager->GetGraphicsPipelineManager()
+			);
 
 		nonLightPSOIndex = m_renderer->AddGraphicsPipeline(nonLightOpaquePipeline);
 
-		const ExternalGraphicsPipeline lightOpaquePipeline = m_blinnPhong->GetOpaqueLightDstPipeline(
-			m_renderPassManager->GetGraphicsPipelineManager()
-		);
+		const ExternalGraphicsPipeline lightOpaquePipeline
+			= m_blinnPhong->GetOpaqueLightDstPipeline(
+				m_renderPassManager->GetGraphicsPipelineManager()
+			);
 
 		lightPSOIndex    = m_renderer->AddGraphicsPipeline(lightOpaquePipeline);
 
@@ -124,6 +94,40 @@ void App::Init()
 
 		if (m_transparencyPass)
 			m_transparencyPass->AddTransparentPipeline(lightTransparentPSOIndex);
+
+		PSOIndexMap::SetPipelineIndex(ShaderType::OpaqueLight, lightPSOIndex);
+		PSOIndexMap::SetPipelineIndex(ShaderType::TransparentLight, lightTransparentPSOIndex);
+	}
+
+	{
+		Mesh mesh{};
+
+		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
+		testMeshBundle.AddMesh(std::move(mesh));
+
+		Mesh quadMesh{};
+
+		QuadMesh{}.SetMesh(quadMesh);
+		testMeshBundle.AddMesh(std::move(quadMesh));
+
+		testMeshBundleIndex = m_renderer->AddMeshBundle(testMeshBundle.MoveTemporaryData());
+	}
+
+	{
+		auto sceneProcessor = std::make_shared<SceneProcessor>(
+			"resources/meshes/nissan_titan_2017_transparent/scene.gltf"
+		);
+
+		SceneMaterialProcessor materialProcessor{ sceneProcessor };
+		materialProcessor.ProcessMeshAndMaterialData();
+
+		materialProcessor.LoadBlinnPhongMaterials(*m_blinnPhong);
+		//materialProcessor.LoadTextures(*m_renderer);
+		materialProcessor.LoadTexturesAsAtlas(*m_renderer);
+
+		assimpMeshBundle.SetMeshBundle(sceneProcessor, materialProcessor);
+
+		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
 
 	cubeLightBundle = std::make_shared<ModelBundleBase>();
@@ -383,26 +387,65 @@ void App::Init()
 			m_transparencyPass->AddTransparentModelBundle(quadBundleIndexT);
 	}
 
+	{
+		assimpModelBundle1 = std::make_shared<ModelBundleBase>();
+
+		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 1.f, assimpMeshBundle);
+		assimpModelBundle1->MoveTowardsZ(0u, 1.f);
+		assimpModelBundle1->MoveTowardsY(0u, -0.75f);
+		assimpModelBundle1->RotateRollDegree(0u, 90.f);
+		assimpModelBundle1->RotatePitchDegree(0u, 90.f);
+		assimpModelBundle1->SetMeshBundleIndex(assimpMeshBundleIndex);
+
+		assimpBundleIndex1 = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(assimpModelBundle1)
+		);
+
+		m_renderPassManager->AddModelBundle(assimpBundleIndex1);
+
+		if (m_transparencyPass)
+			m_transparencyPass->AddTransparentModelBundle(assimpBundleIndex1);
+	}
+
 	/*
 	{
-		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
-		assimpModelBundle1->MoveTowardsZ(0u, 1.f);
-		assimpModelBundle1->SetMeshBundleIndex(assimpMeshBundleIndex);
-		assimpBundleIndex1 = assimpModelBundle1.SetModelBundle(*m_renderer, L"TestFragmentShader");
-	}
+		assimpModelBundle2 = std::make_shared<ModelBundleBase>();
 
-	{
 		assimpModelBundle2->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
 		assimpModelBundle2->MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, 10.f);
+		assimpModelBundle2->MoveTowardsY(0u, -0.75f);
+		assimpModelBundle2->RotateRollDegree(0u, 90.f);
+		assimpModelBundle2->RotatePitchDegree(0u, 90.f);
 		assimpModelBundle2->SetMeshBundleIndex(assimpMeshBundleIndex);
-		assimpBundleIndex2 = assimpModelBundle2.SetModelBundle(*m_renderer, L"TestFragmentShader");
+
+		assimpBundleIndex2 = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(assimpModelBundle2)
+		);
+
+		m_renderPassManager->AddModelBundle(assimpBundleIndex2);
+
+		if (m_transparencyPass)
+			m_transparencyPass->AddTransparentModelBundle(assimpBundleIndex2);
 	}
 
 	{
+		assimpModelBundle3 = std::make_shared<ModelBundleBase>();
+
 		assimpModelBundle3->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
 		assimpModelBundle3->MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, -10.f);
+		assimpModelBundle3->MoveTowardsY(0u, -0.75f);
+		assimpModelBundle3->RotateRollDegree(0u, 90.f);
+		assimpModelBundle3->RotatePitchDegree(0u, 90.f);
 		assimpModelBundle3->SetMeshBundleIndex(assimpMeshBundleIndex);
-		assimpBundleIndex3 = assimpModelBundle3.SetModelBundle(*m_renderer, L"TestFragmentShader");
+
+		assimpBundleIndex3 = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(assimpModelBundle3)
+		);
+
+		m_renderPassManager->AddModelBundle(assimpBundleIndex3);
+
+		if (m_transparencyPass)
+			m_transparencyPass->AddTransparentModelBundle(assimpBundleIndex3);
 	}
 	*/
 }

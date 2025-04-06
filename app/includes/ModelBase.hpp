@@ -515,6 +515,10 @@ public:
 private:
 	void SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData);
 
+	// Will add a new one if not available.
+	[[nodiscard]]
+	size_t GetLocalPipelineIndex(std::uint32_t pipelineIndex);
+
 private:
 	std::vector<MeshNodeData> m_modelNodeData;
 	PipelineContainerBase_t   m_basePipelines;

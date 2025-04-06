@@ -252,7 +252,8 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 			size_t currentMeshIndex = node->mMeshes[index];
 			aiMesh* mesh            = meshes[currentMeshIndex];
 
-			const bool isTriangle = mesh->mPrimitiveTypes & aiPrimitiveType::aiPrimitiveType_TRIANGLE;
+			const bool isTriangle
+				= mesh->mPrimitiveTypes & aiPrimitiveType::aiPrimitiveType_TRIANGLE;
 
 			// Skipping non triangles.
 			if (!isTriangle)
@@ -269,14 +270,19 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 				// Base Colour
 				const size_t materialIndex = mesh->mMaterialIndex;
 
-				SceneMaterialProcessor::TextureDetails baseTextureDetailsM
+				const SceneMaterialProcessor::TextureDetails baseTextureDetailsM
 					= materialProcessor.GetBaseTextureDetails(materialIndex);
+
+				const SceneMaterialProcessor::MaterialDetails baseMaterialDetailsM
+					= materialProcessor.GetMaterialDetails(materialIndex);
 
 				MeshTextureDetails baseTextureDetails
 				{
-					.baseTextureIndex = baseTextureDetailsM.textureIndex,
-					.materialIndex    = materialProcessor.GetMaterialDetails(materialIndex).materialIndex,
-					.uvInfo           = baseTextureDetailsM.uvInfo
+					.baseTextureIndex        = baseTextureDetailsM.textureIndex,
+					.baseTextureBindingIndex = baseTextureDetailsM.textureBindIndex,
+					.materialIndex           = baseMaterialDetailsM.materialIndex,
+					.pipelineIndex           = baseMaterialDetailsM.pipelineIndex,
+					.uvInfo                  = baseTextureDetailsM.uvInfo
 				};
 
 				// I pass row major matrices in the shaders, and assimp loads column major matrices.
@@ -300,7 +306,9 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 		{
 			.modelIndex   = currentModelIndex,
 			.meshIndex    = meshIndex,
-			.childrenData = MeshChildrenData{ .count = childCount, .startingIndex = childrenOffset }
+			.childrenData = MeshChildrenData{
+								.count = childCount, .startingIndex = childrenOffset
+							}
 		}
 	);
 
@@ -320,8 +328,8 @@ void SceneMeshProcessor::TraverseMeshHierarchyDetails(
 
 	for (size_t index = 0u; index < childCount; ++index)
 		ProcessMeshNodeDetails(
-			children[index], meshNodeData, materialProcessor, accumulatedTransform, permanentDetails,
-			meshes, childrenOffset, modelIndex
+			children[index], meshNodeData, materialProcessor, accumulatedTransform,
+			permanentDetails, meshes, childrenOffset, modelIndex
 		);
 
 	for (size_t index = 0u; index < childCount; ++index)
@@ -335,8 +343,8 @@ void SceneMeshProcessor::TraverseMeshHierarchyDetails(
 				tempAccumulatedTransform * XMMatrixTranspose(GetXMMatrix(child->mTransformation));
 
 		TraverseMeshHierarchyDetails(
-			child, materialProcessor,
-			tempAccumulatedTransform, permanentDetails, meshNodeData, meshes, childrenOffset, modelIndex
+			child, materialProcessor, tempAccumulatedTransform, permanentDetails, meshNodeData,
+			meshes, childrenOffset, modelIndex
 		);
 	}
 }
