@@ -4,6 +4,7 @@
 #include <array>
 #include <ranges>
 #include <algorithm>
+#include <assimp/GltfMaterial.h>
 
 namespace PSOIndexMap
 {
@@ -53,7 +54,12 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess);
 		material->Get(AI_MATKEY_OPACITY, opacity);
 
-		const bool isTransparent = !isApproximatelyEqual(opacity, 1.f);
+		aiString alphaMode{};
+
+		material->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode);
+
+		const bool isTransparent =
+			!isApproximatelyEqual(opacity, 1.f) || alphaMode != aiString{ "OPAQUE" };
 
 		m_materialData.emplace_back(
 			BlinnPhongMaterial
@@ -75,23 +81,23 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 			}
 		);
 
-		// Base Colour
-		constexpr aiTextureType baseColour = aiTextureType_BASE_COLOR;
+		// Diffuse
+		constexpr aiTextureType diffuseType = aiTextureType_DIFFUSE;
 
-		const auto baseCount = material->GetTextureCount(baseColour);
+		const auto diffuseCount = material->GetTextureCount(diffuseType);
 
-		if (baseCount)
+		if (diffuseCount)
 		{
 			// Texture
 			aiString aiTexturePath{};
 
 			// Only process the first texture for now.
-			material->GetTexture(baseColour, 0u, &aiTexturePath);
+			material->GetTexture(diffuseType, 0u, &aiTexturePath);
 
 			m_texturePaths.emplace_back(
 				TexturePath
 				{
-					.baseColour = fileDirectory + aiTexturePath.C_Str()
+					.diffuse = fileDirectory + aiTexturePath.C_Str()
 				}
 			);
 			m_baseTextureDetails.emplace_back(
@@ -125,7 +131,7 @@ void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)
 		const TexturePath& texturePath     = m_texturePaths[index];
 
 		// Base colour
-		const std::string& baseTexturePath = texturePath.baseColour;
+		const std::string& baseTexturePath = texturePath.diffuse;
 		const std::string baseName         = SceneProcessor::GetFileName(baseTexturePath);
 
 		m_baseTextureDetails[index].name   = baseName;
@@ -164,7 +170,7 @@ void SceneMaterialProcessor::LoadTextures(Renderer& renderer)
 		const TexturePath& texturePath      = m_texturePaths[index];
 
 		// Base colour
-		const std::string& baseTexturePath  = texturePath.baseColour;
+		const std::string& baseTexturePath  = texturePath.diffuse;
 
 		std::optional<STexture> baseTexture = TextureTool::LoadTextureFromFile(baseTexturePath);
 

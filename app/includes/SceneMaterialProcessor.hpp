@@ -82,7 +82,7 @@ public:
 private:
 	struct TexturePath
 	{
-		std::string baseColour;
+		std::string diffuse;
 	};
 
 private:
