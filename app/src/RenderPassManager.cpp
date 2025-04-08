@@ -157,9 +157,10 @@ void RenderPassManager::SetupRenderPassesFromRenderer()
 	// This must be done at the end so all the other passes using the render target quad modelBundle
 	// can add their instance of the quad model with their own pipeline.
 	// And we also must add the model bundle to the renderer before adding them to the render passes.
-	m_renderTargetQuadModelBundleIndex = m_renderer->AddModelBundle(
-		std::make_shared<ModelBundleImpl>(m_renderTargetQuadModelBundle)
-	);
+	if (!std::empty(m_renderTargetQuadModelBundle->GetModels()))
+		m_renderTargetQuadModelBundleIndex = m_renderer->AddModelBundle(
+			std::make_shared<ModelBundleImpl>(m_renderTargetQuadModelBundle)
+		);
 
 	// This must be done at the end so all the other passes using the post processing pass
 	// can add their pipelines before we add the model bundle to the pass.
