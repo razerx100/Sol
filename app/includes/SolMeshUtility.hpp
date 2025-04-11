@@ -45,19 +45,25 @@ struct MeshNodeData
 
 struct MeshTextureDetails
 {
-	// Use this one to remove the texture resource.
-	std::uint32_t baseTextureIndex;
-	// Use this one to actually use it.
-	std::uint32_t baseTextureBindingIndex;
-	std::uint32_t materialIndex;
-	std::uint32_t pipelineIndex;
-	UVInfo        uvInfo;
+	// The indices of the resources.
+	std::uint32_t textureIndex     = std::numeric_limits<std::uint32_t>::max();
+	// The indices of the bound texures, which can be used.
+	std::uint32_t textureBindIndex = std::numeric_limits<std::uint32_t>::max();
+	UVInfo        uvInfo{};
+};
+
+struct MeshMaterialDetails
+{
+	std::vector<MeshTextureDetails> diffuseTextures;
+	std::vector<MeshTextureDetails> specularTextures;
+	std::uint32_t                   materialIndex;
+	std::uint32_t                   pipelineIndex;
 };
 
 struct MeshPermanentDetails
 {
-	DirectX::XMMATRIX  worldMatrix;
-	MeshTextureDetails baseTextureDetails;
+	DirectX::XMMATRIX   worldMatrix;
+	MeshMaterialDetails materialDetails;
 };
 
 template<typename T>
@@ -78,4 +84,9 @@ static void MemcpyIntoVector(std::vector<T>& dst, const std::vector<T>& src) noe
 void CopyAndOffsetIndices(
 	std::vector<std::uint32_t>& dst, const std::vector<std::uint32_t>& src, std::uint32_t offset
 ) noexcept;
+
+void SetDefaultTextureDetails(std::uint32_t textureIndex, std::uint32_t bindingIndex) noexcept;
+
+[[nodiscard]]
+const MeshTextureDetails& GetDefaultTextureDetails() noexcept;
 #endif

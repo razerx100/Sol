@@ -6,6 +6,7 @@
 
 #include <ModelBase.hpp>
 #include <Sol.hpp>
+#include <SceneMaterialProcessor.hpp>
 
 Sol::Sol(const std::string& appName)
 	: m_appName{ appName },
@@ -215,7 +216,9 @@ void Sol::AddDefaultTexture(Renderer* renderer)
 		std::uint8_t g;
 		std::uint8_t b;
 		std::uint8_t a;
-	} pixel{ .r = 255u, .g = 255u, .b = 255u, . a = 255u };
+	} pixel{ .r = 255u, .g = 255u, .b = 255u, . a = 1u };
+	// If the default texture is used in an opaque mesh then the alpha value shouldn't matter.
+	// And on a transparent object, we would probably want it to be translucent.
 
 	STexture defaultTexture{};
 
@@ -223,6 +226,8 @@ void Sol::AddDefaultTexture(Renderer* renderer)
 	defaultTexture.height = 1u;
 	defaultTexture.width  = 1u;
 
-	size_t defaultTexIndex                   = renderer->AddTexture(std::move(defaultTexture));
-	[[maybe_unused]] std::uint32_t bindIndex = renderer->BindTexture(defaultTexIndex);
+	size_t defaultTexIndex  = renderer->AddTexture(std::move(defaultTexture));
+	std::uint32_t bindIndex = renderer->BindTexture(defaultTexIndex);
+
+	SetDefaultTextureDetails(static_cast<std::uint32_t>(defaultTexIndex), bindIndex);
 }

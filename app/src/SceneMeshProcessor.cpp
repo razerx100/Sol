@@ -267,23 +267,11 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 
 			// Permanent Details
 			{
-				// Base Colour
+				// Diffuse
 				const size_t materialIndex = mesh->mMaterialIndex;
 
-				const SceneMaterialProcessor::TextureDetails baseTextureDetailsM
-					= materialProcessor.GetBaseTextureDetails(materialIndex);
-
-				const SceneMaterialProcessor::MaterialDetails baseMaterialDetailsM
+				const SceneMaterialProcessor::MaterialDetails& baseMaterialDetails
 					= materialProcessor.GetMaterialDetails(materialIndex);
-
-				MeshTextureDetails baseTextureDetails
-				{
-					.baseTextureIndex        = baseTextureDetailsM.textureIndex,
-					.baseTextureBindingIndex = baseTextureDetailsM.textureBindIndex,
-					.materialIndex           = baseMaterialDetailsM.materialIndex,
-					.pipelineIndex           = baseMaterialDetailsM.pipelineIndex,
-					.uvInfo                  = baseTextureDetailsM.uvInfo
-				};
 
 				// I pass row major matrices in the shaders, and assimp loads column major matrices.
 				permanentDetails.emplace_back(
@@ -292,7 +280,13 @@ void SceneMeshProcessor::ProcessMeshNodeDetails(
 						.worldMatrix = accumulatedTransform * DirectX::XMMatrixTranspose(
 							GetXMMatrix(node->mTransformation)
 						),
-						.baseTextureDetails = baseTextureDetails
+						.materialDetails = MeshMaterialDetails
+						{
+							.diffuseTextures  = baseMaterialDetails.diffuseDetails,
+							.specularTextures = baseMaterialDetails.specularDetails,
+							.materialIndex    = baseMaterialDetails.materialIndex,
+							.pipelineIndex    = baseMaterialDetails.pipelineIndex
+						}
 					}
 				);
 			}

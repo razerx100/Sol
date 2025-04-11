@@ -3,6 +3,21 @@
 #include <ExternalPipeline.hpp>
 #include <RendererTypes.hpp>
 
+namespace PSOStorage
+{
+	enum class ShaderType
+	{
+		OpaqueLight,
+		TransparentLight,
+		Count
+	};
+
+	void SetPipelineIndex(ShaderType type, std::uint32_t psoIndex) noexcept;
+
+	[[nodiscard]]
+	std::uint32_t GetPipelineIndex(ShaderType type) noexcept;
+}
+
 class GraphicsPipelineManager
 {
 public:

@@ -95,8 +95,10 @@ void App::Init()
 		if (m_transparencyPass)
 			m_transparencyPass->AddTransparentPipeline(lightTransparentPSOIndex);
 
-		PSOIndexMap::SetPipelineIndex(ShaderType::OpaqueLight, lightPSOIndex);
-		PSOIndexMap::SetPipelineIndex(ShaderType::TransparentLight, lightTransparentPSOIndex);
+		using ShaderType = PSOStorage::ShaderType;
+
+		PSOStorage::SetPipelineIndex(ShaderType::OpaqueLight, lightPSOIndex);
+		PSOStorage::SetPipelineIndex(ShaderType::TransparentLight, lightTransparentPSOIndex);
 	}
 
 	{

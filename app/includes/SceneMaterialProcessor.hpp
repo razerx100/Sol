@@ -1,55 +1,44 @@
 #ifndef SCENE_MATERIAL_PROCESSOR_HPP_
 #define SCENE_MATERIAL_PROCESSOR_HPP_
 #include <memory>
+#include <array>
 #include <string>
 #include <limits>
+#include <optional>
 #include <BlinnPhongLightTechnique.hpp>
 #include <SceneProcessor.hpp>
 #include <Renderer.hpp>
 
-enum class ShaderType
-{
-	OpaqueLight,
-	TransparentLight,
-	Count
-};
-
-namespace PSOIndexMap
-{
-	void SetPipelineIndex(ShaderType type, std::uint32_t psoIndex) noexcept;
-
-	[[nodiscard]]
-	std::uint32_t GetPipelineIndex(ShaderType type) noexcept;
-}
-
 class SceneMaterialProcessor
 {
 public:
-	struct TextureDetails
-	{
-		std::string   name{};
-		// The indices of the resources.
-		std::uint32_t textureIndex     = std::numeric_limits<std::uint32_t>::max();
-		// The indices of the bound texures, which can be used.
-		std::uint32_t textureBindIndex = std::numeric_limits<std::uint32_t>::max();
-		// The indices from the material details container.
-		std::uint32_t materialIndex    = std::numeric_limits<std::uint32_t>::max();
-		UVInfo        uvInfo{};
-	};
-
 	struct MaterialDetails
 	{
 		// Keeping the name, so the materials can be handled independently.
-		std::string   name{};
+		std::string                     name{};
 		// The indices from the renderer.
-		std::uint32_t materialIndex = std::numeric_limits<std::uint32_t>::max();
-		std::uint32_t pipelineIndex = std::numeric_limits<std::uint32_t>::max();
+		std::uint32_t                   materialIndex = std::numeric_limits<std::uint32_t>::max();
+		std::uint32_t                   pipelineIndex = std::numeric_limits<std::uint32_t>::max();
+		std::vector<MeshTextureDetails> diffuseDetails{};
+		std::vector<MeshTextureDetails> specularDetails{};
+	};
+
+private:
+	struct TexturePath
+	{
+		std::string name;
+		std::string path;
+	};
+
+	struct TexturePaths
+	{
+		std::vector<TexturePath> diffusePaths{};
+		std::vector<TexturePath> specularPaths{};
 	};
 
 public:
 	SceneMaterialProcessor(std::shared_ptr<SceneProcessor> scene)
-		: m_scene{ std::move(scene) }, m_texturePaths{}, m_materialData{}, m_baseTextureDetails{},
-		m_materialDetails{}, m_defaultTextureDetails{}
+		: m_scene{ std::move(scene) }, m_materialData{}, m_materialDetails{}, m_texturePaths{}
 	{}
 
 	void ProcessMeshAndMaterialData();
@@ -58,21 +47,14 @@ public:
 	void LoadTexturesAsAtlas(Renderer& renderer);
 	void LoadTextures(Renderer& renderer);
 
+	void ClearTexturePaths() noexcept { m_texturePaths = std::vector<TexturePaths>{}; }
+
 	[[nodiscard]]
 	const MaterialDetails& GetMaterialDetails(size_t index) const noexcept
 	{
 		return m_materialDetails[index];
 	}
-	[[nodiscard]]
-	const TextureDetails& GetBaseTextureDetails(const std::string& fileName) const noexcept;
-	[[nodiscard]]
-	const TextureDetails& GetBaseTextureDetails(size_t materialIndex) const noexcept;
 
-	[[nodiscard]]
-	const std::vector<TextureDetails>& GetBaseTextureDetails() const noexcept
-	{
-		return m_baseTextureDetails;
-	}
 	[[nodiscard]]
 	const std::vector<MaterialDetails>& GetMaterialDetails() const noexcept
 	{
@@ -80,38 +62,48 @@ public:
 	}
 
 private:
-	struct TexturePath
-	{
-		std::string diffuse;
-	};
+	static void ProcessMaterialTexture(
+		aiTextureType textureType, aiMaterial const* material,
+		std::vector<TexturePath>& texturePaths, const std::string& fileDirectory
+	) noexcept;
+
+	static void ConfigureMaterialTextures(
+		std::vector<MeshTextureDetails>& textureDetails,
+		const std::vector<TexturePath>& texturePaths, class TextureAtlas& atlas,
+		std::uint32_t atlasIndex, std::uint32_t atlasBindIndex
+	) noexcept;
+	static void ConfigureMaterialTextures(
+		std::vector<MeshTextureDetails>& textureDetails,
+		const std::vector<TexturePath>& texturePaths, Renderer& renderer
+	) noexcept;
+
+	[[nodiscard]]
+	static std::pair<std::uint32_t, std::uint32_t> CreateAndAddAtlas(
+		class TextureAtlas& atlas, Renderer& renderer
+	);
 
 private:
 	std::shared_ptr<SceneProcessor> m_scene;
-	std::vector<TexturePath>        m_texturePaths;
 	std::vector<BlinnPhongMaterial> m_materialData;
-	std::vector<TextureDetails>     m_baseTextureDetails;
 	std::vector<MaterialDetails>    m_materialDetails;
-	TextureDetails                  m_defaultTextureDetails;
+	std::vector<TexturePaths>       m_texturePaths;
 
 public:
 	SceneMaterialProcessor(const SceneMaterialProcessor&) = delete;
 	SceneMaterialProcessor& operator=(const SceneMaterialProcessor&) = delete;
 
 	SceneMaterialProcessor(SceneMaterialProcessor&& other) noexcept
-		: m_scene{ std::move(other.m_scene) }, m_texturePaths{ std::move(other.m_texturePaths) },
+		: m_scene{ std::move(other.m_scene) },
 		m_materialData{ std::move(other.m_materialData) },
-		m_baseTextureDetails{ std::move(other.m_baseTextureDetails) },
 		m_materialDetails{ std::move(other.m_materialDetails) },
-		m_defaultTextureDetails{ std::move(other.m_defaultTextureDetails) }
+		m_texturePaths{ std::move(other.m_texturePaths) }
 	{}
 	SceneMaterialProcessor& operator=(SceneMaterialProcessor&& other) noexcept
 	{
-		m_scene                 = std::move(other.m_scene);
-		m_texturePaths          = std::move(other.m_texturePaths);
-		m_materialData          = std::move(other.m_materialData);
-		m_baseTextureDetails    = std::move(other.m_baseTextureDetails);
-		m_materialDetails       = std::move(other.m_materialDetails);
-		m_defaultTextureDetails = std::move(other.m_defaultTextureDetails);
+		m_scene           = std::move(other.m_scene);
+		m_materialData    = std::move(other.m_materialData);
+		m_materialDetails = std::move(other.m_materialDetails);
+		m_texturePaths    = std::move(other.m_texturePaths);
 
 		return *this;
 	}

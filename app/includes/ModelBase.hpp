@@ -519,6 +519,10 @@ private:
 	[[nodiscard]]
 	size_t GetLocalPipelineIndex(std::uint32_t pipelineIndex);
 
+	static void SetMaterial(
+		ModelMaterial& material, const MeshMaterialDetails& materialDetails
+	) noexcept;
+
 private:
 	std::vector<MeshNodeData> m_modelNodeData;
 	PipelineContainerBase_t   m_basePipelines;

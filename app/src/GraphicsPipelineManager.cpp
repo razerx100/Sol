@@ -1,5 +1,23 @@
 #include <GraphicsPipelineManager.hpp>
+#include <array>
 
+namespace PSOStorage
+{
+	// Shader Type indices
+	static std::array<std::uint32_t, static_cast<size_t>(ShaderType::Count)> s_pipelineIndexMap{};
+
+	void SetPipelineIndex(ShaderType type, std::uint32_t psoIndex) noexcept
+	{
+		s_pipelineIndexMap[static_cast<size_t>(type)] = psoIndex;
+	}
+
+	std::uint32_t GetPipelineIndex(ShaderType type) noexcept
+	{
+		return s_pipelineIndexMap[static_cast<size_t>(type)];
+	}
+}
+
+// Graphics Pipeline Manager
 GraphicsPipelineManager::GraphicsPipelineManager(RenderEngineType engineType)
 	: m_mainPassOpaqueSignature{}, m_transparencyPassSignature{}, m_transparencyCombinePassSignature{},
 	m_engineType{ engineType }

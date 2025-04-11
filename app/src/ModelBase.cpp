@@ -223,6 +223,33 @@ void ModelBundleBase::SetModels(float modelScale, const std::vector<MeshNodeData
 	}
 }
 
+void ModelBundleBase::SetMaterial(
+	ModelMaterial& material, const MeshMaterialDetails& materialDetails
+) noexcept {
+	const MeshTextureDetails& defaultTexture = GetDefaultTextureDetails();
+
+	// For now we will only use the first texture and in the absence of that, the default
+	// texture.
+	MeshTextureDetails diffuseDetails  = defaultTexture;
+	MeshTextureDetails specularDetails = defaultTexture;
+
+	if (!std::empty(materialDetails.diffuseTextures))
+		diffuseDetails = materialDetails.diffuseTextures.front();
+
+	if (!std::empty(materialDetails.specularTextures))
+		specularDetails = materialDetails.specularTextures.front();
+	else if (!std::empty(materialDetails.diffuseTextures))
+		specularDetails = materialDetails.diffuseTextures.front();
+
+	material.SetDiffuseIndex(diffuseDetails.textureBindIndex);
+	material.SetDiffuseUVInfo(diffuseDetails.uvInfo);
+
+	material.SetSpecularIndex(specularDetails.textureBindIndex);
+	material.SetSpecularUVInfo(specularDetails.uvInfo);
+
+	material.SetMaterialIndex(materialDetails.materialIndex);
+}
+
 void ModelBundleBase::ChangeMeshBundle(
 	std::uint32_t meshBundleIndex,
 	const std::vector<MeshNodeData>& newNodeData,
@@ -251,18 +278,14 @@ void ModelBundleBase::ChangeMeshBundle(
 			std::shared_ptr<ModelBase>& model       = m_baseModels[modelIndex];
 			const MeshPermanentDetails& meshDetails = permanentDetails[modelIndex];
 
-			// Base Colour
-			const MeshTextureDetails& baseColourDetails = meshDetails.baseTextureDetails;
+			// Diffuse
+			const MeshMaterialDetails& meshMaterialDetails = meshDetails.materialDetails;
 
-			ModelMaterial& material = model->GetMaterial();
-
-			material.SetDiffuseIndex(baseColourDetails.baseTextureBindingIndex);
-			material.SetDiffuseUVInfo(baseColourDetails.uvInfo);
-			material.SetMaterialIndex(baseColourDetails.materialIndex);
+			SetMaterial(model->GetMaterial(), meshMaterialDetails);
 
 			// Set Pipeline
 			const size_t pipelineLocalIndex = GetLocalPipelineIndex(
-				baseColourDetails.pipelineIndex
+				meshMaterialDetails.pipelineIndex
 			);
 
 			m_basePipelines[pipelineLocalIndex]->AddModelIndex(

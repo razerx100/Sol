@@ -6,22 +6,6 @@
 #include <algorithm>
 #include <assimp/GltfMaterial.h>
 
-namespace PSOIndexMap
-{
-	// Shader Type indices
-	static std::array<std::uint32_t, static_cast<size_t>(ShaderType::Count)> s_pipelineIndexMap{};
-
-	void SetPipelineIndex(ShaderType type, std::uint32_t psoIndex) noexcept
-	{
-		s_pipelineIndexMap[static_cast<size_t>(type)] = psoIndex;
-	}
-
-	std::uint32_t GetPipelineIndex(ShaderType type) noexcept
-	{
-		return s_pipelineIndexMap[static_cast<size_t>(type)];
-	}
-}
-
 // Scene Material Processor
 void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 {
@@ -71,44 +55,59 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 			}
 		);
 
-		m_materialDetails.emplace_back(
-			MaterialDetails
-			{
-				.name          = name.C_Str(),
-				.pipelineIndex = PSOIndexMap::GetPipelineIndex(
-					isTransparent ? ShaderType::TransparentLight : ShaderType::OpaqueLight
-				)
-			}
+		using ShaderType = PSOStorage::ShaderType;
+
+		MaterialDetails materialDetails
+		{
+			.name          = name.C_Str(),
+			.materialIndex = static_cast<std::uint32_t>(index),
+			.pipelineIndex = PSOStorage::GetPipelineIndex(
+				isTransparent ? ShaderType::TransparentLight : ShaderType::OpaqueLight
+			)
+		};
+
+		TexturePaths texturePaths{};
+
+		ProcessMaterialTexture(
+			aiTextureType_DIFFUSE, material, texturePaths.diffusePaths, fileDirectory
+		);
+		ProcessMaterialTexture(
+			aiTextureType_SPECULAR, material, texturePaths.specularPaths, fileDirectory
 		);
 
-		// Diffuse
-		constexpr aiTextureType diffuseType = aiTextureType_DIFFUSE;
+		m_materialDetails.emplace_back(std::move(materialDetails));
+		m_texturePaths.emplace_back(std::move(texturePaths));
+	}
+}
 
-		const auto diffuseCount = material->GetTextureCount(diffuseType);
+void SceneMaterialProcessor::ProcessMaterialTexture(
+	aiTextureType textureType, aiMaterial const* material,
+	std::vector<TexturePath>& texturePaths, const std::string& fileDirectory
+) noexcept {
+	const std::uint32_t textureCount = material->GetTextureCount(textureType);
 
-		if (diffuseCount)
+	if (textureCount)
+	{
+		texturePaths.reserve(textureCount);
+
+		for (std::uint32_t index = 0u; index < textureCount; ++index)
 		{
-			// Texture
 			aiString aiTexturePath{};
 
-			// Only process the first texture for now.
-			material->GetTexture(diffuseType, 0u, &aiTexturePath);
+			material->GetTexture(textureType, index, &aiTexturePath);
 
-			m_texturePaths.emplace_back(
-				TexturePath
-				{
-					.diffuse = fileDirectory + aiTexturePath.C_Str()
-				}
-			);
-			m_baseTextureDetails.emplace_back(
-				TextureDetails{ .materialIndex = static_cast<std::uint32_t>(index) }
-			);
+			TexturePath path{ .path = fileDirectory + aiTexturePath.C_Str() };
+
+			path.name = SceneProcessor::GetFileName(path.path);
+
+			texturePaths.emplace_back(std::move(path));
 		}
 	}
 }
 
-void SceneMaterialProcessor::LoadBlinnPhongMaterials(BlinnPhongLightTechnique& blinnPhongTechnique)
-{
+void SceneMaterialProcessor::LoadBlinnPhongMaterials(
+	BlinnPhongLightTechnique& blinnPhongTechnique
+) {
 	const size_t materialCount = std::size(m_materialData);
 
 	for (size_t index = 0u; index < materialCount; ++index)
@@ -117,106 +116,128 @@ void SceneMaterialProcessor::LoadBlinnPhongMaterials(BlinnPhongLightTechnique& b
 		);
 }
 
+std::pair<std::uint32_t, std::uint32_t> SceneMaterialProcessor::CreateAndAddAtlas(
+	TextureAtlas& atlas, Renderer& renderer
+) {
+	auto textureIndex = std::numeric_limits<std::uint32_t>::max();
+	auto bindingIndex = std::numeric_limits<std::uint32_t>::max();
+
+	if (atlas.DoUnprocessedTexturesExist())
+	{
+		atlas.CreateAtlas();
+
+		textureIndex = static_cast<std::uint32_t>(
+			renderer.AddTexture(std::move(atlas.MoveTexture()))
+		);
+		bindingIndex = static_cast<std::uint32_t>(
+			renderer.BindTexture(textureIndex)
+		);
+	}
+
+	return std::make_pair(textureIndex, bindingIndex);
+}
+
+void SceneMaterialProcessor::ConfigureMaterialTextures(
+	std::vector<MeshTextureDetails>& textureDetails, const std::vector<TexturePath>& texturePaths,
+	TextureAtlas& atlas, std::uint32_t atlasIndex, std::uint32_t atlasBindIndex
+) noexcept {
+	const size_t textureCount = std::size(texturePaths);
+
+	for (size_t index = 0u; index < textureCount; ++index)
+	{
+		MeshTextureDetails& oneTextureDetails = textureDetails[index];
+		const TexturePath& texturePath        = texturePaths[index];
+
+		oneTextureDetails.textureIndex     = atlasIndex;
+		oneTextureDetails.textureBindIndex = atlasBindIndex;
+		oneTextureDetails.uvInfo           = atlas.GetUVInfo(texturePath.name);
+	}
+}
+
+void SceneMaterialProcessor::ConfigureMaterialTextures(
+	std::vector<MeshTextureDetails>& textureDetails,
+	const std::vector<TexturePath>& texturePaths, Renderer& renderer
+) noexcept {
+	const size_t textureCount = std::size(texturePaths);
+
+	for (size_t index = 0u; index < textureCount; ++index)
+	{
+		MeshTextureDetails& oneTextureDetails = textureDetails[index];
+		const TexturePath& texturePath        = texturePaths[index];
+
+		std::optional<STexture> texture = TextureTool::LoadTextureFromFile(texturePath.path);
+
+		if (texture)
+		{
+			const auto textureIndex = static_cast<std::uint32_t>(
+				renderer.AddTexture(std::move(*texture))
+			);
+			const auto textureBindIndex = static_cast<std::uint32_t>(
+				renderer.BindTexture(textureIndex)
+			);
+
+			oneTextureDetails.textureIndex     = textureIndex;
+			oneTextureDetails.textureBindIndex = textureBindIndex;
+
+			// The UV info will be the default one for non atlas textures,
+			// so no need to set it.
+		}
+	}
+}
+
 void SceneMaterialProcessor::LoadTexturesAsAtlas(Renderer& renderer)
 {
-	const size_t textureCount = std::size(m_texturePaths);
-
-	TextureAtlas baseColourAtlas{};
+	TextureAtlas diffuseAtlas{};
+	TextureAtlas specularAtlas{};
 
 	// Maybe later I will make it so there are multiple atlas and only a certain number of
 	// textures are put into a single atlas. As the precision would decrease the more textures
 	// we put in one.
-	for (size_t index = 0u; index < textureCount; ++index)
+	for (const TexturePaths& texturePath : m_texturePaths)
+		for (const TexturePath& diffuseTexturePath : texturePath.diffusePaths)
+			diffuseAtlas.AddTexture(diffuseTexturePath.name, diffuseTexturePath.path);
+
+	for (const TexturePaths& texturePath : m_texturePaths)
+		for (const TexturePath& specularTexturePath : texturePath.specularPaths)
+			specularAtlas.AddTexture(specularTexturePath.name, specularTexturePath.path);
+
+	auto [diffuseTextureIndex, diffuseBindingIndex]   = CreateAndAddAtlas(diffuseAtlas, renderer);
+	auto [specularTextureIndex, specularBindingIndex] = CreateAndAddAtlas(specularAtlas, renderer);
+
+	const size_t materialCount = std::size(m_materialDetails);
+
+	for (size_t index = 0u; index < materialCount; ++index)
 	{
-		const TexturePath& texturePath     = m_texturePaths[index];
+		MaterialDetails& materialDetails         = m_materialDetails[index];
+		const TexturePaths& materialTexturePaths = m_texturePaths[index];
 
-		// Base colour
-		const std::string& baseTexturePath = texturePath.diffuse;
-		const std::string baseName         = SceneProcessor::GetFileName(baseTexturePath);
-
-		m_baseTextureDetails[index].name   = baseName;
-
-		baseColourAtlas.AddTexture(baseName, baseTexturePath);
-	}
-
-	if (baseColourAtlas.DoUnprocessedTexturesExist())
-	{
-		baseColourAtlas.CreateAtlas();
-
-		const auto baseTextureIndex     = static_cast<std::uint32_t>(
-			renderer.AddTexture(std::move(baseColourAtlas.MoveTexture()))
-		);
-		const auto baseTextureBindIndex = static_cast<std::uint32_t>(
-			renderer.BindTexture(baseTextureIndex)
+		ConfigureMaterialTextures(
+			materialDetails.diffuseDetails, materialTexturePaths.diffusePaths,
+			diffuseAtlas, diffuseTextureIndex, diffuseBindingIndex
 		);
 
-		for (size_t index = 0u; index < textureCount; ++index)
-		{
-			TextureDetails& baseTextureDetails  = m_baseTextureDetails[index];
-
-			baseTextureDetails.textureIndex     = baseTextureIndex;
-			baseTextureDetails.textureBindIndex = baseTextureBindIndex;
-			baseTextureDetails.uvInfo           = baseColourAtlas.GetUVInfo(baseTextureDetails.name);
-		}
+		ConfigureMaterialTextures(
+			materialDetails.specularDetails, materialTexturePaths.specularPaths,
+			specularAtlas, specularTextureIndex, specularBindingIndex
+		);
 	}
 }
 
 void SceneMaterialProcessor::LoadTextures(Renderer& renderer)
 {
-	const size_t textureCount = std::size(m_texturePaths);
+	const size_t materialCount = std::size(m_materialDetails);
 
-	for (size_t index = 0u; index < textureCount; ++index)
+	for (size_t index = 0u; index < materialCount; ++index)
 	{
-		const TexturePath& texturePath      = m_texturePaths[index];
+		MaterialDetails& materialDetails         = m_materialDetails[index];
+		const TexturePaths& materialTexturePaths = m_texturePaths[index];
 
-		// Base colour
-		const std::string& baseTexturePath  = texturePath.diffuse;
+		ConfigureMaterialTextures(
+			materialDetails.diffuseDetails, materialTexturePaths.diffusePaths, renderer
+		);
 
-		std::optional<STexture> baseTexture = TextureTool::LoadTextureFromFile(baseTexturePath);
-
-		if (baseTexture)
-		{
-			const auto baseTextureIndex = static_cast<std::uint32_t>(
-				renderer.AddTexture(std::move(*baseTexture))
-			);
-			const auto baseTextureBindIndex = static_cast<std::uint32_t>(
-				renderer.BindTexture(baseTextureIndex)
-			);
-
-			TextureDetails& baseTextureDetails  = m_baseTextureDetails[index];
-
-			baseTextureDetails.name             = SceneProcessor::GetFileName(baseTexturePath);
-			baseTextureDetails.textureIndex     = baseTextureIndex;
-			baseTextureDetails.textureBindIndex = baseTextureBindIndex;
-
-			// The UV info will be the default one for non atlas textures, so no need to set it.
-		}
+		ConfigureMaterialTextures(
+			materialDetails.specularDetails, materialTexturePaths.specularPaths, renderer
+		);
 	}
-}
-
-const SceneMaterialProcessor::TextureDetails& SceneMaterialProcessor::GetBaseTextureDetails(
-	const std::string& fileName
-) const noexcept {
-	auto result = std::ranges::find(
-		m_baseTextureDetails, fileName, [](const TextureDetails& details) { return details.name; }
-	);
-
-	if (std::end(m_baseTextureDetails) != result)
-		return *result;
-
-	return m_defaultTextureDetails;
-}
-
-const SceneMaterialProcessor::TextureDetails& SceneMaterialProcessor::GetBaseTextureDetails(
-	size_t materialIndex
-) const noexcept {
-	auto result = std::ranges::find(
-		m_baseTextureDetails, materialIndex, [](const TextureDetails& details)
-		{ return details.materialIndex; }
-	);
-
-	if (std::end(m_baseTextureDetails) != result)
-		return *result;
-
-	return m_defaultTextureDetails;
 }
