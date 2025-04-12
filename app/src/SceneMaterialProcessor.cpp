@@ -143,14 +143,20 @@ void SceneMaterialProcessor::ConfigureMaterialTextures(
 ) noexcept {
 	const size_t textureCount = std::size(texturePaths);
 
+	textureDetails.reserve(textureCount);
+
 	for (size_t index = 0u; index < textureCount; ++index)
 	{
-		MeshTextureDetails& oneTextureDetails = textureDetails[index];
-		const TexturePath& texturePath        = texturePaths[index];
+		const TexturePath& texturePath = texturePaths[index];
 
-		oneTextureDetails.textureIndex     = atlasIndex;
-		oneTextureDetails.textureBindIndex = atlasBindIndex;
-		oneTextureDetails.uvInfo           = atlas.GetUVInfo(texturePath.name);
+		textureDetails.emplace_back(
+			MeshTextureDetails
+			{
+				.textureIndex     = atlasIndex,
+				.textureBindIndex = atlasBindIndex,
+				.uvInfo           = atlas.GetUVInfo(texturePath.name)
+			}
+		);
 	}
 }
 
