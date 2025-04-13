@@ -10,12 +10,11 @@
 #include <TextureAtlas.hpp>
 #include <SceneMaterialProcessor.hpp>
 #include <AllocationLiterals.hpp>
+#include <SolScene.hpp>
 
-static MeshBundleImpl testMeshBundle{ true };
+static SolScene      testScene{};
 static std::uint32_t testMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
-static MeshBundleImpl assimpMeshBundle{ false };
 static std::uint32_t assimpMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
-static MeshBundleImpl sphereMeshBundle{ true };
 static std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
 static std::shared_ptr<ModelBundleBase> cubeBundle1{};
@@ -102,6 +101,8 @@ void App::Init()
 	}
 
 	{
+		MeshBundleImpl testMeshBundle{ true };
+
 		Mesh mesh{};
 
 		CubeMesh{}.SetMesh(mesh, CubeUVMode::IndependentFaceTexture);
@@ -116,8 +117,10 @@ void App::Init()
 	}
 
 	{
+		MeshBundleImpl assimpMeshBundle{ false };
+
 		auto sceneProcessor = std::make_shared<SceneProcessor>(
-			"resources/meshes/nissan_titan_2017_transparent/scene.gltf"
+			"resources/meshes/shiba/scene.gltf"
 		);
 
 		SceneMaterialProcessor materialProcessor{ sceneProcessor };
@@ -127,7 +130,10 @@ void App::Init()
 		//materialProcessor.LoadTextures(*m_renderer);
 		materialProcessor.LoadTexturesAsAtlas(*m_renderer);
 
-		assimpMeshBundle.SetMeshBundle(sceneProcessor, materialProcessor);
+		assimpMeshBundle.SetMeshBundle(sceneProcessor);
+
+		testScene.SetSceneNodes(*sceneProcessor);
+		testScene.SetMeshMaterialDetails(*sceneProcessor, materialProcessor);
 
 		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
@@ -328,6 +334,8 @@ void App::Init()
 			modelMaterial.SetSpecularUVInfo(atlas.GetUVInfo("Katarin"));
 			modelMaterial.SetSpecularIndex(atlasBindingIndex);
 
+			model2.SetVisibility(false);
+
 			cubeBundle1->MoveTowardsY(1u, 0.75f);
 		}
 
@@ -392,9 +400,9 @@ void App::Init()
 	{
 		assimpModelBundle1 = std::make_shared<ModelBundleBase>();
 
-		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 1.f, assimpMeshBundle);
-		assimpModelBundle1->MoveTowardsZ(0u, 1.f);
-		assimpModelBundle1->MoveTowardsY(0u, -0.75f);
+		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 0.5f, testScene);
+		assimpModelBundle1->MoveTowardsZ(0u, -1.f);
+		//assimpModelBundle1->MoveTowardsY(0u, -0.75f);
 		assimpModelBundle1->RotateRollDegree(0u, 90.f);
 		assimpModelBundle1->RotatePitchDegree(0u, 90.f);
 		assimpModelBundle1->SetMeshBundleIndex(assimpMeshBundleIndex);
@@ -720,6 +728,8 @@ void App::PhysicsUpdate()
 	{
 		if (sphereMeshBundleIndex == std::numeric_limits<std::uint32_t>::max())
 		{
+			MeshBundleImpl sphereMeshBundle{ true };
+
 			Mesh mesh{};
 
 			SphereMesh{ 64u, 64u }.SetMesh(mesh);

@@ -7,7 +7,6 @@
 #include <Renderer.hpp>
 #include <assimp/scene.h>
 #include <SceneMeshProcessor.hpp>
-#include <SceneMaterialProcessor.hpp>
 
 class MeshBundleTempIntermediate
 {
@@ -26,7 +25,7 @@ public:
 	[[nodiscard]]
 	MeshBundleTemporaryData GenerateTemporaryData(bool meshShader) override;
 
-	void AddMesh(Mesh&& mesh) noexcept;
+	void AddMesh(Mesh&& mesh) noexcept override;
 
 private:
 	static void GenerateMeshShaderData(
@@ -36,8 +35,12 @@ private:
 		std::vector<Mesh>& meshes, MeshBundleTemporaryData& meshBundleTemporaryData
 	);
 
-	static void ProcessMeshVS(Mesh& mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
-	static void ProcessMeshMS(Mesh& mesh, MeshBundleTemporaryData& meshBundleTemporaryData) noexcept;
+	static void ProcessMeshVS(
+		Mesh& mesh, MeshBundleTemporaryData& meshBundleTemporaryData
+	) noexcept;
+	static void ProcessMeshMS(
+		Mesh& mesh, MeshBundleTemporaryData& meshBundleTemporaryData
+	) noexcept;
 
 private:
 	std::vector<Mesh> m_tempMeshes;
@@ -51,12 +54,7 @@ public:
 	[[nodiscard]]
 	MeshBundleTemporaryData GenerateTemporaryData(bool meshShader) override;
 
-	void SetMeshBundle(std::shared_ptr<SceneProcessor> scene);
-
-	void LoadMeshNodeDetails(
-		const SceneMaterialProcessor& materialProcessor,
-		std::vector<MeshPermanentDetails>& permananeDetails, std::vector<MeshNodeData>& meshNodeData
-	);
+	void SetSceneProcessor(std::shared_ptr<SceneProcessor> scene);
 
 private:
 	SceneMeshProcessor m_meshProcessor;
@@ -85,10 +83,7 @@ public:
 
 	void AddMesh(Mesh&& mesh);
 
-	void SetMeshBundle(
-		std::shared_ptr<SceneProcessor> scene, const SceneMaterialProcessor& materialProcessor,
-		std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
-	);
+	void SetMeshBundle(std::shared_ptr<SceneProcessor> scene);
 
 	// Vertex and Mesh
 	[[nodiscard]]
@@ -149,36 +144,17 @@ class MeshBundleImpl : public MeshBundle
 {
 public:
 	MeshBundleImpl(bool customTemp)
-		: m_meshNodeData{}, m_permanentDetails{},
-		m_temporaryData{ std::make_unique<MeshBundleTemporaryImpl>(customTemp) }
+		: m_temporaryData{ std::make_unique<MeshBundleTemporaryImpl>(customTemp) }
 	{}
 
 	void AddMesh(Mesh&& mesh);
 
-	void SetMeshBundle(
-		std::shared_ptr<SceneProcessor> scene, const SceneMaterialProcessor& materialProcessor
-	);
+	void SetMeshBundle(std::shared_ptr<SceneProcessor> scene);
 
 	[[nodiscard]]
 	std::unique_ptr<MeshBundleTemporary> MoveTemporaryData() override
 	{
 		return std::move(m_temporaryData);
-	}
-	[[nodiscard]]
-	const MeshPermanentDetails& GetPermanentDetail(size_t index) const noexcept
-	{
-		return m_permanentDetails[index];
-	}
-	[[nodiscard]]
-	// The first one will be the root node.
-	const std::vector<MeshNodeData>& GetMeshNodeData() const noexcept
-	{
-		return m_meshNodeData;
-	}
-	[[nodiscard]]
-	const std::vector<MeshPermanentDetails>& GetPermanentDetails() const noexcept
-	{
-		return m_permanentDetails;
 	}
 
 public:
@@ -195,8 +171,6 @@ public:
 	) noexcept;
 
 private:
-	std::vector<MeshNodeData>                m_meshNodeData;
-	std::vector<MeshPermanentDetails>        m_permanentDetails;
 	std::unique_ptr<MeshBundleTemporaryImpl> m_temporaryData;
 
 public:
@@ -204,15 +178,11 @@ public:
 	MeshBundleImpl& operator=(const MeshBundleImpl&) = delete;
 
 	MeshBundleImpl(MeshBundleImpl&& other) noexcept
-		: m_meshNodeData{ std::move(other.m_meshNodeData) },
-		m_permanentDetails{std::move(other.m_permanentDetails)},
-		m_temporaryData{ std::move(other.m_temporaryData) }
+		: m_temporaryData{ std::move(other.m_temporaryData) }
 	{}
 	MeshBundleImpl& operator=(MeshBundleImpl&& other) noexcept
 	{
-		m_meshNodeData     = std::move(other.m_meshNodeData);
-		m_permanentDetails = std::move(other.m_permanentDetails);
-		m_temporaryData    = std::move(other.m_temporaryData);
+		m_temporaryData = std::move(other.m_temporaryData);
 
 		return *this;
 	}

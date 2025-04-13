@@ -120,16 +120,9 @@ MeshBundleTemporaryData MeshBundleTempAssimp::GenerateTemporaryData(bool meshSha
 	return m_meshProcessor.GenerateTemporaryMeshData(meshShader);
 }
 
-void MeshBundleTempAssimp::SetMeshBundle(std::shared_ptr<SceneProcessor> scene)
+void MeshBundleTempAssimp::SetSceneProcessor(std::shared_ptr<SceneProcessor> scene)
 {
 	m_meshProcessor.SetSceneProcessor(std::move(scene));
-}
-
-void MeshBundleTempAssimp::LoadMeshNodeDetails(
-	const SceneMaterialProcessor& materialProcessor,
-	std::vector<MeshPermanentDetails>& permananeDetails, std::vector<MeshNodeData>& meshNodeData
-) {
-	m_meshProcessor.LoadMeshNodeDetails(materialProcessor, permananeDetails, meshNodeData);
 }
 
 // Mesh Bundle Temporary Impl
@@ -145,21 +138,21 @@ void MeshBundleTemporaryImpl::GenerateTemporaryData(bool meshShader)
 
 void MeshBundleTemporaryImpl::AddMesh(Mesh&& mesh)
 {
-	assert(dynamic_cast<MeshBundleTempCustom*>(m_tempIntermediate.get()) && "Temp type isn't custom.");
+	assert(
+		dynamic_cast<MeshBundleTempCustom*>(m_tempIntermediate.get())
+		&& "Temp type isn't custom."
+	);
 
 	m_tempIntermediate->AddMesh(std::move(mesh));
 }
 
-void MeshBundleTemporaryImpl::SetMeshBundle(
-	std::shared_ptr<SceneProcessor> scene, const SceneMaterialProcessor& materialProcessor,
-	std::vector<MeshPermanentDetails>& permanentDetails, std::vector<MeshNodeData>& meshNodeData
-) {
+void MeshBundleTemporaryImpl::SetMeshBundle(std::shared_ptr<SceneProcessor> scene)
+{
 	if (!m_tempIntermediate)
 	{
 		auto tempData = std::make_unique<MeshBundleTempAssimp>();
 
-		tempData->SetMeshBundle(std::move(scene));
-		tempData->LoadMeshNodeDetails(materialProcessor, permanentDetails, meshNodeData);
+		tempData->SetSceneProcessor(std::move(scene));
 
 		m_tempIntermediate = std::move(tempData);
 	}
@@ -169,23 +162,11 @@ void MeshBundleTemporaryImpl::SetMeshBundle(
 void MeshBundleImpl::AddMesh(Mesh&& mesh)
 {
 	m_temporaryData->AddMesh(std::move(mesh));
-
-	m_meshNodeData.emplace_back(
-		MeshNodeData
-		{
-			.meshIndex    = 0u,
-			.childrenData = MeshChildrenData{ .count = 0u, .startingIndex = 0u }
-		}
-	);
-	m_permanentDetails.emplace_back(MeshPermanentDetails{ DirectX::XMMatrixIdentity() });
 }
 
-void MeshBundleImpl::SetMeshBundle(
-	std::shared_ptr<SceneProcessor> scene, const SceneMaterialProcessor& materialProcessor
-) {
-	m_temporaryData->SetMeshBundle(
-		std::move(scene), materialProcessor, m_permanentDetails, m_meshNodeData
-	);
+void MeshBundleImpl::SetMeshBundle(std::shared_ptr<SceneProcessor> scene)
+{
+	m_temporaryData->SetMeshBundle(std::move(scene));
 }
 
 void MeshBundleImpl::CalculateNormalsIndependentFaces(

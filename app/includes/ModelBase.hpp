@@ -68,15 +68,37 @@ public:
 		return *this;
 	}
 
+	void Rotate(const DirectX::XMMATRIX& rotationMatrix) noexcept
+	{
+		m_modelMatrix *= rotationMatrix;
+	}
+	void Scale(const DirectX::XMMATRIX& scalingMatrix) noexcept
+	{
+		m_modelMatrix *= scalingMatrix;
+
+		RecalculateScale();
+	}
+
+	[[nodiscard]]
+	static DirectX::XMMATRIX GetRotationMatrix(
+		const DirectX::XMVECTOR& rotationAxis, float angleRadian
+	) noexcept {
+		return DirectX::XMMatrixRotationAxis(rotationAxis, angleRadian);
+	}
+
+	[[nodiscard]]
+	static DirectX::XMMATRIX GetScalingMatrix(float scaleX, float scaleY, float scaleZ) noexcept
+	{
+		return DirectX::XMMatrixScaling(scaleX, scaleY, scaleZ);
+	}
+
 	void Rotate(const DirectX::XMVECTOR& rotationAxis, float angleRadian) noexcept
 	{
-		m_modelMatrix *= DirectX::XMMatrixRotationAxis(rotationAxis, angleRadian);
+		Rotate(GetRotationMatrix(rotationAxis, angleRadian));
 	}
 	void Scale(float scale) noexcept
 	{
-		m_modelMatrix *= DirectX::XMMatrixScaling(scale, scale, scale);
-
-		RecalculateScale();
+		Scale(GetScalingMatrix(scale, scale, scale));
 	}
 	void MultiplyModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
 	{
@@ -385,46 +407,46 @@ public:
 
 	std::uint32_t AddPipeline(std::uint32_t pipelineIndex) noexcept;
 
-	// Because of circular inclusion, can't include the MeshBundleBase header in this header.
+	// Because of circular inclusion, can't include the BlinnPhoneTechnique header in this header.
 	// So, have to do some template stuff to figure that out.
 	template<class T>
 	void SetMeshBundle(
-		std::uint32_t meshBundleIndex, float modelScale, const T& meshBundle
+		std::uint32_t meshBundleIndex, float modelScale, const T& scene
 	) {
-		const std::vector<MeshNodeData>& newNodeData = meshBundle.GetMeshNodeData();
-		const std::vector<MeshPermanentDetails>& permanentDetails
-			= meshBundle.GetPermanentDetails();
+		const std::vector<SceneNodeData>& sceneNodeData = scene.GetSceneNodeData();
+		const std::vector<MeshMaterialDetails>& meshMaterialDetails
+			= scene.GetMeshMaterialDetails();
 
-		SetMeshBundle(meshBundleIndex, modelScale, newNodeData, permanentDetails);
+		SetMeshBundle(meshBundleIndex, modelScale, sceneNodeData, meshMaterialDetails);
 	}
 
 	void SetMeshBundle(
 		std::uint32_t meshBundleIndex, float modelScale,
-		const std::vector<MeshNodeData>& newNodeData,
-		const std::vector<MeshPermanentDetails>& permanentDetails
+		const std::vector<SceneNodeData>& sceneNodeData,
+		const std::vector<MeshMaterialDetails>& meshMaterialDetails
 	);
 
-	// Because of circular inclusion, can't include the MeshBundleBase header in this header.
+	// Because of circular inclusion, can't include the BlinnPhoneTechnique header in this header.
 	// So, have to do some template stuff to figure that out.
 	template<class T>
 	void ChangeMeshBundle(
-		std::uint32_t meshBundleIndex, const T& meshBundle,
+		std::uint32_t meshBundleIndex, const T& scene,
 		bool discardExistingTransformation = true
 	) {
-		const std::vector<MeshNodeData>& newNodeData = meshBundle.GetMeshNodeData();
-		const std::vector<MeshPermanentDetails>& permanentDetails
-			= meshBundle.GetPermanentDetails();
+		const std::vector<SceneNodeData>& sceneNodeData = scene.GetSceneNodeData();
+		const std::vector<MeshMaterialDetails>& meshMaterialDetails
+			= scene.GetMeshMaterialDetails();
 
 		ChangeMeshBundle(
-			meshBundleIndex, newNodeData, permanentDetails, discardExistingTransformation
+			meshBundleIndex, sceneNodeData, meshMaterialDetails, discardExistingTransformation
 		);
 	}
 
 	// Can only be changed if the new mesh count is the same as before.
 	void ChangeMeshBundle(
 		std::uint32_t meshBundleIndex,
-		const std::vector<MeshNodeData>& newNodeData,
-		const std::vector<MeshPermanentDetails>& permanentDetails,
+		const std::vector<SceneNodeData>& sceneNodeData,
+		const std::vector<MeshMaterialDetails>& meshMaterialDetails,
 		bool discardExistingTransformation = true
 	);
 
@@ -513,7 +535,7 @@ public:
 	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
 
 private:
-	void SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData);
+	void SetModels(float modelScale, const std::vector<SceneNodeData>& sceneNodeData);
 
 	// Will add a new one if not available.
 	[[nodiscard]]
@@ -524,14 +546,14 @@ private:
 	) noexcept;
 
 private:
-	std::vector<MeshNodeData> m_modelNodeData;
-	PipelineContainerBase_t   m_basePipelines;
-	ModelContainerBase_t      m_baseModels;
+	std::vector<ModelNodeData> m_modelNodeData;
+	PipelineContainerBase_t    m_basePipelines;
+	ModelContainerBase_t       m_baseModels;
 	// This is just so it could be shared in the interface. And would be the same pointers as above
 	// so won't have to do all the operations.
-	ModelContainer_t          m_models;
-	PipelineContainer_t       m_pipelines;
-	std::uint32_t             m_meshBundleIndex;
+	ModelContainer_t           m_models;
+	PipelineContainer_t        m_pipelines;
+	std::uint32_t              m_meshBundleIndex;
 
 public:
 	ModelBundleBase(const ModelBundleBase&) = delete;

@@ -27,20 +27,26 @@ struct MeshBundleTemporaryData
 	MeshBundleTemporaryDetails  bundleDetails;
 };
 
-struct MeshChildrenData
+struct ModelNodeChildrenData
 {
-	std::uint32_t count;
-	std::uint32_t startingIndex;
+	std::uint32_t count         = 0u;
+	std::uint32_t startingIndex = std::numeric_limits<std::uint32_t>::max();
 };
 
-struct MeshNodeData
+struct ModelNodeData
 {
-	std::uint32_t    modelIndex   = std::numeric_limits<std::uint32_t>::max();
-	std::uint32_t    meshIndex    = std::numeric_limits<std::uint32_t>::max();
-	MeshChildrenData childrenData;
+	std::uint32_t         modelIndex   = std::numeric_limits<std::uint32_t>::max();
+	std::uint32_t         meshIndex    = std::numeric_limits<std::uint32_t>::max();
+	ModelNodeChildrenData childrenData{};
 
 	[[nodiscard]]
 	bool HasMesh() const noexcept { return meshIndex != std::numeric_limits<std::uint32_t>::max(); }
+};
+
+struct SceneNodeData
+{
+	ModelNodeData     modelNodeData;
+	DirectX::XMMATRIX worldMatrix{};
 };
 
 struct MeshTextureDetails
@@ -58,12 +64,6 @@ struct MeshMaterialDetails
 	std::vector<MeshTextureDetails> specularTextures;
 	std::uint32_t                   materialIndex;
 	std::uint32_t                   pipelineIndex;
-};
-
-struct MeshPermanentDetails
-{
-	DirectX::XMMATRIX   worldMatrix;
-	MeshMaterialDetails materialDetails;
 };
 
 template<typename T>

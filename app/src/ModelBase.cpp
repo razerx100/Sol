@@ -32,7 +32,8 @@ void ModelTransform::MultiplyAndBreakDownModelMatrix(const DirectX::XMMATRIX& ma
 	BrokenDownMatrix brokenDownMatrix = BreakDownMatrix(matrix);
 
 	{
-		XMVECTOR newOffset = XMLoadFloat3(&m_modelOffset) + XMLoadFloat3(&brokenDownMatrix.position);
+		XMVECTOR newOffset
+			= XMLoadFloat3(&m_modelOffset) + XMLoadFloat3(&brokenDownMatrix.position);
 
 		XMStoreFloat3(&m_modelOffset, newOffset);
 	}
@@ -103,11 +104,11 @@ ModelBundleBase& ModelBundleBase::AddModel(
 	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_baseModels));
 
 	m_modelNodeData.emplace_back(
-		MeshNodeData
+		ModelNodeData
 		{
 			.modelIndex   = modelIndex,
 			.meshIndex    = modelIndex,
-			.childrenData = MeshChildrenData{ .count = 0u, .startingIndex = 0u }
+			.childrenData = ModelNodeChildrenData{ .count = 0u, .startingIndex = 0u }
 		}
 	);
 
@@ -191,23 +192,22 @@ void ModelBundleBase::ChangeModelPipeline(
 
 void ModelBundleBase::SetMeshBundle(
 	std::uint32_t meshBundleIndex, float modelScale,
-	const std::vector<MeshNodeData>& newNodeData,
-	const std::vector<MeshPermanentDetails>& permanentDetails
+	const std::vector<SceneNodeData>& sceneNodeData,
+	const std::vector<MeshMaterialDetails>& meshMaterialDetails
 ) {
-	SetModels(modelScale, newNodeData);
+	SetModels(modelScale, sceneNodeData);
 
-	ChangeMeshBundle(meshBundleIndex, newNodeData, permanentDetails, false);
+	ChangeMeshBundle(meshBundleIndex, sceneNodeData, meshMaterialDetails, false);
 }
 
-void ModelBundleBase::SetModels(float modelScale, const std::vector<MeshNodeData>& nodeData)
-{
-	const size_t nodeCount = std::size(nodeData);
-
-	m_modelNodeData.resize(nodeCount);
+void ModelBundleBase::SetModels(
+	float modelScale, const std::vector<SceneNodeData>& sceneNodeData
+) {
+	const size_t nodeCount = std::size(sceneNodeData);
 
 	for (size_t index = 0u; index < nodeCount; ++index)
 	{
-		const MeshNodeData& currentNodeData = nodeData[index];
+		const ModelNodeData& currentNodeData = sceneNodeData[index].modelNodeData;
 
 		// Since any adjacent nodes without mesh will be skipped, the mesh index should
 		// be the same ast the model index.
@@ -252,40 +252,37 @@ void ModelBundleBase::SetMaterial(
 
 void ModelBundleBase::ChangeMeshBundle(
 	std::uint32_t meshBundleIndex,
-	const std::vector<MeshNodeData>& newNodeData,
-	const std::vector<MeshPermanentDetails>& permanentDetails,
+	const std::vector<SceneNodeData>& sceneNodeData,
+	const std::vector<MeshMaterialDetails>& meshMaterialDetails,
 	bool discardExistingTransformation
 ) {
-	m_meshBundleIndex         = meshBundleIndex;
-	const size_t newNodeCount = std::size(newNodeData);
+	m_meshBundleIndex = meshBundleIndex;
 
-	assert(!std::empty(m_baseModels) && "The models haven't been set yet.");
+	const size_t newNodeCount = std::size(sceneNodeData);
 
-	assert(
-		newNodeCount == std::size(m_modelNodeData)
-		&& "The new mesh count isn't the same as before."
-	);
+	if (std::empty(m_modelNodeData))
+		m_modelNodeData.resize(newNodeCount);
 
 	for (size_t index = 0u; index < newNodeCount; ++index)
 	{
-		const MeshNodeData& currentNodeData = newNodeData[index];
-		m_modelNodeData[index]              = currentNodeData;
+		const SceneNodeData& currentNodeData  = sceneNodeData[index];
+		const ModelNodeData& currentModelNode = currentNodeData.modelNodeData;
 
-		if (currentNodeData.HasMesh())
+		m_modelNodeData[index] = currentModelNode;
+
+		if (currentModelNode.HasMesh())
 		{
-			const size_t modelIndex = currentNodeData.modelIndex;
+			const size_t modelIndex = currentModelNode.modelIndex;
+			const size_t meshIndex  = currentModelNode.meshIndex;
 
-			std::shared_ptr<ModelBase>& model       = m_baseModels[modelIndex];
-			const MeshPermanentDetails& meshDetails = permanentDetails[modelIndex];
+			std::shared_ptr<ModelBase>& model = m_baseModels[modelIndex];
+			const MeshMaterialDetails& oneMeshMaterialDetails = meshMaterialDetails[meshIndex];
 
-			// Diffuse
-			const MeshMaterialDetails& meshMaterialDetails = meshDetails.materialDetails;
-
-			SetMaterial(model->GetMaterial(), meshMaterialDetails);
+			SetMaterial(model->GetMaterial(), oneMeshMaterialDetails);
 
 			// Set Pipeline
 			const size_t pipelineLocalIndex = GetLocalPipelineIndex(
-				meshMaterialDetails.pipelineIndex
+				oneMeshMaterialDetails.pipelineIndex
 			);
 
 			m_basePipelines[pipelineLocalIndex]->AddModelIndex(
@@ -298,7 +295,7 @@ void ModelBundleBase::ChangeMeshBundle(
 			if (discardExistingTransformation)
 				transform.ResetTransform();
 
-			transform.MultiplyAndBreakDownModelMatrix(meshDetails.worldMatrix);
+			transform.MultiplyAndBreakDownModelMatrix(currentNodeData.worldMatrix);
 		}
 	}
 }
@@ -306,7 +303,7 @@ void ModelBundleBase::ChangeMeshBundle(
 void ModelBundleBase::Rotate(
 	size_t nodeIndex, const DirectX::XMVECTOR& rotationAxis, float angleRadian
 ) noexcept {
-	MeshNodeData nodeData = m_modelNodeData[nodeIndex];
+	const ModelNodeData& nodeData = m_modelNodeData[nodeIndex];
 
 	if (nodeData.HasMesh())
 	{
@@ -315,7 +312,7 @@ void ModelBundleBase::Rotate(
 		model->GetTransform().Rotate(rotationAxis, angleRadian);
 	}
 
-	const MeshChildrenData& childrenData = nodeData.childrenData;
+	const ModelNodeChildrenData& childrenData = nodeData.childrenData;
 
 	if (childrenData.count)
 	{
@@ -329,7 +326,7 @@ void ModelBundleBase::Rotate(
 
 void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 {
-	MeshNodeData nodeData = m_modelNodeData[nodeIndex];
+	const ModelNodeData& nodeData = m_modelNodeData[nodeIndex];
 
 	if (nodeData.HasMesh())
 	{
@@ -338,7 +335,7 @@ void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 		model->GetTransform().Scale(scale);
 	}
 
-	const MeshChildrenData& childrenData = nodeData.childrenData;
+	const ModelNodeChildrenData& childrenData = nodeData.childrenData;
 
 	if (childrenData.count)
 	{
@@ -352,7 +349,7 @@ void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 
 void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offset) noexcept
 {
-	MeshNodeData nodeData = m_modelNodeData[nodeIndex];
+	const ModelNodeData& nodeData = m_modelNodeData[nodeIndex];
 
 	if (nodeData.HasMesh())
 	{
@@ -361,7 +358,7 @@ void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offse
 		model->GetTransform().MoveModel(offset);
 	}
 
-	const MeshChildrenData& childrenData = nodeData.childrenData;
+	const ModelNodeChildrenData& childrenData = nodeData.childrenData;
 
 	if (childrenData.count)
 	{
