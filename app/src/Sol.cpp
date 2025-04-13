@@ -216,7 +216,7 @@ void Sol::AddDefaultTexture(Renderer* renderer)
 		std::uint8_t g;
 		std::uint8_t b;
 		std::uint8_t a;
-	} pixel{ .r = 255u, .g = 255u, .b = 255u, . a = 1u };
+	} pixel{ .r = 255u, .g = 255u, .b = 255u, . a = 26u };
 	// If the default texture is used in an opaque mesh then the alpha value shouldn't matter.
 	// And on a transparent object, we would probably want it to be translucent.
 

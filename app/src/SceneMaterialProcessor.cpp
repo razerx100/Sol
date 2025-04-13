@@ -24,10 +24,10 @@ void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 		aiMaterial* material = materials[index];
 
 		// Material
-		aiColor4D diffuse{ 1.f, 1.f, 1.f, 1.f };
-		aiColor4D specular{ 1.f, 1.f, 1.f, 1.f };
-		aiColor4D ambient{ 1.f, 1.f, 1.f, 1.f };
-		float shininess = 1.f;
+		aiColor4D diffuse{ 0.8f, 0.8f, 0.8f, 0.8f };
+		aiColor4D specular{ 0.3f, 0.3f, 0.3f, 0.3f };
+		aiColor4D ambient{ 0.2f, 0.2f, 0.2f, 0.2f };
+		float shininess = 16.f;
 		float opacity   = 1.f;
 		aiString name{};
 
