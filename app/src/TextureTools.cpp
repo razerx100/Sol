@@ -2,7 +2,6 @@
 #include <array>
 #include <cassert>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 namespace TextureTool
@@ -47,7 +46,8 @@ namespace TextureTool
 		if (data != nullptr)
 		{
 			STexture texture{};
-			texture.data   = std::shared_ptr<stbi_uc>(data, [](stbi_uc* data) { stbi_image_free(data); });
+			texture.data   = std::shared_ptr<stbi_uc>(data, [](stbi_uc* data)
+				{ stbi_image_free(data); });
 			texture.width  = static_cast<std::uint32_t>(width);
 			texture.height = static_cast<std::uint32_t>(height);
 
