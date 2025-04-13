@@ -141,6 +141,18 @@ FetchContent_MakeAvailable(STB)
 
 message(STATUS "Fetched STB")
 
+message(STATUS "Fetching TinyImporters....")
+
+FetchContent_Declare(
+    TinyImporters
+    GIT_REPOSITORY https://github.com/razerx100/TinyImporters.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(TinyImporters)
+
+message(STATUS "Fetched TinyImporters")
+
 set(BUILD_SHARED_LIBS OFF)
 set(ASSIMP_BUILD_ZLIB ON)
 set(ASSIMP_BUILD_TESTS OFF)
@@ -164,7 +176,7 @@ unset(ASSIMP_INSTALL_PDB)
 message(STATUS "Fetched Assimp")
 
 target_link_libraries(SolApp PRIVATE
-    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::callisto razer::DxMath razer::stb assimp
+    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::callisto razer::DxMath razer::stb razer::TinyImporter assimp
 )
 
 add_dependencies(SolApp GLSL HLSL)

@@ -13,6 +13,7 @@ Manager module/executable which dynamically links to different modules to form a
 1. [DirectXMath](https://github.com/microsoft/DirectXMath).
 2. [stb](https://github.com/nothings/stb).
 3. [assimp](https://github.com/assimp/assimp).
+4. [tinygltf] (https://github.com/syoyo/tinygltf).
 
 ## Instructions
 Use the ADD_TEST_SOL cmake flag to add unit testing.
