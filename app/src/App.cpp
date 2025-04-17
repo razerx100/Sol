@@ -138,6 +138,18 @@ void App::Init()
 		assimpMeshBundleIndex = m_renderer->AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
 	}
 
+	/*
+	{
+		GLTFObject gltf{};
+
+		gltf.LoadFromFile("resources/meshes/shiba/scene.gltf");
+
+		MeshBundleTemporaryData meshData = SceneMeshProcessor1::GenerateTemporaryMeshData(
+			gltf, false
+		);
+	}
+	*/
+
 	cubeLightBundle = std::make_shared<ModelBundleBase>();
 
 	cubeLightBundle->AddModel(nonLightPSOIndex, 0.1f);

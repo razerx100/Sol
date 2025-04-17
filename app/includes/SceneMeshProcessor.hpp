@@ -4,6 +4,7 @@
 #include <vector>
 #include <SceneProcessor.hpp>
 #include <SolMeshUtility.hpp>
+#include <GLTFObject.hpp>
 
 class SceneMeshProcessor
 {
@@ -52,5 +53,11 @@ public:
 
 		return *this;
 	}
+};
+
+namespace SceneMeshProcessor1
+{
+	[[nodiscard]]
+	MeshBundleTemporaryData GenerateTemporaryMeshData(GLTFObject& gltfObj, bool meshShader);
 };
 #endif
