@@ -5,6 +5,67 @@
 #include <MeshletMaker.hpp>
 #include <DirectXPackedVector.h>
 
+// AABB Generator
+void AABBGenerator::ProcessVertex(const DirectX::XMFLOAT3& position) noexcept
+{
+	using namespace DirectX;
+
+	XMVECTOR vertexPosition = XMLoadFloat3(&position);
+
+	m_positiveAxes = XMVectorMax(vertexPosition, m_positiveAxes);
+	m_negativeAxes = XMVectorMin(vertexPosition, m_negativeAxes);
+}
+
+AxisAlignedBoundingBox AABBGenerator::GenerateAABB() const noexcept
+{
+	using namespace DirectX;
+
+	AxisAlignedBoundingBox aabb{};
+
+	XMFLOAT4& pAxes = aabb.maxAxes;
+	XMFLOAT4& nAxes = aabb.minAxes;
+
+	XMStoreFloat4(&pAxes, m_positiveAxes);
+	XMStoreFloat4(&nAxes, m_negativeAxes);
+
+	pAxes.w = 1.f;
+	nAxes.w = 1.f;
+
+	return aabb;
+}
+
+// Sphere BV Generator
+void SphereBVGenerator::SetCentre(const AxisAlignedBoundingBox& aabb) noexcept
+{
+	using namespace DirectX;
+
+	m_centre = (XMLoadFloat4(&aabb.maxAxes) + XMLoadFloat4(&aabb.minAxes)) * 0.5;
+}
+
+void SphereBVGenerator::ProcessVertex(const DirectX::XMFLOAT3& position) noexcept
+{
+	using namespace DirectX;
+
+	XMVECTOR vertexV  = XMLoadFloat3(&position);
+	XMVECTOR distance = XMVector3Length(m_centre - vertexV);
+
+	m_radius = std::max(m_radius, XMVectorGetX(distance));
+}
+
+SphereBoundingVolume SphereBVGenerator::GenerateBV() const noexcept
+{
+	using namespace DirectX;
+
+	// The first three components should be the centre. In the object space, it should be 0, 0.
+	SphereBoundingVolume sphereVolume{ { 0.f, 0.f, 0.f, 0.f } };
+
+	XMStoreFloat4(&sphereVolume.sphere, m_centre);
+
+	sphereVolume.sphere.w = m_radius;
+
+	return sphereVolume;
+}
+
 AxisAlignedBoundingBox GetAABB(const aiAABB& aiAABB) noexcept
 {
 	AxisAlignedBoundingBox aabb
@@ -20,118 +81,52 @@ AxisAlignedBoundingBox GenerateAABB(const std::vector<Vertex>& vertices) noexcep
 {
 	using namespace DirectX;
 
-	AxisAlignedBoundingBox aabb{};
+	AABBGenerator aabbGen{};
 
-	XMVECTOR pAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
-	XMVECTOR nAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
+	for (const Vertex& vertex : vertices)
+		aabbGen.ProcessVertex(vertex.position);
 
-	for (const auto& vertex : vertices)
-	{
-		XMVECTOR vertexPosition = XMLoadFloat3(&vertex.position);
-
-		pAxesV = XMVectorMax(vertexPosition, pAxesV);
-		nAxesV = XMVectorMin(vertexPosition, nAxesV);
-	}
-
-	XMFLOAT4& pAxes = aabb.maxAxes;
-	XMFLOAT4& nAxes = aabb.minAxes;
-
-	XMStoreFloat4(&pAxes, pAxesV);
-	XMStoreFloat4(&nAxes, nAxesV);
-
-	pAxes.w = 1.f;
-	nAxes.w = 1.f;
-
-	return aabb;
+	return aabbGen.GenerateAABB();
 }
 
 AxisAlignedBoundingBox GenerateAABB(const std::vector<DirectX::XMFLOAT3>& positions) noexcept
 {
 	using namespace DirectX;
 
-	AxisAlignedBoundingBox aabb{};
+	AABBGenerator aabbGen{};
 
-	XMVECTOR pAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
-	XMVECTOR nAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
+	for (const DirectX::XMFLOAT3& position : positions)
+		aabbGen.ProcessVertex(position);
 
-	for (const auto& position : positions)
-	{
-		XMVECTOR vertexPosition = XMLoadFloat3(&position);
-
-		pAxesV = XMVectorMax(vertexPosition, pAxesV);
-		nAxesV = XMVectorMin(vertexPosition, nAxesV);
-	}
-
-	XMFLOAT4& pAxes = aabb.maxAxes;
-	XMFLOAT4& nAxes = aabb.minAxes;
-
-	XMStoreFloat4(&pAxes, pAxesV);
-	XMStoreFloat4(&nAxes, nAxesV);
-
-	pAxes.w = 1.f;
-	nAxes.w = 1.f;
-
-	return aabb;
+	return aabbGen.GenerateAABB();
 }
 
 SphereBoundingVolume GenerateSphereBV(const std::vector<Vertex>& vertices) noexcept
 {
 	using namespace DirectX;
 
-	// The first three components should be the centre. In the object space, it should be 0, 0.
-	SphereBoundingVolume sphereVolume{ { 0.f, 0.f, 0.f, 0.f } };
+	SphereBVGenerator sphereBVGen{};
 
-	// This function would probably be used for a model and so its centre should be at the origin.
-	// But just to be sure.
-	AxisAlignedBoundingBox aabb = GenerateAABB(vertices);
+	sphereBVGen.SetCentre(GenerateAABB(vertices));
 
-	const XMVECTOR centre       = (XMLoadFloat4(&aabb.maxAxes) + XMLoadFloat4(&aabb.minAxes)) * 0.5;
+	for (const Vertex& vertex : vertices)
+		sphereBVGen.ProcessVertex(vertex.position);
 
-	XMStoreFloat4(&sphereVolume.sphere, centre);
-
-	float radius = 0.f;
-
-	for (const auto& vertex : vertices)
-	{
-		XMVECTOR vertexV  = XMLoadFloat3(&vertex.position);
-		XMVECTOR distance = XMVector3Length(centre - vertexV);
-
-		radius = std::max(radius, XMVectorGetX(distance));
-	}
-
-	sphereVolume.sphere.w = radius;
-
-	return sphereVolume;
+	return sphereBVGen.GenerateBV();
 }
 
 SphereBoundingVolume GenerateSphereBV(const std::vector<DirectX::XMFLOAT3>& positions) noexcept
 {
 	using namespace DirectX;
 
-	// The first three components should be the centre. In the object space, it should be 0, 0.
-	SphereBoundingVolume sphereVolume{ { 0.f, 0.f, 0.f, 0.f } };
+	SphereBVGenerator sphereBVGen{};
 
-	// This function would probably be used for a model and so its centre should be at the origin.
-	// But just to be sure.
-	AxisAlignedBoundingBox aabb = GenerateAABB(positions);
+	sphereBVGen.SetCentre(GenerateAABB(positions));
 
-	const XMVECTOR centre       = (XMLoadFloat4(&aabb.maxAxes) + XMLoadFloat4(&aabb.minAxes)) * 0.5;
+	for (const DirectX::XMFLOAT3& position : positions)
+		sphereBVGen.ProcessVertex(position);
 
-	XMStoreFloat4(&sphereVolume.sphere, centre);
-
-	float radius = 0.f;
-
-	for (const auto& position : positions)
-	{
-		XMVECTOR vertexV  = XMLoadFloat3(&position);
-		XMVECTOR distance = XMVector3Length(centre - vertexV);
-
-		radius = std::max(radius, XMVectorGetX(distance));
-	}
-
-	sphereVolume.sphere.w = radius;
-
-	return sphereVolume;
+	return sphereBVGen.GenerateBV();
 }
 
 // Vertex component getters.
@@ -153,33 +148,14 @@ static AxisAlignedBoundingBox _generateAABB(
 ) noexcept {
 	using namespace DirectX;
 
-	AxisAlignedBoundingBox aabb{};
-
-	XMVECTOR pAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
-	XMVECTOR nAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
+	AABBGenerator aabbGen{};
 
 	const auto vertexEnd = static_cast<size_t>(meshlet.indexOffset + meshlet.indexCount);
 
 	for (size_t index = meshlet.indexOffset; index < vertexEnd; ++index)
-	{
-		XMFLOAT3 vertexPositionF = GetPosition(vertices[vertexIndices[index]]);
+		aabbGen.ProcessVertex(GetPosition(vertices[vertexIndices[index]]));
 
-		XMVECTOR vertexPosition = XMLoadFloat3(&vertexPositionF);
-
-		pAxesV = XMVectorMax(vertexPosition, pAxesV);
-		nAxesV = XMVectorMin(vertexPosition, nAxesV);
-	}
-
-	XMFLOAT4& pAxes = aabb.maxAxes;
-	XMFLOAT4& nAxes = aabb.minAxes;
-
-	XMStoreFloat4(&pAxes, pAxesV);
-	XMStoreFloat4(&nAxes, nAxesV);
-
-	pAxes.w = 1.f;
-	nAxes.w = 1.f;
-
-	return aabb;
+	return aabbGen.GenerateAABB();
 }
 
 AxisAlignedBoundingBox GenerateAABB(
@@ -203,34 +179,16 @@ static SphereBoundingVolume _generateSphereBV(
 ) noexcept {
 	using namespace DirectX;
 
-	// The first three components should be the centre. In the object space, it should be 0, 0.
-	SphereBoundingVolume sphereVolume{ { 0.f, 0.f, 0.f, 0.f } };
+	SphereBVGenerator sphereBVGen{};
 
-	// This function would be for meshlets and the origin would be the centre of the model but
-	// not the meshlets.
-	AxisAlignedBoundingBox aabb = _generateAABB(vertices, vertexIndices, meshlet);
-
-	const XMVECTOR centre       = (XMLoadFloat4(&aabb.maxAxes) + XMLoadFloat4(&aabb.minAxes)) * 0.5;
-
-	XMStoreFloat4(&sphereVolume.sphere, centre);
-
-	float radius = 0.f;
+	sphereBVGen.SetCentre(_generateAABB(vertices, vertexIndices, meshlet));
 
 	const auto vertexEnd = static_cast<size_t>(meshlet.indexOffset + meshlet.indexCount);
 
 	for (size_t index = meshlet.indexOffset; index < vertexEnd; ++index)
-	{
-		XMFLOAT3 vertexPositionF = GetPosition(vertices[vertexIndices[index]]);
+		sphereBVGen.ProcessVertex(GetPosition(vertices[vertexIndices[index]]));
 
-		XMVECTOR vertexV  = XMLoadFloat3(&vertexPositionF);
-		XMVECTOR distance = XMVector3Length(centre - vertexV);
-
-		radius = std::max(radius, XMVectorGetX(distance));
-	}
-
-	sphereVolume.sphere.w = radius;
-
-	return sphereVolume;
+	return sphereBVGen.GenerateBV();
 }
 
 SphereBoundingVolume GenerateSphereBV(
@@ -270,7 +228,8 @@ ClusterNormalCone GenerateNormalCone(
 		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
-		const Vertex& primVertex1 = vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
+		const Vertex& primVertex1
+			= vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
 		// All of the vertex normals of a triangle should point towards the same direction.
 
@@ -298,7 +257,8 @@ ClusterNormalCone GenerateNormalCone(
 		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
-		const Vertex& primVertex1 = vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
+		const Vertex& primVertex1
+			= vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
 		// All of the vertex normals of a triangle should point towards the same direction.
 
@@ -333,7 +293,8 @@ ClusterNormalCone GenerateNormalCone(
 		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
 			MeshletMaker::UnpackPrim(packedPrimIndices);
 
-		const Vertex& primVertex1 = vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
+		const Vertex& primVertex1
+			= vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
 		XMVECTOR centre = XMVectorSubtract(spatialCentre, XMLoadFloat3(&primVertex1.position));
 		XMVECTOR normal = XMLoadFloat3(&primVertex1.normal);
@@ -418,8 +379,8 @@ ClusterNormalCone GenerateNormalCone(
 		// All of the vertex normals of a triangle should point towards the same direction.
 
 		{
-			// Calculate the AABB of the normals, so we can calculate the centre. Not using the other
-			// functions, as the parameters would need to be different.
+			// Calculate the AABB of the normals, so we can calculate the centre. Not using the
+			// other functions, as the parameters would need to be different.
 			XMVECTOR normalV = XMLoadFloat3(&primNormal1);
 
 			positiveAxesV = XMVectorMax(normalV, positiveAxesV);
@@ -491,7 +452,9 @@ ClusterNormalCone GenerateNormalCone(
 		const float dotCentre = XMVectorGetX(XMVector3Dot(centre, normal));
 		const float dotNormal = XMVectorGetX(XMVector3Dot(normalCentre, normal));
 
-		assert(dotNormal > 0.f && "The dot normal should be bigger than the Minimum dot from above.");
+		assert(
+			dotNormal > 0.f && "The dot normal should be bigger than the Minimum dot from above."
+		);
 
 		// The normal is a unit. Since we want to know how far the centre is, we are
 		// dividing.

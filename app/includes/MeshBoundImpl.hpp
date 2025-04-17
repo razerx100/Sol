@@ -5,6 +5,43 @@
 #include <ConversionUtilities.hpp>
 #include <assimp/aabb.h>
 
+class AABBGenerator
+{
+public:
+	AABBGenerator()
+		: m_positiveAxes{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 1.f) },
+		m_negativeAxes{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 1.f) }
+	{}
+
+	void ProcessVertex(const DirectX::XMFLOAT3& position) noexcept;
+
+	[[nodiscard]]
+	AxisAlignedBoundingBox GenerateAABB() const noexcept;
+
+private:
+	DirectX::XMVECTOR m_positiveAxes;
+	DirectX::XMVECTOR m_negativeAxes;
+};
+
+class SphereBVGenerator
+{
+public:
+	SphereBVGenerator()
+		: m_centre{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f) }, m_radius{ 0.f }
+	{}
+
+	void SetCentre(const AxisAlignedBoundingBox& aabb) noexcept;
+
+	void ProcessVertex(const DirectX::XMFLOAT3& position) noexcept;
+
+	[[nodiscard]]
+	SphereBoundingVolume GenerateBV() const noexcept;
+
+private:
+	DirectX::XMVECTOR m_centre;
+	float             m_radius;
+};
+
 [[nodiscard]]
 AxisAlignedBoundingBox GenerateAABB(const std::vector<DirectX::XMFLOAT3>& positions) noexcept;
 [[nodiscard]]
