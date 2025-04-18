@@ -372,8 +372,10 @@ namespace SceneMeshProcessor1
 		MeshTemporaryDetailsMS meshDetailsMS
 		{
 			// Should be all triangles.
+			.meshletOffset
+				= static_cast<std::uint32_t>(std::size(meshBundleTempData.meshletDetails)),
 			.indexOffset  = static_cast<std::uint32_t>(std::size(meshBundleTempData.indices)),
-			.vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTempData.vertices))
+			.vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTempData.vertices)),
 		};
 
 		AxisAlignedBoundingBox aabb{};
@@ -393,12 +395,14 @@ namespace SceneMeshProcessor1
 			const tinygltf::Accessor& indicesAccessor = accessors[primitive.indices];
 
 			{
-				const size_t indexCount = indicesAccessor.count;
+				const size_t indexCount   = indicesAccessor.count;
+				const size_t vertexOffset = meshDetailsMS.vertexOffset;
 
 				assert(
 					indicesAccessor.type == TINYGLTF_TYPE_SCALAR && "Indices type isn't scalar."
 				);
 
+				std::vector<Vertex>& vertices               = meshBundleTempData.vertices;
 				std::vector<std::uint32_t>& indices         = meshBundleTempData.indices;
 				std::vector<std::uint32_t>& primIndices     = meshBundleTempData.primIndices;
 				std::vector<MeshletDetails>& meshletDetails = meshBundleTempData.meshletDetails;
@@ -427,6 +431,8 @@ namespace SceneMeshProcessor1
 
 					MeshletGenerator meshletGen{ indices, primIndices };
 
+					AABBGenerator spatialAabbGen{};
+
 					for (size_t index = 0u; index + 2u < indexCount; index += 3u)
 					{
 						MeshletGenerator::PrimTriangle triangle
@@ -436,19 +442,43 @@ namespace SceneMeshProcessor1
 							.vertex2 = srcIndexData[index + 2u]
 						};
 
+						spatialAabbGen.ProcessVertex(
+							vertices[vertexOffset + triangle.vertex0].position
+						);
+						spatialAabbGen.ProcessVertex(
+							vertices[vertexOffset + triangle.vertex1].position
+						);
+						spatialAabbGen.ProcessVertex(
+							vertices[vertexOffset + triangle.vertex2].position
+						);
+
 						const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
 
 						if (isMeshletProcessed)
 						{
+							SphereBVGenerator sphereBVGen{};
+
+							sphereBVGen.SetCentre(spatialAabbGen.GenerateAABB());
+
+							const size_t indexOffset       = meshDetailsMS.indexOffset;
+							const size_t currentIndexCount = std::size(indices);
+
+							for (size_t index1 = indexOffset; index1 < currentIndexCount; ++index1)
+								sphereBVGen.ProcessVertex(
+									vertices[vertexOffset + indices[index1]].position
+								);
+
 							meshletDetails.emplace_back(
 								MeshletDetails
 								{
-									.meshlet = meshletGen.GenerateMeshlet()
+									.meshlet = meshletGen.GenerateMeshlet(),
+									.sphereB = sphereBVGen.GenerateBV()
 								}
 							);
 
+							spatialAabbGen = AABBGenerator{};
 							// Need to do this to reset the offsets and the vertex index map.
-							meshletGen = MeshletGenerator{ indices, primIndices };
+							meshletGen     = MeshletGenerator{ indices, primIndices };
 						}
 					}
 				}
