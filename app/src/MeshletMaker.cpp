@@ -1,29 +1,150 @@
 #include <MeshletMaker.hpp>
 
-// Meshlet Maker
-MeshletMaker::MeshletMaker()
-	: m_tempVertexIndices{}, m_tempPrimitiveIndices{}, m_vertexIndices{}, m_primitiveIndices{},
-	m_meshletDetails{}
+// Meshlet Generator
+MeshletGenerator::MeshletGenerator(
+	std::vector<std::uint32_t>& vertexIndices,
+	std::vector<std::uint32_t>& primitiveIndices
+) : m_vertexIndices{ vertexIndices }, m_vertexIndexOffset{ std::size(vertexIndices) },
+	m_primitiveIndices{ primitiveIndices },
+	m_primitiveIndexOffset{ std::size(primitiveIndices) }, m_primitiveIndexMap{}
 {
-	m_tempVertexIndices.reserve(s_meshletVertexLimit);
-	m_tempPrimitiveIndices.reserve(s_meshletPrimitiveLimit);
+	m_vertexIndices.reserve(m_vertexIndexOffset + s_meshletVertexLimit);
+	m_primitiveIndices.reserve(m_primitiveIndexOffset + s_meshletPrimitiveLimit);
 }
+
+size_t MeshletGenerator::GetMeshletVertexIndexCount() const noexcept
+{
+	// Since there will be the previous vertex indices from other meshlets.
+	return std::size(m_vertexIndices) - m_vertexIndexOffset;
+}
+
+size_t MeshletGenerator::GetMeshletPrimitiveIndexCount() const noexcept
+{
+	// Since there will be the previous primtive indices from other meshlets.
+	return std::size(m_primitiveIndices) - m_primitiveIndexOffset;
+}
+
+bool MeshletGenerator::ProcessPrimitive(const PrimTriangle& primitive)
+{
+	const size_t vertexIndexCount    = GetMeshletVertexIndexCount();
+	const size_t primitiveIndexCount = GetMeshletPrimitiveIndexCount();
+
+	const size_t addableVertexIndexCount = GetAddableVertexIndexCount(primitive);
+
+	const size_t newVertexIndexCount    = vertexIndexCount + addableVertexIndexCount;
+	const size_t newPrimitiveIndexCount = primitiveIndexCount + 1u;
+
+	const bool hasMeshletLimitReached
+		= newVertexIndexCount > s_meshletVertexLimit
+		|| newPrimitiveIndexCount > s_meshletPrimitiveLimit;
+
+	if (hasMeshletLimitReached)
+		return false;
+
+	// The prim indices are the local vertex indices. As in, they are local to the meshlet.
+	// We are assuming each primitive would be a triangle. Each prim index actually has the
+	// three local vertex indices which create that triangle. So, actually the primIndices
+	// contain the indices of the primitive/triangles for that meshlet.
+
+	// And the vertex indices are the unique vertex indices. With the duplicates
+	// removed. The indices of the primitives index into the vertexIndices and then that index
+	// is used to find the actual vertex.
+	const std::uint32_t primIndexOne   = GetOrAddPrimitiveIndex(primitive.vertex0);
+	const std::uint32_t primIndexTwo   = GetOrAddPrimitiveIndex(primitive.vertex1);
+	const std::uint32_t primIndexThree = GetOrAddPrimitiveIndex(primitive.vertex2);
+
+	PrimitiveIndicesUnpacked unpackedPrim
+	{
+		.firstIndex  = primIndexOne,
+		.secondIndex = primIndexTwo,
+		.thirdIndex  = primIndexThree
+	};
+
+	std::uint32_t packedPrim = 0u;
+
+	static_assert(
+		sizeof(PrimitiveIndicesUnpacked) == sizeof(std::uint32_t),
+		"The size of Primitive Indices Unpacked and U32 should be the same."
+	);
+
+	memcpy(&packedPrim, &unpackedPrim, sizeof(std::uint32_t));
+
+	m_primitiveIndices.emplace_back(packedPrim);
+
+	return true;
+}
+
+Meshlet MeshletGenerator::GenerateMeshlet() const noexcept
+{
+	const auto meshletVertexIndexCount = static_cast<std::uint32_t>(GetMeshletVertexIndexCount());
+	const auto meshletPrimitiveIndexCount
+		= static_cast<std::uint32_t>(GetMeshletPrimitiveIndexCount());
+
+	return Meshlet
+		{
+			.indexCount      = meshletVertexIndexCount,
+			.indexOffset     = static_cast<std::uint32_t>(m_vertexIndexOffset),
+			.primitiveCount  = meshletPrimitiveIndexCount,
+			.primitiveOffset = static_cast<std::uint32_t>(m_primitiveIndexOffset)
+		};
+}
+
+bool MeshletGenerator::IsInMap(std::uint32_t vertexIndex) const noexcept
+{
+	return m_primitiveIndexMap.find(vertexIndex) != std::end(m_primitiveIndexMap);
+}
+
+size_t MeshletGenerator::GetAddableVertexIndexCount(
+	const PrimTriangle& primitive
+) const noexcept {
+	size_t addableIndexCount = 0u;
+
+	if (IsInMap(primitive.vertex0))
+		++addableIndexCount;
+
+	if (IsInMap(primitive.vertex1))
+		++addableIndexCount;
+
+	if (IsInMap(primitive.vertex2))
+		++addableIndexCount;
+
+	return addableIndexCount;
+}
+
+std::uint32_t MeshletGenerator::GetOrAddPrimitiveIndex(std::uint32_t vertexIndex) noexcept
+{
+	if (!IsInMap(vertexIndex))
+	{
+		m_primitiveIndexMap.emplace(
+			vertexIndex, static_cast<std::uint32_t>(GetMeshletVertexIndexCount())
+		);
+		m_vertexIndices.emplace_back(vertexIndex);
+	}
+
+	return m_primitiveIndexMap[vertexIndex];
+}
+
+MeshletGenerator::PrimitiveIndicesUnpacked MeshletGenerator::UnpackPrim(
+	std::uint32_t packedIndices
+) noexcept {
+	PrimitiveIndicesUnpacked unpackedIndices{ 0u, 0u, 0u };
+
+	memcpy(&unpackedIndices, &packedIndices, sizeof(std::uint32_t));
+
+	return unpackedIndices;
+}
+
+// Meshlet Maker
+MeshletMaker::MeshletMaker() : m_vertexIndices{}, m_primitiveIndices{}, m_meshletDetails{} {}
 
 void MeshletMaker::GenerateMeshlets(const Mesh& mesh) noexcept
 {
-	const std::vector<std::uint32_t>& indices = mesh.indices;
-
-	for (size_t start = 0u; start < std::size(indices);)
-		start = MakeMeshlet(indices, start);
+	MakeMeshlets(mesh.indices);
 }
 
 void MeshletMaker::GenerateMeshlets(aiMesh const* mesh) noexcept
 {
-	size_t faceCount = mesh->mNumFaces;
-	aiFace* faces    = mesh->mFaces;
-
-	for (size_t start = 0u; start < faceCount;)
-		start = MakeMeshlet(faces, faceCount, start);
+	MakeMeshlets(mesh->mFaces, mesh->mNumFaces);
 }
 
 void MeshletMaker::LoadVertexIndices(std::vector<std::uint32_t>& vertexIndices) noexcept
@@ -40,219 +161,71 @@ MeshExtraForMesh MeshletMaker::GenerateExtraMeshData() noexcept
 	};
 }
 
-bool MeshletMaker::IsInMap(
-	const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
-	std::uint32_t vIndex
-) noexcept {
-	return vertexIndicesMap.find(vIndex) != std::end(vertexIndicesMap);
-}
-
-std::uint32_t MeshletMaker::GetPrimIndex(
-	std::uint32_t vIndex, std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
-	std::vector<std::uint32_t>& vertexIndices
-) noexcept {
-	if (!IsInMap(vertexIndicesMap, vIndex))
-	{
-		vertexIndicesMap.emplace(
-			vIndex, static_cast<std::uint32_t>(std::size(vertexIndices))
-		);
-		vertexIndices.emplace_back(vIndex);
-	}
-
-	return vertexIndicesMap[vIndex];
-}
-
-std::uint32_t MeshletMaker::GetExtraIndexCount(
-	const std::unordered_map<std::uint32_t, std::uint32_t>& vertexIndicesMap,
-	std::uint32_t primIndex1, std::uint32_t primIndex2, std::uint32_t primIndex3
-) noexcept {
-	std::uint32_t extraIndexCount = 0u;
-
-	if (!IsInMap(vertexIndicesMap, primIndex1))
-		++extraIndexCount;
-
-	if (!IsInMap(vertexIndicesMap, primIndex2))
-		++extraIndexCount;
-
-	if (!IsInMap(vertexIndicesMap, primIndex3))
-		++extraIndexCount;
-
-	return extraIndexCount;
-}
-
-size_t MeshletMaker::MakeMeshlet(const std::vector<std::uint32_t>& indices, size_t startingIndex) noexcept
+void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexcept
 {
-	const size_t meshletIndexLimit = startingIndex + s_meshletPrimitiveLimit * 3u;
+	MeshletGenerator meshletGen{ m_vertexIndices, m_primitiveIndices };
 
-	// I would love to make this map into static or something but that isn't going to work. As least
-	// in this approach. A meshlet should have 64 vertices and 126 primitives. The problem arises when
-	// there is a huge mesh with million vertices, what if a triangle is formed by for example if the
-	// 1st, 1M th, and the 999th vertices decide to make a triangle, it would be really hard to define
-	// the vertex offset with the limit 64, if there is only a single instance of those vertex indices
-	// So, making a new duplicate and adding it at the end would solve the issue. So, can't keep the map
-	// from any previous meshlets. And since the unordered map is a linked_list, there is no point in
-	// preserving it like a vector, as the allocation can't be reused. Maybe I can use the flatmap when it
-	// is implemented on MSVC.
-	std::unordered_map<std::uint32_t, std::uint32_t> vertexIndicesMap{};
+	const size_t indexCount = std::size(indices);
 
-	m_tempVertexIndices.clear();
-	m_tempPrimitiveIndices.clear();
-
-	size_t indexOffset                   = startingIndex;
-	constexpr size_t triangleVertexCount = 3u;
-
-	for (; indexOffset + 2u < std::size(indices) && indexOffset < meshletIndexLimit;
-		indexOffset += triangleVertexCount)
+	for (size_t index = 0u; index + 2u < indexCount; index += 3u)
 	{
-		const std::uint32_t vIndex1 = indices[indexOffset];
-		const std::uint32_t vIndex2 = indices[indexOffset + 1u];
-		const std::uint32_t vIndex3 = indices[indexOffset + 2u];
-
-		const auto vIndexCount = static_cast<std::uint32_t>(std::size(m_tempVertexIndices));
-
-		const std::uint32_t couldBeVIndexCount = vIndexCount + GetExtraIndexCount(
-			vertexIndicesMap, vIndex1, vIndex2, vIndex3
-		);
-
-		if (couldBeVIndexCount > s_meshletVertexLimit)
-			break;
-
-		// The prim indices are the local vertex indices. As in, they are local to the meshlet.
-		// We are assuming each primitive would be a triangle. Each prim index actually has the
-		// three local vertex indices which create that triangle. So, actually the primIndices
-		// contain the indices of the primitive/triangles for that meshlet.
-
-		// And the vertexIndices are the unique vertex indices. With the duplicates
-		// removed. The indices of the primitives index into the vertexIndices and then that index
-		// is used to find the actual vertex.
-		const std::uint32_t primIndexOne   = GetPrimIndex(vIndex1, vertexIndicesMap, m_tempVertexIndices);
-		const std::uint32_t primIndexTwo   = GetPrimIndex(vIndex2, vertexIndicesMap, m_tempVertexIndices);
-		const std::uint32_t primIndexThree = GetPrimIndex(vIndex3, vertexIndicesMap, m_tempVertexIndices);
-
-		PrimitiveIndicesUnpacked unpackedPrim
+		MeshletGenerator::PrimTriangle triangle
 		{
-			.firstIndex  = primIndexOne,
-			.secondIndex = primIndexTwo,
-			.thirdIndex  = primIndexThree
+			.vertex0 = indices[index + 0u],
+			.vertex1 = indices[index + 1u],
+			.vertex2 = indices[index + 2u]
 		};
 
-		std::uint32_t packedPrim = 0u;
+		const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
 
-		memcpy(&packedPrim, &unpackedPrim, sizeof(std::uint32_t));
-
-		m_tempPrimitiveIndices.emplace_back(packedPrim);
-	}
-
-	const auto vertexOffset    = static_cast<std::uint32_t>(std::size(m_vertexIndices));
-	const auto primitiveOffset = static_cast<std::uint32_t>(std::size(m_primitiveIndices));
-
-	m_meshletDetails.emplace_back(
-		MeshletDetails
+		if (isMeshletProcessed)
 		{
-			.meshlet = Meshlet
-			{
-				.indexCount      = static_cast<std::uint32_t>(std::size(m_tempVertexIndices)),
-				.indexOffset     = static_cast<std::uint32_t>(vertexOffset),
-				.primitiveCount  = static_cast<std::uint32_t>(std::size(m_tempPrimitiveIndices)),
-				.primitiveOffset = static_cast<std::uint32_t>(primitiveOffset)
-			}
+			m_meshletDetails.emplace_back(
+				MeshletDetails
+				{
+					.meshlet = meshletGen.GenerateMeshlet()
+				}
+			);
+
+			meshletGen = MeshletGenerator{ m_vertexIndices, m_primitiveIndices };
 		}
-	);
-
-	MemcpyIntoVector(m_vertexIndices, m_tempVertexIndices);
-	MemcpyIntoVector(m_primitiveIndices, m_tempPrimitiveIndices);
-
-	return indexOffset;
+	}
 }
 
-size_t MeshletMaker::MakeMeshlet(aiFace* faces, size_t faceCount, size_t startingIndex) noexcept
+void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 {
-	const size_t meshletIndexLimit = startingIndex + s_meshletPrimitiveLimit;
+	MeshletGenerator meshletGen{ m_vertexIndices, m_primitiveIndices };
 
-	// I would love to make this map into static or something but that isn't going to work. As least
-	// in this approach. A meshlet should have 64 vertices and 126 primitives. The problem arises when
-	// there is a huge mesh with million vertices, what if a triangle is formed by for example if the
-	// 1st, 1M th, and the 999th vertices decide to make a triangle, it would be really hard to define
-	// the vertex offset with the limit 64, if there is only a single instance of those vertex indices
-	// So, making a new duplicate and adding it at the end would solve the issue. So, can't keep the map
-	// from any previous meshlets. And since the unordered map is a linked_list, there is no point in
-	// preserving it like a vector, as the allocation can't be reused. Maybe I can use the flatmap when it
-	// is implemented on MSVC.
-	std::unordered_map<std::uint32_t, std::uint32_t> vertexIndicesMap{};
-
-	m_tempVertexIndices.clear();
-	m_tempPrimitiveIndices.clear();
-
-	size_t indexOffset = startingIndex;
-
-	for (;indexOffset < faceCount && indexOffset < meshletIndexLimit; ++indexOffset)
+	for (size_t index = 0u; index < faceCount; ++index)
 	{
-		const aiFace& face = faces[indexOffset];
+		const aiFace& face = faces[index];
 
-		// Each face should be a triangle.
-		const std::uint32_t vIndex1 = face.mIndices[0];
-		const std::uint32_t vIndex2 = face.mIndices[1];
-		const std::uint32_t vIndex3 = face.mIndices[2];
-
-		const auto vIndexCount = static_cast<std::uint32_t>(std::size(m_tempVertexIndices));
-
-		const std::uint32_t couldBeVIndexCount = vIndexCount + GetExtraIndexCount(
-			vertexIndicesMap, vIndex1, vIndex2, vIndex3
-		);
-
-		if (couldBeVIndexCount > s_meshletVertexLimit)
-			break;
-
-		// The prim indices are the local vertex indices. As in, they are local to the meshlet.
-		// We are assuming each primitive would be a triangle. Each prim index actually has the
-		// three local vertex indices which create that triangle. So, actually the primIndices
-		// contain the indices of the primitive/triangles for that meshlet.
-
-		// And the vertexIndices are the unique vertex indices. With the duplicates
-		// removed. The indices of the primitives index into the vertexIndices and then that index
-		// is used to find the actual vertex.
-		const std::uint32_t primIndexOne   = GetPrimIndex(vIndex1, vertexIndicesMap, m_tempVertexIndices);
-		const std::uint32_t primIndexTwo   = GetPrimIndex(vIndex2, vertexIndicesMap, m_tempVertexIndices);
-		const std::uint32_t primIndexThree = GetPrimIndex(vIndex3, vertexIndicesMap, m_tempVertexIndices);
-
-		PrimitiveIndicesUnpacked unpackedPrim
+		MeshletGenerator::PrimTriangle triangle
 		{
-			.firstIndex  = primIndexOne,
-			.secondIndex = primIndexTwo,
-			.thirdIndex  = primIndexThree
+			.vertex0 = face.mIndices[0],
+			.vertex1 = face.mIndices[1],
+			.vertex2 = face.mIndices[2]
 		};
 
-		std::uint32_t packedPrim = 0u;
+		const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
 
-		memcpy(&packedPrim, &unpackedPrim, sizeof(std::uint32_t));
-
-		m_tempPrimitiveIndices.emplace_back(packedPrim);
-	}
-
-	const auto localVertexOffset = static_cast<std::uint32_t>(std::size(m_vertexIndices));
-	const auto primitiveOffset   = static_cast<std::uint32_t>(std::size(m_primitiveIndices));
-
-	m_meshletDetails.emplace_back(
-		MeshletDetails
+		if (isMeshletProcessed)
 		{
-			.meshlet = Meshlet
-			{
-				.indexCount      = static_cast<std::uint32_t>(std::size(m_tempVertexIndices)),
-				.indexOffset     = static_cast<std::uint32_t>(localVertexOffset),
-				.primitiveCount  = static_cast<std::uint32_t>(std::size(m_tempPrimitiveIndices)),
-				.primitiveOffset = static_cast<std::uint32_t>(primitiveOffset)
-			}
+			m_meshletDetails.emplace_back(
+				MeshletDetails
+				{
+					.meshlet = meshletGen.GenerateMeshlet()
+				}
+			);
+
+			meshletGen = MeshletGenerator{ m_vertexIndices, m_primitiveIndices };
 		}
-	);
-
-	MemcpyIntoVector(m_vertexIndices, m_tempVertexIndices);
-	MemcpyIntoVector(m_primitiveIndices, m_tempPrimitiveIndices);
-
-	return indexOffset;
+	}
 }
 
-MeshletMaker::PrimitiveIndicesUnpacked MeshletMaker::UnpackPrim(std::uint32_t packedIndices) noexcept
-{
+MeshletMaker::PrimitiveIndicesUnpacked MeshletMaker::UnpackPrim(
+	std::uint32_t packedIndices
+) noexcept {
 	PrimitiveIndicesUnpacked unpackedIndices{ 0u, 0u, 0u };
 
 	memcpy(&unpackedIndices, &packedIndices, sizeof(std::uint32_t));

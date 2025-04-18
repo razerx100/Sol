@@ -218,8 +218,7 @@ ClusterNormalCone GenerateNormalCone(
 	const auto primOffset  = static_cast<size_t>(meshlet.primitiveOffset);
 	const auto primCount   = static_cast<size_t>(meshlet.primitiveCount);
 
-	XMVECTOR positiveAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
-	XMVECTOR negativeAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
+	AABBGenerator normalAABB{};
 
 	for (size_t index = 0u; index < primCount; ++index)
 	{
@@ -233,19 +232,16 @@ ClusterNormalCone GenerateNormalCone(
 
 		// All of the vertex normals of a triangle should point towards the same direction.
 
-		{
-			// Calculate the AABB of the normals, so we can calculate the centre. Not using the other
-			// functions, as the parameters would need to be different.
-			XMVECTOR normalV = XMLoadFloat3(&primVertex1.normal);
-
-			positiveAxesV = XMVectorMax(normalV, positiveAxesV);
-			negativeAxesV = XMVectorMin(normalV, negativeAxesV);
-		}
+		// Calculate the AABB of the normals, so we can calculate the centre. Not using the other
+		// functions, as the parameters would need to be different.
+		normalAABB.ProcessVertex(primVertex1.normal);
 	}
 
 	// The centre of the normals should be the cone normal.
-	XMVECTOR normalCentre = XMVector3Normalize((positiveAxesV + negativeAxesV) * 0.5f);
-	normalCentre          = XMVectorSetW(normalCentre, 0.f);
+	XMVECTOR normalCentre = XMVector3Normalize(
+		(normalAABB.m_positiveAxes + normalAABB.m_negativeAxes) * 0.5f
+	);
+	normalCentre = XMVectorSetW(normalCentre, 0.f);
 
 	// Check if the Cone is degenerate.
 	XMVECTOR minimumDot = XMVectorSet(1.f, 1.f, 1.f, 1.f);

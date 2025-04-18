@@ -5,9 +5,8 @@
 #include <ConversionUtilities.hpp>
 #include <assimp/aabb.h>
 
-class AABBGenerator
+struct AABBGenerator
 {
-public:
 	AABBGenerator()
 		: m_positiveAxes{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 1.f) },
 		m_negativeAxes{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 1.f) }
@@ -18,14 +17,12 @@ public:
 	[[nodiscard]]
 	AxisAlignedBoundingBox GenerateAABB() const noexcept;
 
-private:
 	DirectX::XMVECTOR m_positiveAxes;
 	DirectX::XMVECTOR m_negativeAxes;
 };
 
-class SphereBVGenerator
+struct SphereBVGenerator
 {
-public:
 	SphereBVGenerator()
 		: m_centre{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f) }, m_radius{ 0.f }
 	{}
@@ -37,7 +34,6 @@ public:
 	[[nodiscard]]
 	SphereBoundingVolume GenerateBV() const noexcept;
 
-private:
 	DirectX::XMVECTOR m_centre;
 	float             m_radius;
 };

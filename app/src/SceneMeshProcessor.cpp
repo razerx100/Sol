@@ -365,8 +365,104 @@ namespace SceneMeshProcessor1
 	}
 
 	static void ProcessMeshMS(
-		const tinygltf::Mesh& mesh, MeshBundleTemporaryData& meshBundleTempData
+		const tinygltf::Mesh& mesh, const std::vector<tinygltf::Accessor>& accessors,
+		const std::vector<tinygltf::BufferView>& bufferViews,
+		const std::vector<tinygltf::Buffer>& buffers, MeshBundleTemporaryData& meshBundleTempData
 	) {
+		MeshTemporaryDetailsMS meshDetailsMS
+		{
+			// Should be all triangles.
+			.indexOffset  = static_cast<std::uint32_t>(std::size(meshBundleTempData.indices)),
+			.vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTempData.vertices))
+		};
+
+		AxisAlignedBoundingBox aabb{};
+
+		for (const tinygltf::Primitive& primitive : mesh.primitives)
+		{
+			// For now only process Triangles.
+			if (primitive.mode != TINYGLTF_MODE_TRIANGLES)
+				continue;
+
+			// Process the vertices first, as we would want to generate Bounding Volumes
+			// with them.
+			ProcessVertices(
+				primitive, accessors, bufferViews, buffers, meshBundleTempData, aabb
+			);
+
+			const tinygltf::Accessor& indicesAccessor = accessors[primitive.indices];
+
+			{
+				const size_t indexCount = indicesAccessor.count;
+
+				assert(
+					indicesAccessor.type == TINYGLTF_TYPE_SCALAR && "Indices type isn't scalar."
+				);
+
+				std::vector<std::uint32_t>& indices         = meshBundleTempData.indices;
+				std::vector<std::uint32_t>& primIndices     = meshBundleTempData.primIndices;
+				std::vector<MeshletDetails>& meshletDetails = meshBundleTempData.meshletDetails;
+
+				{
+					const size_t currentMeshletDetailsCount = std::size(meshletDetails);
+					const size_t potentialNewMeshletDetailsCount
+						= indexCount / MeshletGenerator::s_meshletVertexLimit + 1u;
+
+					meshletDetails.reserve(
+						currentMeshletDetailsCount + potentialNewMeshletDetailsCount
+					);
+				}
+
+				const tinygltf::BufferView& indexBufferView
+					= bufferViews[indicesAccessor.bufferView];
+
+				const tinygltf::Buffer& indexBuffer = buffers[indexBufferView.buffer];
+
+				if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+				{
+					auto srcIndexData = reinterpret_cast<std::uint32_t const*>(
+						std::data(indexBuffer.data) + indexBufferView.byteOffset
+						+ indicesAccessor.byteOffset
+					);
+
+					MeshletGenerator meshletGen{ indices, primIndices };
+
+					for (size_t index = 0u; index + 2u < indexCount; index += 3u)
+					{
+						MeshletGenerator::PrimTriangle triangle
+						{
+							.vertex0 = srcIndexData[index + 0u],
+							.vertex1 = srcIndexData[index + 1u],
+							.vertex2 = srcIndexData[index + 2u]
+						};
+
+						const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
+
+						if (isMeshletProcessed)
+						{
+							meshletDetails.emplace_back(
+								MeshletDetails
+								{
+									.meshlet = meshletGen.GenerateMeshlet()
+								}
+							);
+
+							// Need to do this to reset the offsets and the vertex index map.
+							meshletGen = MeshletGenerator{ indices, primIndices };
+						}
+					}
+				}
+			}
+
+			/*
+			// Hopefully, there can't be multiple instances of the same mode?
+			*/
+		}
+
+		meshDetailsMS.aabb = aabb;
+
+		meshBundleTempData.bundleDetails.meshTemporaryDetailsMS.emplace_back(meshDetailsMS);
+
 		/*
 		MeshletMaker meshletMaker{};
 
@@ -427,7 +523,10 @@ namespace SceneMeshProcessor1
 		meshBundleTempData.bundleDetails.meshTemporaryDetailsMS.reserve(meshCount);
 
 		for (size_t index = 0u; index < meshCount; ++index)
-			ProcessMeshMS(gltf.meshes[index], meshBundleTempData);
+			ProcessMeshMS(
+				gltf.meshes[index], gltf.accessors, gltf.bufferViews, gltf.buffers,
+				meshBundleTempData
+			);
 	}
 
 	static void ProcessMeshVS(
