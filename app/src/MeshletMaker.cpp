@@ -173,6 +173,8 @@ void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexc
 
 	const size_t indexCount = std::size(indices);
 
+	bool isMeshletLimitReached = false;
+
 	for (size_t index = 0u; index + 2u < indexCount; index += 3u)
 	{
 		MeshletGenerator::PrimTriangle triangle
@@ -182,9 +184,9 @@ void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexc
 			.vertex2 = indices[index + 2u]
 		};
 
-		const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
+		isMeshletLimitReached = !meshletGen.ProcessPrimitive(triangle);
 
-		if (isMeshletProcessed)
+		if (isMeshletLimitReached)
 		{
 			m_meshletDetails.emplace_back(
 				MeshletDetails
@@ -197,11 +199,21 @@ void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexc
 			meshletGen = MeshletGenerator{ m_vertexIndices, m_primitiveIndices };
 		}
 	}
+
+	if (!isMeshletLimitReached)
+		m_meshletDetails.emplace_back(
+			MeshletDetails
+			{
+				.meshlet = meshletGen.GenerateMeshlet(0u, 0u)
+			}
+		);
 }
 
 void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 {
 	MeshletGenerator meshletGen{ m_vertexIndices, m_primitiveIndices };
+
+	bool isMeshletLimitReached = false;
 
 	for (size_t index = 0u; index < faceCount; ++index)
 	{
@@ -214,9 +226,9 @@ void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 			.vertex2 = face.mIndices[2]
 		};
 
-		const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
+		isMeshletLimitReached = !meshletGen.ProcessPrimitive(triangle);
 
-		if (isMeshletProcessed)
+		if (isMeshletLimitReached)
 		{
 			m_meshletDetails.emplace_back(
 				MeshletDetails
@@ -229,6 +241,14 @@ void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 			meshletGen = MeshletGenerator{ m_vertexIndices, m_primitiveIndices };
 		}
 	}
+
+	if (!isMeshletLimitReached)
+		m_meshletDetails.emplace_back(
+			MeshletDetails
+			{
+				.meshlet = meshletGen.GenerateMeshlet(0u, 0u)
+			}
+		);
 }
 
 MeshletMaker::PrimitiveIndicesUnpacked MeshletMaker::UnpackPrim(

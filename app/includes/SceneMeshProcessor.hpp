@@ -58,6 +58,6 @@ public:
 namespace SceneMeshProcessor1
 {
 	[[nodiscard]]
-	MeshBundleTemporaryData GenerateTemporaryMeshData(GLTFObject& gltfObj, bool meshShader);
+	MeshBundleTemporaryData GenerateTemporaryMeshData(const GLTFObject& gltfObj, bool meshShader);
 };
 #endif

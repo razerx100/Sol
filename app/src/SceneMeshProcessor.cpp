@@ -200,11 +200,12 @@ namespace SceneMeshProcessor1
 {
 	template<std::integral T>
 	static void CopyIndices(
-		std::vector<std::uint32_t>& indices,
-		const tinygltf::Accessor& indicesAccessor, const tinygltf::BufferView& indexBufferView,
-		const tinygltf::Buffer& indexBuffer, size_t oldOffset, size_t indexCount,
-		std::uint32_t vertexOffset
+		std::vector<std::uint32_t>& indices, const tinygltf::Accessor& indicesAccessor,
+		const tinygltf::BufferView& indexBufferView, const tinygltf::Buffer& indexBuffer,
+		size_t oldOffset, std::uint32_t vertexOffset
 	) {
+		const size_t indexCount = indicesAccessor.count;
+
 		auto srcIndexData = reinterpret_cast<T const*>(
 			std::data(indexBuffer.data) + indexBufferView.byteOffset + indicesAccessor.byteOffset
 		);
@@ -247,19 +248,165 @@ namespace SceneMeshProcessor1
 		}
 	}
 
+	// Returns true if a meshlet is ready to be processed.
 	[[nodiscard]]
-	static std::uint32_t ProcessIndices(
+	static bool ProcessTriangle(
+		std::vector<Vertex>& vertices, size_t vertexOffset,
+		const MeshletGenerator::PrimTriangle& triangle, MeshletGenerator& meshletGen,
+		AABBGenerator& meshletSpatialAabbGen, AABBGenerator& meshletNormalAabbGen
+	) {
+		const Vertex& vertex0 = vertices[vertexOffset + triangle.vertex0];
+		const Vertex& vertex1 = vertices[vertexOffset + triangle.vertex1];
+		const Vertex& vertex2 = vertices[vertexOffset + triangle.vertex2];
+
+		meshletSpatialAabbGen.ProcessAxes(vertex0.position);
+		meshletSpatialAabbGen.ProcessAxes(vertex1.position);
+		meshletSpatialAabbGen.ProcessAxes(vertex2.position);
+
+		meshletNormalAabbGen.ProcessAxes(vertex0.normal);
+		meshletNormalAabbGen.ProcessAxes(vertex1.normal);
+		meshletNormalAabbGen.ProcessAxes(vertex2.normal);
+
+		return !meshletGen.ProcessPrimitive(triangle);
+	}
+
+	[[nodiscard]]
+	static MeshletDetails ProcessMeshlet(
+		const std::vector<Vertex>& vertices, const std::vector<std::uint32_t>& indices,
+		size_t meshVertexOffset, size_t meshIndexOffset, const Meshlet& meshlet,
+		const AxisAlignedBoundingBox& meshletSpatialAabb,
+		const AxisAlignedBoundingBox& meshletNormalAabb
+	) {
+		SphereBVGenerator spatialSphereBVGen{};
+
+		spatialSphereBVGen.SetCentre(meshletSpatialAabb);
+
+		NormalConeGenerator normalConeGen{};
+
+		// We don't need to wait for the radius computation. We only need
+		// the centre.
+		normalConeGen.SetSpatialCentre(spatialSphereBVGen.GenerateBV());
+
+		{
+			SphereBVGenerator normalSphereBVGen{};
+
+			normalSphereBVGen.SetCentre(meshletNormalAabb);
+
+			normalConeGen.SetNormalCentre(normalSphereBVGen.GenerateBV());
+		}
+
+		const size_t meshletIndexOffset = meshlet.indexOffset;
+		const size_t indexOffset        = meshIndexOffset + meshletIndexOffset;
+
+		const size_t meshletIndexCount  = meshlet.indexCount;
+
+		// Going through all the vertices of the meshlet.
+		for (size_t index = indexOffset; index < meshletIndexCount; ++index)
+		{
+			const Vertex& vertex = vertices[meshVertexOffset + indices[index]];
+
+			spatialSphereBVGen.ProcessRadius(vertex.position);
+
+			normalConeGen.ProcessNormalMinimumDot(vertex.normal);
+			normalConeGen.ProcessApexOffset(vertex.position, vertex.normal);
+		}
+
+		return MeshletDetails
+		{
+			.meshlet    = meshlet,
+			.sphereB    = spatialSphereBVGen.GenerateBV(),
+			.coneNormal = normalConeGen.GenerateNormalCone()
+		};
+	}
+
+	template<std::integral T>
+	static void ProcessIndicesMS(
+		const MeshTemporaryDetailsMS& meshDetails, std::vector<Vertex>& vertices,
+		std::vector<std::uint32_t>& indices, std::vector<std::uint32_t>& primIndices,
+		std::vector<MeshletDetails>& meshletDetails, const tinygltf::Accessor& indicesAccessor,
+		const tinygltf::BufferView& indexBufferView, const tinygltf::Buffer& indexBuffer
+	) {
+		const size_t indexCount = indicesAccessor.count;
+
+		auto srcIndexData = reinterpret_cast<T const*>(
+			std::data(indexBuffer.data) + indexBufferView.byteOffset
+			+ indicesAccessor.byteOffset
+		);
+
+		MeshletGenerator meshletGen{ indices, primIndices };
+
+		AABBGenerator meshletSpatialAabbGen{};
+		AABBGenerator meshletNormalAabbGen{};
+
+		bool isMeshletLimitReached = false;
+
+		for (size_t index = 0u; index + 2u < indexCount; index += 3u)
+		{
+			MeshletGenerator::PrimTriangle triangle
+			{
+				.vertex0 = srcIndexData[index + 0u],
+				.vertex1 = srcIndexData[index + 1u],
+				.vertex2 = srcIndexData[index + 2u]
+			};
+
+			isMeshletLimitReached = ProcessTriangle(
+				vertices, meshDetails.vertexOffset, triangle, meshletGen, meshletSpatialAabbGen,
+				meshletNormalAabbGen
+			);
+
+			if (isMeshletLimitReached)
+			{
+				// Since the indices containers are per mesh bundle here, we must
+				// set the correct mesh offsets.
+				const Meshlet meshlet = meshletGen.GenerateMeshlet(
+					meshDetails.indexOffset, meshDetails.primitiveOffset
+				);
+
+				meshletDetails.emplace_back(
+					ProcessMeshlet(
+						vertices, indices,
+						meshDetails.vertexOffset, meshDetails.indexOffset,
+						meshlet, meshletSpatialAabbGen.GenerateAABB(),
+						meshletNormalAabbGen.GenerateAABB()
+					)
+				);
+
+				// Reset the per meshlet generators.
+				meshletSpatialAabbGen = AABBGenerator{};
+				meshletNormalAabbGen  = AABBGenerator{};
+				meshletGen            = MeshletGenerator{ indices, primIndices };
+			}
+		}
+
+		// If the meshlet limit wasn't reached on the last iteration, create a meshlet with
+		// the currently processed vertices.
+		if (!isMeshletLimitReached)
+		{
+			const Meshlet meshlet = meshletGen.GenerateMeshlet(
+				meshDetails.indexOffset, meshDetails.primitiveOffset
+			);
+
+			meshletDetails.emplace_back(
+				ProcessMeshlet(
+					vertices, indices,
+					meshDetails.vertexOffset, meshDetails.indexOffset,
+					meshlet, meshletSpatialAabbGen.GenerateAABB(),
+					meshletNormalAabbGen.GenerateAABB()
+				)
+			);
+		}
+	}
+
+	static void ProcessIndices(
 		std::uint32_t vertexOffset, const tinygltf::Accessor& indicesAccessor,
 		const std::vector<tinygltf::BufferView>& bufferViews,
-		const std::vector<tinygltf::Buffer>& buffers, MeshBundleTemporaryData& meshBundleTempData
+		const std::vector<tinygltf::Buffer>& buffers, std::vector<std::uint32_t>& indices
 	) {
 		const size_t indexCount = indicesAccessor.count;
 
 		assert(indicesAccessor.type == TINYGLTF_TYPE_SCALAR && "Indices type isn't scalar.");
 
-		std::vector<std::uint32_t>& indices = meshBundleTempData.indices;
-
-		const size_t oldIndexCount          = std::size(indices);
+		const size_t oldIndexCount = std::size(indices);
 
 		indices.resize(oldIndexCount + indexCount);
 
@@ -269,27 +416,69 @@ namespace SceneMeshProcessor1
 
 		if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
 			CopyIndices<std::uint32_t>(
-				indices, indicesAccessor, indexBufferView, indexBuffer, oldIndexCount, indexCount,
+				indices, indicesAccessor, indexBufferView, indexBuffer, oldIndexCount,
 				vertexOffset
 			);
 		else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
 			CopyIndices<std::uint16_t>(
-				indices, indicesAccessor, indexBufferView, indexBuffer, oldIndexCount, indexCount,
+				indices, indicesAccessor, indexBufferView, indexBuffer, oldIndexCount,
 				vertexOffset
 			);
 		else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE)
 			CopyIndices<std::uint8_t>(
-				indices, indicesAccessor, indexBufferView, indexBuffer, oldIndexCount, indexCount,
+				indices, indicesAccessor, indexBufferView, indexBuffer, oldIndexCount,
 				vertexOffset
 			);
+	}
 
-		return static_cast<std::uint32_t>(indexCount);
+	static void ProcessIndicesMS(
+		const MeshTemporaryDetailsMS& meshDetails, const tinygltf::Accessor& indicesAccessor,
+		const std::vector<tinygltf::BufferView>& bufferViews,
+		const std::vector<tinygltf::Buffer>& buffers, std::vector<Vertex>& vertices,
+		std::vector<std::uint32_t>& indices, std::vector<std::uint32_t>& primIndices,
+		std::vector<MeshletDetails>& meshletDetails
+	) {
+		const size_t indexCount = indicesAccessor.count;
+
+		assert(
+			indicesAccessor.type == TINYGLTF_TYPE_SCALAR && "Indices type isn't scalar."
+		);
+
+		{
+			const size_t currentMeshletDetailsCount = std::size(meshletDetails);
+			const size_t potentialNewMeshletDetailsCount
+				= indexCount / MeshletGenerator::s_meshletVertexLimit + 1u;
+
+			meshletDetails.reserve(
+				currentMeshletDetailsCount + potentialNewMeshletDetailsCount
+			);
+		}
+
+		const tinygltf::BufferView& indexBufferView = bufferViews[indicesAccessor.bufferView];
+
+		const tinygltf::Buffer& indexBuffer         = buffers[indexBufferView.buffer];
+
+		if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+			ProcessIndicesMS<std::uint32_t>(
+				meshDetails, vertices, indices, primIndices, meshletDetails, indicesAccessor,
+				indexBufferView, indexBuffer
+			);
+		else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+			ProcessIndicesMS<std::uint16_t>(
+				meshDetails, vertices, indices, primIndices, meshletDetails, indicesAccessor,
+				indexBufferView, indexBuffer
+			);
+		else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE)
+			ProcessIndicesMS<std::uint8_t>(
+				meshDetails, vertices, indices, primIndices, meshletDetails, indicesAccessor,
+				indexBufferView, indexBuffer
+			);
 	}
 
 	static void ProcessVertices(
 		const tinygltf::Primitive& primitive, const std::vector<tinygltf::Accessor>& accessors,
 		const std::vector<tinygltf::BufferView>& bufferViews,
-		const std::vector<tinygltf::Buffer>& buffers, MeshBundleTemporaryData& meshBundleTempData,
+		const std::vector<tinygltf::Buffer>& buffers, std::vector<Vertex>& vertices,
 		AxisAlignedBoundingBox& aabb
 	) {
 		auto positionIndex = std::numeric_limits<size_t>::max();
@@ -310,16 +499,15 @@ namespace SceneMeshProcessor1
 
 		const tinygltf::Accessor& positionAccessor = accessors[positionIndex];
 
-		const size_t vertexCount      = positionAccessor.count;
+		const size_t vertexCount    = positionAccessor.count;
+		const size_t oldVertexCount = std::size(vertices);
 
-		std::vector<Vertex>& vertices = meshBundleTempData.vertices;
-
-		const size_t oldVertexCount   = std::size(vertices);
-
+		// Since the normal vector can't be zero. As that doesn't define any directions.
+		// Setting the default normal to face negative Z.
 		Vertex vertex
 		{
 			.position = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
-			.normal   = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
+			.normal   = DirectX::XMFLOAT3{ 0.f, 0.f, -1.f },
 			.uv       = DirectX::XMFLOAT2{ 0.f, 0.f }
 		};
 
@@ -367,13 +555,11 @@ namespace SceneMeshProcessor1
 	static void ProcessMeshMS(
 		const tinygltf::Mesh& mesh, const std::vector<tinygltf::Accessor>& accessors,
 		const std::vector<tinygltf::BufferView>& bufferViews,
-		const std::vector<tinygltf::Buffer>& buffers, MeshBundleTemporaryData& meshBundleTempData
+		const std::vector<tinygltf::Buffer>& buffers, std::vector<Vertex>& vertices,
+		std::vector<std::uint32_t>& indices, std::vector<std::uint32_t>& primIndices,
+		std::vector<MeshletDetails>& meshletDetails,
+		std::vector<MeshTemporaryDetailsMS>& meshDetails
 	) {
-		std::vector<Vertex>& vertices               = meshBundleTempData.vertices;
-		std::vector<std::uint32_t>& indices         = meshBundleTempData.indices;
-		std::vector<std::uint32_t>& primIndices     = meshBundleTempData.primIndices;
-		std::vector<MeshletDetails>& meshletDetails = meshBundleTempData.meshletDetails;
-
 		MeshTemporaryDetailsMS meshDetailsMS
 		{
 			.meshletOffset   = static_cast<std::uint32_t>(std::size(meshletDetails)),
@@ -392,131 +578,14 @@ namespace SceneMeshProcessor1
 
 			// Process the vertices first, as we would want to generate Bounding Volumes
 			// with them.
-			ProcessVertices(
-				primitive, accessors, bufferViews, buffers, meshBundleTempData, meshAabb
-			);
+			ProcessVertices(primitive, accessors, bufferViews, buffers, vertices, meshAabb);
 
 			const tinygltf::Accessor& indicesAccessor = accessors[primitive.indices];
 
-			{
-				const size_t indexCount   = indicesAccessor.count;
-				const size_t vertexOffset = meshDetailsMS.vertexOffset;
-
-				assert(
-					indicesAccessor.type == TINYGLTF_TYPE_SCALAR && "Indices type isn't scalar."
-				);
-
-				{
-					const size_t currentMeshletDetailsCount = std::size(meshletDetails);
-					const size_t potentialNewMeshletDetailsCount
-						= indexCount / MeshletGenerator::s_meshletVertexLimit + 1u;
-
-					meshletDetails.reserve(
-						currentMeshletDetailsCount + potentialNewMeshletDetailsCount
-					);
-				}
-
-				const tinygltf::BufferView& indexBufferView
-					= bufferViews[indicesAccessor.bufferView];
-
-				const tinygltf::Buffer& indexBuffer = buffers[indexBufferView.buffer];
-
-				if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
-				{
-					auto srcIndexData = reinterpret_cast<std::uint32_t const*>(
-						std::data(indexBuffer.data) + indexBufferView.byteOffset
-						+ indicesAccessor.byteOffset
-					);
-
-					MeshletGenerator meshletGen{ indices, primIndices };
-
-					AABBGenerator spatialAabbGen{};
-					AABBGenerator normalAabbGen{};
-
-					for (size_t index = 0u; index + 2u < indexCount; index += 3u)
-					{
-						MeshletGenerator::PrimTriangle triangle
-						{
-							.vertex0 = srcIndexData[index + 0u],
-							.vertex1 = srcIndexData[index + 1u],
-							.vertex2 = srcIndexData[index + 2u]
-						};
-
-						const Vertex& vertex0 = vertices[vertexOffset + triangle.vertex0];
-						const Vertex& vertex1 = vertices[vertexOffset + triangle.vertex1];
-						const Vertex& vertex2 = vertices[vertexOffset + triangle.vertex2];
-
-						spatialAabbGen.ProcessAxes(vertex0.position);
-						spatialAabbGen.ProcessAxes(vertex1.position);
-						spatialAabbGen.ProcessAxes(vertex2.position);
-
-						normalAabbGen.ProcessAxes(vertex0.normal);
-						normalAabbGen.ProcessAxes(vertex1.normal);
-						normalAabbGen.ProcessAxes(vertex2.normal);
-
-						const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
-
-						if (isMeshletProcessed)
-						{
-							SphereBVGenerator spatialSphereBVGen{};
-
-							spatialSphereBVGen.SetCentre(spatialAabbGen.GenerateAABB());
-
-							NormalConeGenerator normalConeGen{};
-
-							// We don't need to wait for the radius computation. We only need
-							// the centre.
-							normalConeGen.SetSpatialCentre(spatialSphereBVGen.GenerateBV());
-
-							{
-								SphereBVGenerator normalSphereBVGen{};
-
-								normalSphereBVGen.SetCentre(normalAabbGen.GenerateAABB());
-
-								normalConeGen.SetNormalCentre(normalSphereBVGen.GenerateBV());
-							}
-
-							// Since the indices containers are per mesh bundle here, we must
-							// set the correct mesh offsets.
-							const Meshlet meshlet = meshletGen.GenerateMeshlet(
-								meshDetailsMS.indexOffset, meshDetailsMS.primitiveOffset
-							);
-
-							const size_t meshIndexOffset    = meshDetailsMS.indexOffset;
-							const size_t meshletIndexOffset = meshlet.indexOffset;
-							const size_t indexOffset        = meshIndexOffset + meshletIndexOffset;
-
-							const size_t meshletIndexCount  = meshlet.indexCount;
-
-							// Going through all the vertices of the meshlet.
-							for (size_t index1 = indexOffset; index1 < meshletIndexCount; ++index1)
-							{
-								const Vertex& vertex = vertices[vertexOffset + indices[index1]];
-
-								spatialSphereBVGen.ProcessRadius(vertex.position);
-
-								normalConeGen.ProcessNormalMinimumDot(vertex.normal);
-								normalConeGen.ProcessApexOffset(vertex.position, vertex.normal);
-							}
-
-							meshletDetails.emplace_back(
-								MeshletDetails
-								{
-									.meshlet    = meshlet,
-									.sphereB    = spatialSphereBVGen.GenerateBV(),
-									.coneNormal = normalConeGen.GenerateNormalCone()
-								}
-							);
-
-							spatialAabbGen = AABBGenerator{};
-							normalAabbGen  = AABBGenerator{};
-							// Need to do this to reset the offsets and the vertex index map.
-							meshletGen     = MeshletGenerator{ indices, primIndices };
-						}
-					}
-				}
-			}
-
+			ProcessIndicesMS(
+				meshDetailsMS, indicesAccessor, bufferViews, buffers, vertices, indices,
+				primIndices, meshletDetails
+			);
 			// Hopefully, there can't be multiple instances of the same mode?
 		}
 
@@ -524,7 +593,7 @@ namespace SceneMeshProcessor1
 		meshDetailsMS.meshletCount
 			= static_cast<std::uint32_t>(std::size(meshletDetails) - meshDetailsMS.meshletOffset);
 
-		meshBundleTempData.bundleDetails.meshTemporaryDetailsMS.emplace_back(meshDetailsMS);
+		meshDetails.emplace_back(meshDetailsMS);
 	}
 
 	static void GenerateMeshShaderData(
@@ -532,24 +601,33 @@ namespace SceneMeshProcessor1
 	) {
 		const size_t meshCount = std::size(gltf.meshes);
 
-		meshBundleTempData.bundleDetails.meshTemporaryDetailsMS.reserve(meshCount);
+		std::vector<Vertex>& vertices               = meshBundleTempData.vertices;
+		std::vector<std::uint32_t>& indices         = meshBundleTempData.indices;
+		std::vector<std::uint32_t>& primIndices     = meshBundleTempData.primIndices;
+		std::vector<MeshletDetails>& meshletDetails = meshBundleTempData.meshletDetails;
+
+		std::vector<MeshTemporaryDetailsMS>& meshDetails
+			= meshBundleTempData.bundleDetails.meshTemporaryDetailsMS;
+
+		meshDetails.reserve(meshCount);
 
 		for (size_t index = 0u; index < meshCount; ++index)
 			ProcessMeshMS(
 				gltf.meshes[index], gltf.accessors, gltf.bufferViews, gltf.buffers,
-				meshBundleTempData
+				vertices, indices, primIndices, meshletDetails, meshDetails
 			);
 	}
 
 	static void ProcessMeshVS(
 		const tinygltf::Mesh& mesh, const std::vector<tinygltf::Accessor>& accessors,
 		const std::vector<tinygltf::BufferView>& bufferViews,
-		const std::vector<tinygltf::Buffer>& buffers, MeshBundleTemporaryData& meshBundleTempData
+		const std::vector<tinygltf::Buffer>& buffers, std::vector<Vertex>& vertices,
+		std::vector<std::uint32_t>& indices, std::vector<MeshTemporaryDetailsVS>& meshDetails
 	) {
 		MeshTemporaryDetailsVS meshDetailsVS
 		{
 			// Should be all triangles.
-			.indexOffset = static_cast<std::uint32_t>(std::size(meshBundleTempData.indices)),
+			.indexOffset = static_cast<std::uint32_t>(std::size(indices)),
 		};
 
 		AxisAlignedBoundingBox aabb{};
@@ -562,23 +640,20 @@ namespace SceneMeshProcessor1
 
 			const tinygltf::Accessor& indicesAccessor = accessors[primitive.indices];
 
-			const auto vertexOffset = static_cast<std::uint32_t>(
-				std::size(meshBundleTempData.vertices)
-			);
+			const auto vertexOffset = static_cast<std::uint32_t>(std::size(vertices));
 
-			meshDetailsVS.indexCount = ProcessIndices(
-				vertexOffset, indicesAccessor, bufferViews, buffers, meshBundleTempData
-			);
+			ProcessIndices(vertexOffset, indicesAccessor, bufferViews, buffers, indices);
 
-			ProcessVertices(
-				primitive, accessors, bufferViews, buffers, meshBundleTempData, aabb
-			);
+			ProcessVertices(primitive, accessors, bufferViews, buffers, vertices, aabb);
 			// Hopefully, there can't be multiple instances of the same mode?
 		}
 
 		meshDetailsVS.aabb = aabb;
 
-		meshBundleTempData.bundleDetails.meshTemporaryDetailsVS.emplace_back(meshDetailsVS);
+		meshDetailsVS.indexCount
+			= static_cast<std::uint32_t>(std::size(indices) - meshDetailsVS.indexOffset);
+
+		meshDetails.emplace_back(meshDetailsVS);
 	}
 
 	static void GenerateVertexShaderData(
@@ -586,16 +661,22 @@ namespace SceneMeshProcessor1
 	) {
 		const size_t meshCount = std::size(gltf.meshes);
 
-		meshBundleTempData.bundleDetails.meshTemporaryDetailsVS.reserve(meshCount);
+		std::vector<Vertex>& vertices       = meshBundleTempData.vertices;
+		std::vector<std::uint32_t>& indices = meshBundleTempData.indices;
+
+		std::vector<MeshTemporaryDetailsVS>& meshDetails
+			= meshBundleTempData.bundleDetails.meshTemporaryDetailsVS;
+
+		meshDetails.reserve(meshCount);
 
 		for (size_t index = 0u; index < meshCount; ++index)
 			ProcessMeshVS(
 				gltf.meshes[index], gltf.accessors, gltf.bufferViews, gltf.buffers,
-				meshBundleTempData
+				vertices, indices, meshDetails
 			);
 	}
 
-	MeshBundleTemporaryData GenerateTemporaryMeshData(GLTFObject& gltfObj, bool meshShader)
+	MeshBundleTemporaryData GenerateTemporaryMeshData(const GLTFObject& gltfObj, bool meshShader)
 	{
 		MeshBundleTemporaryData meshBundleTempData{};
 
