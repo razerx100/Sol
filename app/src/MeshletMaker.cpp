@@ -103,13 +103,13 @@ size_t MeshletGenerator::GetAddableVertexIndexCount(
 ) const noexcept {
 	size_t addableIndexCount = 0u;
 
-	if (IsInMap(primitive.vertex0))
+	if (!IsInMap(primitive.vertex0))
 		++addableIndexCount;
 
-	if (IsInMap(primitive.vertex1))
+	if (!IsInMap(primitive.vertex1))
 		++addableIndexCount;
 
-	if (IsInMap(primitive.vertex2))
+	if (!IsInMap(primitive.vertex2))
 		++addableIndexCount;
 
 	return addableIndexCount;
