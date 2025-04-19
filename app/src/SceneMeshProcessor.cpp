@@ -250,7 +250,7 @@ namespace SceneMeshProcessor1
 
 	// Returns true if a meshlet is ready to be processed.
 	[[nodiscard]]
-	static bool ProcessTriangle(
+	static void ProcessTriangle(
 		std::vector<Vertex>& vertices, size_t vertexOffset,
 		const MeshletGenerator::PrimTriangle& triangle, MeshletGenerator& meshletGen,
 		AABBGenerator& meshletSpatialAabbGen, AABBGenerator& meshletNormalAabbGen
@@ -267,7 +267,7 @@ namespace SceneMeshProcessor1
 		meshletNormalAabbGen.ProcessAxes(vertex1.normal);
 		meshletNormalAabbGen.ProcessAxes(vertex2.normal);
 
-		return !meshletGen.ProcessPrimitive(triangle);
+		meshletGen.ProcessPrimitive(triangle);
 	}
 
 	[[nodiscard]]
@@ -349,12 +349,7 @@ namespace SceneMeshProcessor1
 				.vertex2 = srcIndexData[index + 2u]
 			};
 
-			isMeshletLimitReached = ProcessTriangle(
-				vertices, meshDetails.vertexOffset, triangle, meshletGen, meshletSpatialAabbGen,
-				meshletNormalAabbGen
-			);
-
-			if (isMeshletLimitReached)
+			if (meshletGen.IsMeshletLimitReached(triangle))
 			{
 				// Since the indices containers are per mesh bundle here, we must
 				// set the correct mesh offsets.
@@ -376,6 +371,11 @@ namespace SceneMeshProcessor1
 				meshletNormalAabbGen  = AABBGenerator{};
 				meshletGen            = MeshletGenerator{ indices, primIndices };
 			}
+
+			ProcessTriangle(
+				vertices, meshDetails.vertexOffset, triangle, meshletGen, meshletSpatialAabbGen,
+				meshletNormalAabbGen
+			);
 		}
 
 		// If the meshlet limit wasn't reached on the last iteration, create a meshlet with

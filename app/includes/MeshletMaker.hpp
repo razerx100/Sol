@@ -31,10 +31,7 @@ public:
 		std::vector<std::uint32_t>& primitiveIndices
 	);
 
-	// Returns false if either the vertex or primitive limit is reached. Should create
-	// the meshlet at that point and start processing a new meshlet.
-	[[nodiscard]]
-	bool ProcessPrimitive(const PrimTriangle& primitive);
+	void ProcessPrimitive(const PrimTriangle& primitive);
 
 	// The indices containers could be of the mesh bundle. In that case, we need to pass
 	// in the offsets for the current mesh to get the correct index offsets for the meshlet.
@@ -42,6 +39,9 @@ public:
 	Meshlet GenerateMeshlet(
 		size_t vertexIndexMeshOffset, size_t primitiveIndexMeshOffset
 	) const noexcept;
+
+	[[nodiscard]]
+	bool IsMeshletLimitReached(const PrimTriangle& primitive) const noexcept;
 
 	[[nodiscard]]
 	static PrimitiveIndicesUnpacked UnpackPrim(std::uint32_t packedIndices) noexcept;

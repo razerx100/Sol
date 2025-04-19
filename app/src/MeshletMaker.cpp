@@ -26,7 +26,8 @@ size_t MeshletGenerator::GetMeshletPrimitiveIndexCount() const noexcept
 	return std::size(m_primitiveIndices) - m_primitiveIndexOffset;
 }
 
-bool MeshletGenerator::ProcessPrimitive(const PrimTriangle& primitive)
+
+bool MeshletGenerator::IsMeshletLimitReached(const PrimTriangle& primitive) const noexcept
 {
 	const size_t vertexIndexCount    = GetMeshletVertexIndexCount();
 	const size_t primitiveIndexCount = GetMeshletPrimitiveIndexCount();
@@ -36,13 +37,12 @@ bool MeshletGenerator::ProcessPrimitive(const PrimTriangle& primitive)
 	const size_t newVertexIndexCount    = vertexIndexCount + addableVertexIndexCount;
 	const size_t newPrimitiveIndexCount = primitiveIndexCount + 1u;
 
-	const bool hasMeshletLimitReached
-		= newVertexIndexCount > s_meshletVertexLimit
+	return newVertexIndexCount > s_meshletVertexLimit
 		|| newPrimitiveIndexCount > s_meshletPrimitiveLimit;
+}
 
-	if (hasMeshletLimitReached)
-		return false;
-
+void MeshletGenerator::ProcessPrimitive(const PrimTriangle& primitive)
+{
 	// The prim indices are the local vertex indices. As in, they are local to the meshlet.
 	// We are assuming each primitive would be a triangle. Each prim index actually has the
 	// three local vertex indices which create that triangle. So, actually the primIndices
@@ -72,8 +72,6 @@ bool MeshletGenerator::ProcessPrimitive(const PrimTriangle& primitive)
 	memcpy(&packedPrim, &unpackedPrim, sizeof(std::uint32_t));
 
 	m_primitiveIndices.emplace_back(packedPrim);
-
-	return true;
 }
 
 Meshlet MeshletGenerator::GenerateMeshlet(
@@ -184,9 +182,7 @@ void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexc
 			.vertex2 = indices[index + 2u]
 		};
 
-		isMeshletLimitReached = !meshletGen.ProcessPrimitive(triangle);
-
-		if (isMeshletLimitReached)
+		if (meshletGen.IsMeshletLimitReached(triangle))
 		{
 			m_meshletDetails.emplace_back(
 				MeshletDetails
@@ -198,6 +194,8 @@ void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexc
 
 			meshletGen = MeshletGenerator{ m_vertexIndices, m_primitiveIndices };
 		}
+
+		meshletGen.ProcessPrimitive(triangle);
 	}
 
 	if (!isMeshletLimitReached)
@@ -226,9 +224,7 @@ void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 			.vertex2 = face.mIndices[2]
 		};
 
-		isMeshletLimitReached = !meshletGen.ProcessPrimitive(triangle);
-
-		if (isMeshletLimitReached)
+		if (meshletGen.IsMeshletLimitReached(triangle))
 		{
 			m_meshletDetails.emplace_back(
 				MeshletDetails
@@ -240,6 +236,8 @@ void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 
 			meshletGen = MeshletGenerator{ m_vertexIndices, m_primitiveIndices };
 		}
+
+		meshletGen.ProcessPrimitive(triangle);
 	}
 
 	if (!isMeshletLimitReached)
