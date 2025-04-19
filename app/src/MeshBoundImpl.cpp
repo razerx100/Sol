@@ -105,11 +105,17 @@ void NormalConeGenerator::ProcessApexOffset(
 	const float dotCentre = XMVectorGetX(XMVector3Dot(centreV, normalV));
 	const float dotNormal = XMVectorGetX(XMVector3Dot(m_normalCentre, normalV));
 
-	assert(dotNormal > 0.f && "The dot normal should be bigger than the Minimum dot from above.");
+	float distance = 0.f;
 
-	// The normal is a unit. Since we want to know how far the centre is, we have to
-	// divide.
-	const float distance = dotCentre / dotNormal;
+	// If the cone is degenerate, the dotNormal will be negative. We won't need the apex offset
+	// in that case. GenerateNormalCone will set a default value and this value will be ignored.
+	// But I don't wanna iterate through all the normals to find if it is degenerate first and
+	// then calculate the apex. I would rather do both in the same iteration, and ignore the apex
+	// offset if the cone is degenerate.
+	if (dotNormal > 0.f)
+		// The normal is a unit. Since we want to know how far the centre is, we have to
+		// divide.
+		distance = dotCentre / dotNormal;
 
 	m_apexOffset = std::max(distance, m_apexOffset);
 }
