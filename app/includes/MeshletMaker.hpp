@@ -36,8 +36,12 @@ public:
 	[[nodiscard]]
 	bool ProcessPrimitive(const PrimTriangle& primitive);
 
+	// The indices containers could be of the mesh bundle. In that case, we need to pass
+	// in the offsets for the current mesh to get the correct index offsets for the meshlet.
 	[[nodiscard]]
-	Meshlet GenerateMeshlet() const noexcept;
+	Meshlet GenerateMeshlet(
+		size_t vertexIndexMeshOffset, size_t primitiveIndexMeshOffset
+	) const noexcept;
 
 	[[nodiscard]]
 	static PrimitiveIndicesUnpacked UnpackPrim(std::uint32_t packedIndices) noexcept;

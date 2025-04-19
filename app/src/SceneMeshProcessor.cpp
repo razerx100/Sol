@@ -348,7 +348,7 @@ namespace SceneMeshProcessor1
 
 				position.z *= -1.f;
 
-				aabbGen.ProcessVertex(position);
+				aabbGen.ProcessAxes(position);
 			}
 
 			aabb = aabbGen.GenerateAABB();
@@ -369,16 +369,20 @@ namespace SceneMeshProcessor1
 		const std::vector<tinygltf::BufferView>& bufferViews,
 		const std::vector<tinygltf::Buffer>& buffers, MeshBundleTemporaryData& meshBundleTempData
 	) {
+		std::vector<Vertex>& vertices               = meshBundleTempData.vertices;
+		std::vector<std::uint32_t>& indices         = meshBundleTempData.indices;
+		std::vector<std::uint32_t>& primIndices     = meshBundleTempData.primIndices;
+		std::vector<MeshletDetails>& meshletDetails = meshBundleTempData.meshletDetails;
+
 		MeshTemporaryDetailsMS meshDetailsMS
 		{
-			// Should be all triangles.
-			.meshletOffset
-				= static_cast<std::uint32_t>(std::size(meshBundleTempData.meshletDetails)),
-			.indexOffset  = static_cast<std::uint32_t>(std::size(meshBundleTempData.indices)),
-			.vertexOffset = static_cast<std::uint32_t>(std::size(meshBundleTempData.vertices)),
+			.meshletOffset   = static_cast<std::uint32_t>(std::size(meshletDetails)),
+			.indexOffset     = static_cast<std::uint32_t>(std::size(indices)),
+			.primitiveOffset = static_cast<std::uint32_t>(std::size(primIndices)),
+			.vertexOffset    = static_cast<std::uint32_t>(std::size(vertices))
 		};
 
-		AxisAlignedBoundingBox aabb{};
+		AxisAlignedBoundingBox meshAabb{};
 
 		for (const tinygltf::Primitive& primitive : mesh.primitives)
 		{
@@ -389,7 +393,7 @@ namespace SceneMeshProcessor1
 			// Process the vertices first, as we would want to generate Bounding Volumes
 			// with them.
 			ProcessVertices(
-				primitive, accessors, bufferViews, buffers, meshBundleTempData, aabb
+				primitive, accessors, bufferViews, buffers, meshBundleTempData, meshAabb
 			);
 
 			const tinygltf::Accessor& indicesAccessor = accessors[primitive.indices];
@@ -401,11 +405,6 @@ namespace SceneMeshProcessor1
 				assert(
 					indicesAccessor.type == TINYGLTF_TYPE_SCALAR && "Indices type isn't scalar."
 				);
-
-				std::vector<Vertex>& vertices               = meshBundleTempData.vertices;
-				std::vector<std::uint32_t>& indices         = meshBundleTempData.indices;
-				std::vector<std::uint32_t>& primIndices     = meshBundleTempData.primIndices;
-				std::vector<MeshletDetails>& meshletDetails = meshBundleTempData.meshletDetails;
 
 				{
 					const size_t currentMeshletDetailsCount = std::size(meshletDetails);
@@ -432,6 +431,7 @@ namespace SceneMeshProcessor1
 					MeshletGenerator meshletGen{ indices, primIndices };
 
 					AABBGenerator spatialAabbGen{};
+					AABBGenerator normalAabbGen{};
 
 					for (size_t index = 0u; index + 2u < indexCount; index += 3u)
 					{
@@ -442,41 +442,74 @@ namespace SceneMeshProcessor1
 							.vertex2 = srcIndexData[index + 2u]
 						};
 
-						spatialAabbGen.ProcessVertex(
-							vertices[vertexOffset + triangle.vertex0].position
-						);
-						spatialAabbGen.ProcessVertex(
-							vertices[vertexOffset + triangle.vertex1].position
-						);
-						spatialAabbGen.ProcessVertex(
-							vertices[vertexOffset + triangle.vertex2].position
-						);
+						const Vertex& vertex0 = vertices[vertexOffset + triangle.vertex0];
+						const Vertex& vertex1 = vertices[vertexOffset + triangle.vertex1];
+						const Vertex& vertex2 = vertices[vertexOffset + triangle.vertex2];
+
+						spatialAabbGen.ProcessAxes(vertex0.position);
+						spatialAabbGen.ProcessAxes(vertex1.position);
+						spatialAabbGen.ProcessAxes(vertex2.position);
+
+						normalAabbGen.ProcessAxes(vertex0.normal);
+						normalAabbGen.ProcessAxes(vertex1.normal);
+						normalAabbGen.ProcessAxes(vertex2.normal);
 
 						const bool isMeshletProcessed = meshletGen.ProcessPrimitive(triangle);
 
 						if (isMeshletProcessed)
 						{
-							SphereBVGenerator sphereBVGen{};
+							SphereBVGenerator spatialSphereBVGen{};
 
-							sphereBVGen.SetCentre(spatialAabbGen.GenerateAABB());
+							spatialSphereBVGen.SetCentre(spatialAabbGen.GenerateAABB());
 
-							const size_t indexOffset       = meshDetailsMS.indexOffset;
-							const size_t currentIndexCount = std::size(indices);
+							NormalConeGenerator normalConeGen{};
 
-							for (size_t index1 = indexOffset; index1 < currentIndexCount; ++index1)
-								sphereBVGen.ProcessVertex(
-									vertices[vertexOffset + indices[index1]].position
-								);
+							// We don't need to wait for the radius computation. We only need
+							// the centre.
+							normalConeGen.SetSpatialCentre(spatialSphereBVGen.GenerateBV());
+
+							{
+								SphereBVGenerator normalSphereBVGen{};
+
+								normalSphereBVGen.SetCentre(normalAabbGen.GenerateAABB());
+
+								normalConeGen.SetNormalCentre(normalSphereBVGen.GenerateBV());
+							}
+
+							// Since the indices containers are per mesh bundle here, we must
+							// set the correct mesh offsets.
+							const Meshlet meshlet = meshletGen.GenerateMeshlet(
+								meshDetailsMS.indexOffset, meshDetailsMS.primitiveOffset
+							);
+
+							const size_t meshIndexOffset    = meshDetailsMS.indexOffset;
+							const size_t meshletIndexOffset = meshlet.indexOffset;
+							const size_t indexOffset        = meshIndexOffset + meshletIndexOffset;
+
+							const size_t meshletIndexCount  = meshlet.indexCount;
+
+							// Going through all the vertices of the meshlet.
+							for (size_t index1 = indexOffset; index1 < meshletIndexCount; ++index1)
+							{
+								const Vertex& vertex = vertices[vertexOffset + indices[index1]];
+
+								spatialSphereBVGen.ProcessRadius(vertex.position);
+
+								normalConeGen.ProcessNormalMinimumDot(vertex.normal);
+								normalConeGen.ProcessApexOffset(vertex.position, vertex.normal);
+							}
 
 							meshletDetails.emplace_back(
 								MeshletDetails
 								{
-									.meshlet = meshletGen.GenerateMeshlet(),
-									.sphereB = sphereBVGen.GenerateBV()
+									.meshlet    = meshlet,
+									.sphereB    = spatialSphereBVGen.GenerateBV(),
+									.coneNormal = normalConeGen.GenerateNormalCone()
 								}
 							);
 
 							spatialAabbGen = AABBGenerator{};
+							normalAabbGen  = AABBGenerator{};
 							// Need to do this to reset the offsets and the vertex index map.
 							meshletGen     = MeshletGenerator{ indices, primIndices };
 						}
@@ -484,65 +517,14 @@ namespace SceneMeshProcessor1
 				}
 			}
 
-			/*
 			// Hopefully, there can't be multiple instances of the same mode?
-			*/
 		}
 
-		meshDetailsMS.aabb = aabb;
+		meshDetailsMS.aabb = meshAabb;
+		meshDetailsMS.meshletCount
+			= static_cast<std::uint32_t>(std::size(meshletDetails) - meshDetailsMS.meshletOffset);
 
 		meshBundleTempData.bundleDetails.meshTemporaryDetailsMS.emplace_back(meshDetailsMS);
-
-		/*
-		MeshletMaker meshletMaker{};
-
-		meshletMaker.GenerateMeshlets(mesh);
-
-		std::vector<std::uint32_t> vertexIndices{};
-
-		meshletMaker.LoadVertexIndices(vertexIndices);
-
-		MeshExtraForMesh extraMeshData = meshletMaker.GenerateExtraMeshData();
-
-		MeshTemporaryDetailsMS meshDetailsMS
-		{
-			.meshletCount    = static_cast<std::uint32_t>(std::size(extraMeshData.meshletDetails)),
-			.meshletOffset   = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.meshletDetails)),
-			.indexOffset     = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.indices)),
-			.primitiveOffset = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.primIndices)),
-			.vertexOffset    = static_cast<std::uint32_t>(std::size(meshBundleTemporaryData.vertices)),
-			.aabb            = GetAABB(mesh->mAABB)
-		};
-
-		meshBundleTemporaryData.bundleDetails.meshTemporaryDetailsMS.emplace_back(meshDetailsMS);
-
-		{
-			// Per meshlet Bounding Sphere
-			std::vector<MeshletDetails>& meshletDetails = extraMeshData.meshletDetails;
-
-			const size_t meshletCount = std::size(meshletDetails);
-
-			for (size_t index1 = 0u; index1 < meshletCount; ++index1)
-			{
-				MeshletDetails& meshletDetail = meshletDetails[index1];
-
-				meshletDetail.sphereB = GenerateSphereBV(
-					mesh->mVertices, vertexIndices, meshletDetail.meshlet
-				);
-
-				meshletDetail.coneNormal = GenerateNormalCone(
-					mesh->mVertices, mesh->mNormals, vertexIndices, extraMeshData.primIndices,
-					meshletDetail
-				);
-			}
-		}
-
-		MemcpyIntoVector(meshBundleTemporaryData.meshletDetails, extraMeshData.meshletDetails);
-		MemcpyIntoVector(meshBundleTemporaryData.primIndices, extraMeshData.primIndices);
-		MemcpyIntoVector(meshBundleTemporaryData.indices, vertexIndices);
-
-		ProcessMeshVertices(mesh, meshBundleTemporaryData);
-		*/
 	}
 
 	static void GenerateMeshShaderData(

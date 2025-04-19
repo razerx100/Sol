@@ -12,7 +12,7 @@ struct AABBGenerator
 		m_negativeAxes{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 1.f) }
 	{}
 
-	void ProcessVertex(const DirectX::XMFLOAT3& position) noexcept;
+	void ProcessAxes(const DirectX::XMFLOAT3& position) noexcept;
 
 	[[nodiscard]]
 	AxisAlignedBoundingBox GenerateAABB() const noexcept;
@@ -29,13 +29,46 @@ struct SphereBVGenerator
 
 	void SetCentre(const AxisAlignedBoundingBox& aabb) noexcept;
 
-	void ProcessVertex(const DirectX::XMFLOAT3& position) noexcept;
+	void ProcessRadius(const DirectX::XMFLOAT3& position) noexcept;
 
 	[[nodiscard]]
 	SphereBoundingVolume GenerateBV() const noexcept;
 
 	DirectX::XMVECTOR m_centre;
 	float             m_radius;
+};
+
+struct NormalConeGenerator
+{
+	NormalConeGenerator()
+		: m_normalCentre{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f) },
+		m_spatialCentre{ DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f) },
+		m_minimumDot{ DirectX::XMVectorSet(1.f, 1.f, 1.f, 1.f) },
+		m_apexOffset{ 0.f }
+	{}
+
+	// The radius isn't necessary. Only the centre.
+	void SetNormalCentre(const SphereBoundingVolume& normalSphere) noexcept;
+	// The radius isn't necessary. Only the centre.
+	void SetSpatialCentre(const SphereBoundingVolume& spatialSphere) noexcept;
+
+	void ProcessNormalMinimumDot(const DirectX::XMFLOAT3& normal) noexcept;
+
+	// Not necessary if the Cone is degenerate.
+	void ProcessApexOffset(
+		const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& normal
+	);
+
+	[[nodiscard]]
+	bool IsConeDegenerate() const noexcept;
+
+	[[nodiscard]]
+	ClusterNormalCone GenerateNormalCone() const noexcept;
+
+	DirectX::XMVECTOR m_normalCentre;
+	DirectX::XMVECTOR m_spatialCentre;
+	DirectX::XMVECTOR m_minimumDot;
+	float             m_apexOffset;
 };
 
 [[nodiscard]]

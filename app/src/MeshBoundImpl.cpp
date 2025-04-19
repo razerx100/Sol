@@ -6,7 +6,7 @@
 #include <DirectXPackedVector.h>
 
 // AABB Generator
-void AABBGenerator::ProcessVertex(const DirectX::XMFLOAT3& position) noexcept
+void AABBGenerator::ProcessAxes(const DirectX::XMFLOAT3& position) noexcept
 {
 	using namespace DirectX;
 
@@ -42,7 +42,7 @@ void SphereBVGenerator::SetCentre(const AxisAlignedBoundingBox& aabb) noexcept
 	m_centre = (XMLoadFloat4(&aabb.maxAxes) + XMLoadFloat4(&aabb.minAxes)) * 0.5;
 }
 
-void SphereBVGenerator::ProcessVertex(const DirectX::XMFLOAT3& position) noexcept
+void SphereBVGenerator::ProcessRadius(const DirectX::XMFLOAT3& position) noexcept
 {
 	using namespace DirectX;
 
@@ -66,6 +66,117 @@ SphereBoundingVolume SphereBVGenerator::GenerateBV() const noexcept
 	return sphereVolume;
 }
 
+// Normal Cone Generator
+void NormalConeGenerator::SetNormalCentre(const SphereBoundingVolume& normalSphere) noexcept
+{
+	using namespace DirectX;
+
+	// The centre of the normals should be the cone normal.
+	m_normalCentre = XMVector3Normalize(XMLoadFloat4(&normalSphere.sphere));
+	// We don't need the W component as it is a normal vector.
+	m_normalCentre = XMVectorSetW(m_normalCentre, 0.f);
+}
+
+void NormalConeGenerator::SetSpatialCentre(const SphereBoundingVolume& spatialSphere) noexcept
+{
+	using namespace DirectX;
+
+	m_spatialCentre = XMLoadFloat4(&spatialSphere.sphere);
+}
+
+void NormalConeGenerator::ProcessNormalMinimumDot(const DirectX::XMFLOAT3& normal) noexcept
+{
+	using namespace DirectX;
+
+	// All of the vertex normals of a triangle should point towards the same direction.
+	XMVECTOR dot = XMVector3Dot(m_normalCentre, XMLoadFloat3(&normal));
+
+	m_minimumDot = XMVectorMin(m_minimumDot, dot);
+}
+
+void NormalConeGenerator::ProcessApexOffset(
+	const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& normal
+) {
+	using namespace DirectX;
+
+	XMVECTOR centreV = XMVectorSubtract(m_spatialCentre, XMLoadFloat3(&position));
+	XMVECTOR normalV = XMLoadFloat3(&normal);
+
+	const float dotCentre = XMVectorGetX(XMVector3Dot(centreV, normalV));
+	const float dotNormal = XMVectorGetX(XMVector3Dot(m_normalCentre, normalV));
+
+	assert(dotNormal > 0.f && "The dot normal should be bigger than the Minimum dot from above.");
+
+	// The normal is a unit. Since we want to know how far the centre is, we have to
+	// divide.
+	const float distance = dotCentre / dotNormal;
+
+	m_apexOffset = std::max(distance, m_apexOffset);
+}
+
+bool NormalConeGenerator::IsConeDegenerate() const noexcept
+{
+	using namespace DirectX;
+
+	// If the axis is more than 90 degrees, it is a degerate cone.
+	return XMVector4Less(m_minimumDot, XMVectorReplicate(0.1f));
+}
+
+ClusterNormalCone NormalConeGenerator::GenerateNormalCone() const noexcept
+{
+	using namespace DirectX;
+	using namespace DirectX::PackedVector;
+
+	ClusterNormalCone normalCone{ .packedCone = 0u, .apexOffset = 0.f };
+
+	XMUBYTEN4 packedConeU{};
+	XMStoreUByteN4(&packedConeU, XMVectorSet(0.f, 0.f, 0.f, 1.f));
+
+	// We check if the W component is 1 to make sure if the cone is degenerate.
+	normalCone.packedCone = packedConeU.v;
+
+	if (!IsConeDegenerate())
+	{
+		normalCone.apexOffset = m_apexOffset;
+
+		// cos(Theta) for the normal cone is the minimum dot; we need to add 90 degrees to the
+		// both sides and invert the cone which gives us
+		// -cos(theta + 90) = -(-sin(theta)) = sin(theta) = sqrt(1 - cos^2(a))
+		XMVECTOR minimumDotSqr = XMVectorMultiply(m_minimumDot, m_minimumDot);
+		XMVECTOR coneCutoff    = XMVectorSqrt(XMVectorSubtract(g_XMOne, minimumDotSqr));
+
+		// Quantize the normal vector
+		// I think this needs to be done with signed int8 because the float value can be
+		// negative.
+		XMBYTEN4 snQuant{};
+		XMStoreByteN4(&snQuant, m_normalCentre);
+
+		std::uint8_t values[4]
+		{
+			static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.x) + 128),
+			static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.y) + 128),
+			static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.z) + 128),
+			0u
+		};
+
+		// Bias
+		XMVECTOR deQuant = XMLoadByteN4(&snQuant);
+		XMVECTOR error   = XMVectorSum(XMVectorAbs(XMVectorSubtract(deQuant, m_normalCentre)));
+
+		coneCutoff = XMVectorAdd(coneCutoff, error);
+
+		// Quantize the normal cone spread to uint8 and bias upward.
+		XMUBYTEN4 nQuant{};
+		XMStoreUByteN4(&nQuant, coneCutoff);
+
+		values[3] = nQuant.x;
+
+		memcpy(&normalCone.packedCone, values, sizeof(std::uint32_t));
+	}
+
+	return normalCone;
+}
+
 AxisAlignedBoundingBox GetAABB(const aiAABB& aiAABB) noexcept
 {
 	AxisAlignedBoundingBox aabb
@@ -84,7 +195,7 @@ AxisAlignedBoundingBox GenerateAABB(const std::vector<Vertex>& vertices) noexcep
 	AABBGenerator aabbGen{};
 
 	for (const Vertex& vertex : vertices)
-		aabbGen.ProcessVertex(vertex.position);
+		aabbGen.ProcessAxes(vertex.position);
 
 	return aabbGen.GenerateAABB();
 }
@@ -96,7 +207,7 @@ AxisAlignedBoundingBox GenerateAABB(const std::vector<DirectX::XMFLOAT3>& positi
 	AABBGenerator aabbGen{};
 
 	for (const DirectX::XMFLOAT3& position : positions)
-		aabbGen.ProcessVertex(position);
+		aabbGen.ProcessAxes(position);
 
 	return aabbGen.GenerateAABB();
 }
@@ -110,7 +221,7 @@ SphereBoundingVolume GenerateSphereBV(const std::vector<Vertex>& vertices) noexc
 	sphereBVGen.SetCentre(GenerateAABB(vertices));
 
 	for (const Vertex& vertex : vertices)
-		sphereBVGen.ProcessVertex(vertex.position);
+		sphereBVGen.ProcessRadius(vertex.position);
 
 	return sphereBVGen.GenerateBV();
 }
@@ -124,7 +235,7 @@ SphereBoundingVolume GenerateSphereBV(const std::vector<DirectX::XMFLOAT3>& posi
 	sphereBVGen.SetCentre(GenerateAABB(positions));
 
 	for (const DirectX::XMFLOAT3& position : positions)
-		sphereBVGen.ProcessVertex(position);
+		sphereBVGen.ProcessRadius(position);
 
 	return sphereBVGen.GenerateBV();
 }
@@ -153,7 +264,7 @@ static AxisAlignedBoundingBox _generateAABB(
 	const auto vertexEnd = static_cast<size_t>(meshlet.indexOffset + meshlet.indexCount);
 
 	for (size_t index = meshlet.indexOffset; index < vertexEnd; ++index)
-		aabbGen.ProcessVertex(GetPosition(vertices[vertexIndices[index]]));
+		aabbGen.ProcessAxes(GetPosition(vertices[vertexIndices[index]]));
 
 	return aabbGen.GenerateAABB();
 }
@@ -186,7 +297,7 @@ static SphereBoundingVolume _generateSphereBV(
 	const auto vertexEnd = static_cast<size_t>(meshlet.indexOffset + meshlet.indexCount);
 
 	for (size_t index = meshlet.indexOffset; index < vertexEnd; ++index)
-		sphereBVGen.ProcessVertex(GetPosition(vertices[vertexIndices[index]]));
+		sphereBVGen.ProcessRadius(GetPosition(vertices[vertexIndices[index]]));
 
 	return sphereBVGen.GenerateBV();
 }
@@ -212,7 +323,7 @@ ClusterNormalCone GenerateNormalCone(
 	using namespace DirectX;
 	using namespace DirectX::PackedVector;
 
-	const Meshlet& meshlet  = meshletDetails.meshlet;
+	const Meshlet& meshlet = meshletDetails.meshlet;
 
 	const auto indexOffset = static_cast<size_t>(meshlet.indexOffset);
 	const auto primOffset  = static_cast<size_t>(meshlet.primitiveOffset);
@@ -234,17 +345,16 @@ ClusterNormalCone GenerateNormalCone(
 
 		// Calculate the AABB of the normals, so we can calculate the centre. Not using the other
 		// functions, as the parameters would need to be different.
-		normalAABB.ProcessVertex(primVertex1.normal);
+		normalAABB.ProcessAxes(primVertex1.normal);
 	}
 
-	// The centre of the normals should be the cone normal.
-	XMVECTOR normalCentre = XMVector3Normalize(
-		(normalAABB.m_positiveAxes + normalAABB.m_negativeAxes) * 0.5f
-	);
-	normalCentre = XMVectorSetW(normalCentre, 0.f);
+	SphereBVGenerator normalSphereGen{};
+	normalSphereGen.SetCentre(normalAABB.GenerateAABB());
 
-	// Check if the Cone is degenerate.
-	XMVECTOR minimumDot = XMVectorSet(1.f, 1.f, 1.f, 1.f);
+	NormalConeGenerator normalConeGen{};
+
+	normalConeGen.SetNormalCentre(normalSphereGen.GenerateBV());
+	normalConeGen.SetSpatialCentre(meshletDetails.sphereB);
 
 	for (size_t index = 0u; index < primCount; ++index)
 	{
@@ -256,93 +366,11 @@ ClusterNormalCone GenerateNormalCone(
 		const Vertex& primVertex1
 			= vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
 
-		// All of the vertex normals of a triangle should point towards the same direction.
-
-		XMVECTOR dot = XMVector3Dot(normalCentre, XMLoadFloat3(&primVertex1.normal));
-
-		minimumDot = XMVectorMin(minimumDot, dot);
+		normalConeGen.ProcessNormalMinimumDot(primVertex1.normal);
+		normalConeGen.ProcessApexOffset(primVertex1.position, primVertex1.normal);
 	}
 
-	ClusterNormalCone normalCone{ 0u };
-
-	// If the axis is more than 90 degrees, it is a degerate cone.
-	if (XMVector4Less(minimumDot, XMVectorReplicate(0.1f)))
-	{
-		XMUBYTEN4 packedConeU{};
-		XMStoreUByteN4(&packedConeU, XMVectorSet(0.f, 0.f, 0.f, 1.f));
-
-		// Need to test this.
-		normalCone.packedCone = packedConeU.v;
-		normalCone.apexOffset = 0.f;
-
-		return normalCone;
-	}
-
-	XMVECTOR spatialCentre = XMLoadFloat4(&meshletDetails.sphereB.sphere);
-
-	float maxT = 0.f;
-
-	for (size_t index = 0u; index < primCount; ++index)
-	{
-		std::uint32_t packedPrimIndices = primIndices[primOffset + index];
-
-		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
-			MeshletMaker::UnpackPrim(packedPrimIndices);
-
-		const Vertex& primVertex1
-			= vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]];
-
-		XMVECTOR centre = XMVectorSubtract(spatialCentre, XMLoadFloat3(&primVertex1.position));
-		XMVECTOR normal = XMLoadFloat3(&primVertex1.normal);
-
-		const float dotCentre = XMVectorGetX(XMVector3Dot(centre, normal));
-		const float dotNormal = XMVectorGetX(XMVector3Dot(normalCentre, normal));
-
-		assert(dotNormal > 0.f && "The dot normal should be bigger than the Minimum dot from above.");
-
-		// The normal is a unit. Since we want to know how far the centre is, we are
-		// dividing.
-		const float t = dotCentre / dotNormal;
-
-		maxT = std::max(t, maxT);
-	}
-
-	// MaxT is the apex offset.
-	normalCone.apexOffset = maxT;
-
-	// cos(Theta) for the normal cone is minimum dot; we need to add 90 degrees to the both sides
-	// and invert the cone which gives us
-	// -cos(theta + 90) = -(-sin(theta)) = sin(theta) = sqrt(1 - cos^2(a))
-	XMVECTOR minimumDotSqr = XMVectorMultiply(minimumDot, minimumDot);
-	XMVECTOR coneCutoff    = XMVectorSqrt(XMVectorSubtract(g_XMOne, minimumDotSqr));
-
-	// Quantize the normal vector
-	XMBYTEN4 snQuant{};
-	XMStoreByteN4(&snQuant, normalCentre);
-
-	std::uint8_t values[4]
-	{
-		static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.x) + 128),
-		static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.y) + 128),
-		static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.z) + 128),
-		0u
-	};
-
-	// Bias
-	XMVECTOR deQuant = XMLoadByteN4(&snQuant);
-	XMVECTOR error   = XMVectorSum(XMVectorAbs(XMVectorSubtract(deQuant, normalCentre)));
-
-	coneCutoff = XMVectorAdd(coneCutoff, error);
-
-	// Quantize the normal cone spread to uint8 and bias upward.
-	XMUBYTEN4 nQuant{};
-	XMStoreUByteN4(&nQuant, coneCutoff);
-
-	values[3] = nQuant.x;
-
-	memcpy(&normalCone.packedCone, values, sizeof(std::uint32_t));
-
-	return normalCone;
+	return normalConeGen.GenerateNormalCone();
 }
 
 ClusterNormalCone GenerateNormalCone(
@@ -352,14 +380,13 @@ ClusterNormalCone GenerateNormalCone(
 	using namespace DirectX;
 	using namespace DirectX::PackedVector;
 
-	const Meshlet& meshlet  = meshletDetails.meshlet;
+	const Meshlet& meshlet = meshletDetails.meshlet;
 
 	const auto indexOffset = static_cast<size_t>(meshlet.indexOffset);
 	const auto primOffset  = static_cast<size_t>(meshlet.primitiveOffset);
 	const auto primCount   = static_cast<size_t>(meshlet.primitiveCount);
 
-	XMVECTOR positiveAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
-	XMVECTOR negativeAxesV{ XMVectorSet(0.f, 0.f, 0.f, 1.f) };
+	AABBGenerator normalAABB{};
 
 	for (size_t index = 0u; index < primCount; ++index)
 	{
@@ -374,22 +401,18 @@ ClusterNormalCone GenerateNormalCone(
 
 		// All of the vertex normals of a triangle should point towards the same direction.
 
-		{
-			// Calculate the AABB of the normals, so we can calculate the centre. Not using the
-			// other functions, as the parameters would need to be different.
-			XMVECTOR normalV = XMLoadFloat3(&primNormal1);
-
-			positiveAxesV = XMVectorMax(normalV, positiveAxesV);
-			negativeAxesV = XMVectorMin(normalV, negativeAxesV);
-		}
+		// Calculate the AABB of the normals, so we can calculate the centre. Not using the
+		// other functions, as the parameters would need to be different.
+		normalAABB.ProcessAxes(primNormal1);
 	}
 
-	// The centre of the normals should be the cone normal.
-	XMVECTOR normalCentre = XMVector3Normalize((positiveAxesV + negativeAxesV) * 0.5f);
-	normalCentre          = XMVectorSetW(normalCentre, 0.f);
+	SphereBVGenerator normalSphereGen{};
+	normalSphereGen.SetCentre(normalAABB.GenerateAABB());
 
-	// Check if the Cone is degenerate.
-	XMVECTOR minimumDot = XMVectorSet(1.f, 1.f, 1.f, 1.f);
+	NormalConeGenerator normalConeGen{};
+
+	normalConeGen.SetNormalCentre(normalSphereGen.GenerateBV());
+	normalConeGen.SetSpatialCentre(meshletDetails.sphereB);
 
 	for (size_t index = 0u; index < primCount; ++index)
 	{
@@ -402,97 +425,13 @@ ClusterNormalCone GenerateNormalCone(
 			normals[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
 		);
 
-		// All of the vertex normals of a triangle should point towards the same direction.
-
-		XMVECTOR dot = XMVector3Dot(normalCentre, XMLoadFloat3(&primNormal1));
-
-		minimumDot = XMVectorMin(minimumDot, dot);
-	}
-
-	ClusterNormalCone normalCone{ 0u };
-
-	// If the axis is more than 90 degrees, it is a degerate cone.
-	if (XMVector4Less(minimumDot, XMVectorReplicate(0.1f)))
-	{
-		XMUBYTEN4 packedConeU{};
-		XMStoreUByteN4(&packedConeU, XMVectorSet(0.f, 0.f, 0.f, 1.f));
-
-		// Need to test this.
-		normalCone.packedCone = packedConeU.v;
-		normalCone.apexOffset = 0.f;
-
-		return normalCone;
-	}
-
-	XMVECTOR spatialCentre = XMLoadFloat4(&meshletDetails.sphereB.sphere);
-
-	float maxT = 0.f;
-
-	for (size_t index = 0u; index < primCount; ++index)
-	{
-		std::uint32_t packedPrimIndices = primIndices[primOffset + index];
-
-		MeshletMaker::PrimitiveIndicesUnpacked unpackedIndices =
-			MeshletMaker::UnpackPrim(packedPrimIndices);
-
-		XMFLOAT3 primNormal1   = GetXMFloat3(
-			normals[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
-		);
 		XMFLOAT3 primPosition1 = GetXMFloat3(
 			vertices[vertexIndices[indexOffset + unpackedIndices.firstIndex]]
 		);
 
-		XMVECTOR centre = XMVectorSubtract(spatialCentre, XMLoadFloat3(&primPosition1));
-		XMVECTOR normal = XMLoadFloat3(&primNormal1);
-
-		const float dotCentre = XMVectorGetX(XMVector3Dot(centre, normal));
-		const float dotNormal = XMVectorGetX(XMVector3Dot(normalCentre, normal));
-
-		assert(
-			dotNormal > 0.f && "The dot normal should be bigger than the Minimum dot from above."
-		);
-
-		// The normal is a unit. Since we want to know how far the centre is, we are
-		// dividing.
-		const float t = dotCentre / dotNormal;
-
-		maxT = std::max(t, maxT);
+		normalConeGen.ProcessNormalMinimumDot(primNormal1);
+		normalConeGen.ProcessApexOffset(primPosition1, primNormal1);
 	}
 
-	// MaxT is the apex offset.
-	normalCone.apexOffset = maxT;
-
-	// cos(Theta) for the normal cone is minimum dot; we need to add 90 degrees to the both sides
-	// and invert the cone which gives us
-	// -cos(theta + 90) = -(-sin(theta)) = sin(theta) = sqrt(1 - cos^2(a))
-	XMVECTOR minimumDotSqr = XMVectorMultiply(minimumDot, minimumDot);
-	XMVECTOR coneCutoff    = XMVectorSqrt(XMVectorSubtract(g_XMOne, minimumDotSqr));
-
-	// Quantize the normal vector
-	XMBYTEN4 snQuant{};
-	XMStoreByteN4(&snQuant, normalCentre);
-
-	std::uint8_t values[4]
-	{
-		static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.x) + 128),
-		static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.y) + 128),
-		static_cast<std::uint8_t>(static_cast<std::int16_t>(snQuant.z) + 128),
-		0u
-	};
-
-	// Bias
-	XMVECTOR deQuant = XMLoadByteN4(&snQuant);
-	XMVECTOR error   = XMVectorSum(XMVectorAbs(XMVectorSubtract(deQuant, normalCentre)));
-
-	coneCutoff = XMVectorAdd(coneCutoff, error);
-
-	// Quantize the normal cone spread to uint8 and bias upward.
-	XMUBYTEN4 nQuant{};
-	XMStoreUByteN4(&nQuant, coneCutoff);
-
-	values[3] = nQuant.x;
-
-	memcpy(&normalCone.packedCone, values, sizeof(std::uint32_t));
-
-	return normalCone;
+	return normalConeGen.GenerateNormalCone();
 }

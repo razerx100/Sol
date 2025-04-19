@@ -4,9 +4,11 @@
 MeshletGenerator::MeshletGenerator(
 	std::vector<std::uint32_t>& vertexIndices,
 	std::vector<std::uint32_t>& primitiveIndices
-) : m_vertexIndices{ vertexIndices }, m_vertexIndexOffset{ std::size(vertexIndices) },
+) : m_vertexIndices{ vertexIndices },
+	m_vertexIndexOffset{ std::size(vertexIndices) },
 	m_primitiveIndices{ primitiveIndices },
-	m_primitiveIndexOffset{ std::size(primitiveIndices) }, m_primitiveIndexMap{}
+	m_primitiveIndexOffset{ std::size(primitiveIndices) },
+	m_primitiveIndexMap{}
 {
 	m_vertexIndices.reserve(m_vertexIndexOffset + s_meshletVertexLimit);
 	m_primitiveIndices.reserve(m_primitiveIndexOffset + s_meshletPrimitiveLimit);
@@ -74,7 +76,9 @@ bool MeshletGenerator::ProcessPrimitive(const PrimTriangle& primitive)
 	return true;
 }
 
-Meshlet MeshletGenerator::GenerateMeshlet() const noexcept
+Meshlet MeshletGenerator::GenerateMeshlet(
+	size_t vertexIndexMeshOffset, size_t primitiveIndexMeshOffset
+) const noexcept
 {
 	const auto meshletVertexIndexCount = static_cast<std::uint32_t>(GetMeshletVertexIndexCount());
 	const auto meshletPrimitiveIndexCount
@@ -82,10 +86,12 @@ Meshlet MeshletGenerator::GenerateMeshlet() const noexcept
 
 	return Meshlet
 		{
-			.indexCount      = meshletVertexIndexCount,
-			.indexOffset     = static_cast<std::uint32_t>(m_vertexIndexOffset),
-			.primitiveCount  = meshletPrimitiveIndexCount,
-			.primitiveOffset = static_cast<std::uint32_t>(m_primitiveIndexOffset)
+			.indexCount = meshletVertexIndexCount,
+			.indexOffset
+				= static_cast<std::uint32_t>(m_vertexIndexOffset - vertexIndexMeshOffset),
+			.primitiveCount = meshletPrimitiveIndexCount,
+			.primitiveOffset
+				= static_cast<std::uint32_t>(m_primitiveIndexOffset - primitiveIndexMeshOffset)
 		};
 }
 
@@ -183,7 +189,8 @@ void MeshletMaker::MakeMeshlets(const std::vector<std::uint32_t>& indices) noexc
 			m_meshletDetails.emplace_back(
 				MeshletDetails
 				{
-					.meshlet = meshletGen.GenerateMeshlet()
+					// Since the indices containers are per mesh, the offsets are zero.
+					.meshlet = meshletGen.GenerateMeshlet(0u, 0u)
 				}
 			);
 
@@ -214,7 +221,8 @@ void MeshletMaker::MakeMeshlets(aiFace* faces, size_t faceCount) noexcept
 			m_meshletDetails.emplace_back(
 				MeshletDetails
 				{
-					.meshlet = meshletGen.GenerateMeshlet()
+					// Since the indices containers are per mesh, the offsets are zero.
+					.meshlet = meshletGen.GenerateMeshlet(0u, 0u)
 				}
 			);
 
