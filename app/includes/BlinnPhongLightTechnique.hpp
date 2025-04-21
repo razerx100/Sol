@@ -134,7 +134,7 @@ private:
 	std::shared_ptr<ExternalBuffer>          m_lightCountExtBuffer;
 	std::shared_ptr<ExternalBuffer>          m_lightInfoExtBuffer;
 	ReusableCPUExtBuffer<BlinnPhongMaterial> m_materials;
-	ReusableVector<LightInfo>                m_lights;
+	Callisto::ReusableVector<LightInfo>      m_lights;
 	std::vector<bool>                        m_lightStatus;
 	size_t                                   m_lightInfoInstanceSize;
 	std::uint32_t                            m_frameCount;

@@ -76,7 +76,7 @@ private:
 
 private:
 	std::shared_ptr<ExternalBuffer> m_buffer;
-	ReusableVector<T>               m_elements;
+	Callisto::ReusableVector<T>     m_elements;
 
 	static constexpr size_t s_extraElementCount = 4u;
 
