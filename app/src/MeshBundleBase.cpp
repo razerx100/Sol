@@ -10,6 +10,8 @@
 #include <ConversionUtilities.hpp>
 #include <MeshletMaker.hpp>
 
+namespace Sol
+{
 // Mesh Bundle Temp Custom
 MeshBundleTemporaryData MeshBundleTempCustom::GenerateTemporaryData(bool meshShader)
 {
@@ -215,4 +217,5 @@ void MeshBundleImpl::SetUVToVertices(
 ) noexcept {
 	for (size_t index = 0u; index < std::size(uvs); ++index)
 		vertices[index].uv = uvs[index];
+}
 }

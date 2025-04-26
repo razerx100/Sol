@@ -1,6 +1,8 @@
 #include <GraphicsPipelineManager.hpp>
 #include <array>
 
+namespace Sol
+{
 namespace PSOStorage
 {
 	// Shader Type indices
@@ -67,4 +69,5 @@ ShaderName GraphicsPipelineManager::GetNoTransformVertexShader() const noexcept
 		vertexShader.SetName(L"VertexShaderIndividualNoTransform");
 
 	return vertexShader;
+}
 }

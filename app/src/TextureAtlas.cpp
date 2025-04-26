@@ -8,8 +8,11 @@
 
 #include <TextureAtlas.hpp>
 
+namespace Sol
+{
 TextureAtlas& TextureAtlas::AddTexture(
-	const std::string& name, std::shared_ptr<void> texture, std::uint32_t width, std::uint32_t height
+	const std::string& name, std::shared_ptr<void> texture, std::uint32_t width,
+	std::uint32_t height
 ) noexcept {
 	m_unprocessedData.emplace_back(
 		TextureInfo
@@ -372,4 +375,5 @@ UVInfo TextureAtlas::GetUVInfo(const std::string& name) const noexcept
 		return data->uvInfo;
 	else
 		return UVInfo{};
+}
 }

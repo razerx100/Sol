@@ -5,6 +5,8 @@
 #include <ConversionUtilities.hpp>
 #include <assimp/aabb.h>
 
+namespace Sol
+{
 struct AABBGenerator
 {
 	AABBGenerator()
@@ -112,4 +114,5 @@ ClusterNormalCone GenerateNormalCone(
 	aiVector3D* vertices, aiVector3D* normals, const std::vector<std::uint32_t>& vertexIndices,
 	const std::vector<std::uint32_t>& primIndices, const MeshletDetails& meshletDetails
 ) noexcept;
+}
 #endif

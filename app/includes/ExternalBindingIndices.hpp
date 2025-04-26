@@ -2,6 +2,8 @@
 #define EXTERNAL_BINDING_INDICES_HPP_
 #include <cstdint>
 
+namespace Sol
+{
 namespace ExternalBinding
 {
 	// Each type can have multiple techniques and among them, the one with the highest number of
@@ -12,5 +14,6 @@ namespace ExternalBinding
 	static constexpr std::uint32_t s_lightInfo  = 1u;
 	static constexpr std::uint32_t s_material   = 2u;
 	static constexpr std::uint32_t s_transparencyRenderTargetBindingData = 3u;
+}
 }
 #endif

@@ -12,6 +12,8 @@
 #include <BasicMeshBundles.hpp>
 #include <RendererCommonTypes.hpp>
 
+namespace Sol
+{
 class RenderPassManager
 {
 	using TransparencyExt_t = std::shared_ptr<WeightedTransparencyTechnique>;
@@ -341,4 +343,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

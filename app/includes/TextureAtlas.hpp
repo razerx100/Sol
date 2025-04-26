@@ -12,6 +12,8 @@
 #include <DirectXMath.h>
 #include <Model.hpp>
 
+namespace Sol
+{
 struct UVU32
 {
 	std::uint32_t uStart;
@@ -143,4 +145,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

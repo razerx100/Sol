@@ -2,6 +2,8 @@
 #define BASIC_MESH_BUNDLES_HPP_
 #include <MeshBundleBase.hpp>
 
+namespace Sol
+{
 class TriangleMesh
 {
 public:
@@ -86,4 +88,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

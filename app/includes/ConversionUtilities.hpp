@@ -6,6 +6,8 @@
 #include <assimp/matrix4x4.h>
 #include <assimp/types.h>
 
+namespace Sol
+{
 [[nodiscard]]
 inline DirectX::XMMATRIX GetXMMatrix(const aiMatrix4x4& aiMatrix) noexcept
 {
@@ -76,5 +78,6 @@ inline bool isApproximatelyEqual(float a, float b)
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
     return std::abs(a - b) <= std::max(std::abs(a), std::abs(b)) * epsilon;
+}
 }
 #endif

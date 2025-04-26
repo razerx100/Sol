@@ -14,6 +14,8 @@
 #include <AllocationLiterals.hpp>
 #include <SolScene.hpp>
 
+namespace Sol
+{
 class App
 {
 public:
@@ -883,4 +885,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

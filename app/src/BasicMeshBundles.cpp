@@ -1,6 +1,8 @@
 #include <BasicMeshBundles.hpp>
 #include <format>
 
+namespace Sol
+{
 // Triangle
 void TriangleMesh::SetMesh(Mesh& mesh) noexcept
 {
@@ -317,4 +319,5 @@ void SphereMesh::CalculateNormals(std::vector<Vertex>& vertices) noexcept
 
 		DirectX::XMStoreFloat3(&vertex.normal, unitVector);
 	}
+}
 }

@@ -3,6 +3,8 @@
 #include <ExternalPipeline.hpp>
 #include <RendererTypes.hpp>
 
+namespace Sol
+{
 namespace PSOStorage
 {
 	enum class ShaderType
@@ -76,4 +78,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

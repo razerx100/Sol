@@ -4,6 +4,8 @@
 
 #include <stb_image.h>
 
+namespace Sol
+{
 namespace TextureTool
 {
 	[[nodiscard]]
@@ -56,4 +58,5 @@ namespace TextureTool
 		else
 			return {};
 	}
-};
+}
+}

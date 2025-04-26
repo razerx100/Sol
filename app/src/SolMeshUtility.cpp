@@ -1,5 +1,7 @@
 #include <SolMeshUtility.hpp>
 
+namespace Sol
+{
 static MeshTextureDetails s_defaultTextureDetails{};
 
 void CopyAndOffsetIndices(
@@ -28,4 +30,5 @@ void SetDefaultTextureDetails(std::uint32_t textureIndex, std::uint32_t bindingI
 const MeshTextureDetails& GetDefaultTextureDetails() noexcept
 {
 	return s_defaultTextureDetails;
+}
 }

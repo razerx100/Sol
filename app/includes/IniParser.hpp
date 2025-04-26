@@ -6,6 +6,8 @@
 #include <string>
 #include <algorithm>
 
+namespace Sol
+{
 class IniParser
 {
     using ValueMap = std::unordered_map<std::string, std::string>;
@@ -82,4 +84,5 @@ public:
         return *this;
     }
 };
+}
 #endif

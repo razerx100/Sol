@@ -5,6 +5,8 @@
 #include <SceneMeshProcessor.hpp>
 #include <SceneMaterialProcessor.hpp>
 
+namespace Sol
+{
 class SolScene
 {
 public:
@@ -64,4 +66,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

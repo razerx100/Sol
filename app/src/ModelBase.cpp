@@ -2,6 +2,8 @@
 #include <concepts>
 #include <ConversionUtilities.hpp>
 
+namespace Sol
+{
 ModelTransform::BrokenDownMatrix ModelTransform::BreakDownMatrix(
 	const DirectX::XMMATRIX& matrix
 ) noexcept {
@@ -368,4 +370,5 @@ void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offse
 		for (size_t childrenIndex = childrenStart; childrenIndex < childrenEnd; ++childrenIndex)
 			MoveModel(childrenIndex, offset);
 	}
+}
 }

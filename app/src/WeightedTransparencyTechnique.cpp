@@ -1,6 +1,8 @@
 #include <WeightedTransparencyTechnique.hpp>
 #include <ExternalBindingIndices.hpp>
 
+namespace Sol
+{
 ShaderName WeightedTransparencyTechnique::s_compositePassShaderName = L"WeightedTransparencyCompositeShader";
 
 WeightedTransparencyTechnique::WeightedTransparencyTechnique()
@@ -161,4 +163,5 @@ void WeightedTransparencyTechnique::SetCompositePass(
 	);
 
 	m_postProcessingPass = std::move(postProcessingPass);
+}
 }

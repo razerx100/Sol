@@ -1,6 +1,8 @@
 #ifndef RENDERER_TYPES_HPP_
 #define RENDERER_TYPES_HPP_
 
+namespace Sol
+{
 enum class RenderEngineType
 {
 	IndirectDraw,
@@ -13,4 +15,5 @@ enum class RendererModule
 	Terra,
 	Gaia
 };
+}
 #endif

@@ -1,5 +1,7 @@
 #include <ConfigManager.hpp>
 
+namespace Sol
+{
 static const std::unordered_map<std::string, std::string> DEFAULTMODULES =
 {
 	{"Renderer",     "Terra"},
@@ -62,4 +64,5 @@ RenderEngineType ConfigManager::GetRenderEngineType() const noexcept
 		renderEngineType = RenderEngineType::MeshDraw;
 
 	return renderEngineType;
+}
 }

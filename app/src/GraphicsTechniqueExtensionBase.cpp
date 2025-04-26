@@ -1,6 +1,8 @@
 #include <GraphicsTechniqueExtensionBase.hpp>
 #include <limits>
 
+namespace Sol
+{
 GraphicsTechniqueExtensionBase::NewBufferInfo_t GraphicsTechniqueExtensionBase::GetNewBufferSize(
 	const ExternalBuffer& buffer, size_t strideSize, size_t elementCount,
 	size_t instanceCount, size_t extraAllocationCount
@@ -24,4 +26,5 @@ GraphicsTechniqueExtensionBase::NewBufferInfo_t GraphicsTechniqueExtensionBase::
 	}
 
 	return newSize;
+}
 }

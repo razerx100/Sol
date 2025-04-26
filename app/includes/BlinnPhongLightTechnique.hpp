@@ -7,6 +7,8 @@
 #include <ReusableVector.hpp>
 #include <ReusableExtBuffer.hpp>
 
+namespace Sol
+{
 // The alphas aren't needed but keeping them for alignment reasons. And it would be
 // easier to deal in Float3 all the time.
 struct BlinnPhongLightProperties
@@ -269,4 +271,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

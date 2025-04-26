@@ -4,6 +4,8 @@
 #include <CameraManagerSol.hpp>
 #include <Sol.hpp>
 
+namespace Sol
+{
 using namespace DirectX;
 
 // Base Camera
@@ -128,4 +130,5 @@ void PerspectiveCameraEuler::LookAround(float offsetX, float offsetY) noexcept
 		m_worldForwardDirection,
 		XMMatrixRotationRollPitchYaw(m_pitch, m_yaw, 0.f)
 	);
+}
 }

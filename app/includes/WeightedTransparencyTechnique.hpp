@@ -6,6 +6,8 @@
 #include <GraphicsPipelineManager.hpp>
 #include <ModelBase.hpp>
 
+namespace Sol
+{
 class WeightedTransparencyTechnique : public GraphicsTechniqueExtensionBase
 {
 public:
@@ -227,4 +229,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

@@ -2,6 +2,8 @@
 #define TIME_MANAGER_HPP_
 #include <chrono>
 
+namespace Sol
+{
 class Timer
 {
 	using Timepoint_t = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::nanoseconds>;
@@ -125,4 +127,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

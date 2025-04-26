@@ -3,6 +3,8 @@
 #include <assimp/scene.h>
 #include <string>
 
+namespace Sol
+{
 class SceneProcessor
 {
 public:
@@ -46,4 +48,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

@@ -5,9 +5,12 @@
 #include <optional>
 #include <Texture.hpp>
 
+namespace Sol
+{
 namespace TextureTool
 {
 	[[nodiscard]]
 	std::optional<STexture> LoadTextureFromFile(const std::string& fileName) noexcept;
-};
+}
+}
 #endif

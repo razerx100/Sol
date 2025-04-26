@@ -5,6 +5,8 @@
 #include <optional>
 #include <RendererTypes.hpp>
 
+namespace Sol
+{
 class ConfigManager
 {
 public:
@@ -80,4 +82,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

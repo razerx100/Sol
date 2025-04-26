@@ -4,6 +4,8 @@
 #include <concepts>
 #include <type_traits>
 
+namespace Sol
+{
 MeshBundleTemporaryData SceneMeshProcessor::GenerateTemporaryMeshData(bool meshShader)
 {
 	MeshBundleTemporaryData meshBundleTempData{};
@@ -689,4 +691,5 @@ namespace SceneMeshProcessor1
 
 		return meshBundleTempData;
 	}
+}
 }

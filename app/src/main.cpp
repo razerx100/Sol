@@ -4,10 +4,12 @@
 #include <SolException.hpp>
 #include <ExceptionMessageBox.hpp>
 
+using namespace Sol;
+
 template<RendererModule module_t, class Engine_t>
 int RunSol(ConfigManager&& configManager)
 {
-	using Sol_t = Sol<module_t, Engine_t>;
+	using Sol_t = ::Sol::Sol<module_t, Engine_t>;
 
 	auto sol = std::make_unique<Sol_t>("Sol", std::move(configManager));
 

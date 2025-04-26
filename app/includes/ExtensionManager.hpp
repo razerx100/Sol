@@ -6,6 +6,8 @@
 #include <WeightedTransparencyTechnique.hpp>
 #include <ExternalResourceManager.hpp>
 
+namespace Sol
+{
 class ExtensionManager
 {
 public:
@@ -100,4 +102,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

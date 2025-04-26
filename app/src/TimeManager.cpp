@@ -1,5 +1,7 @@
 #include <TimeManager.hpp>
 
+namespace Sol
+{
 // Frame Time
 void FrameTime::EndTimer() noexcept
 {
@@ -16,4 +18,5 @@ void FrameTime::ResetFrameCount() noexcept
 {
 	m_frameCount = 0u;
 	m_oneSecond  = 0.f;
+}
 }

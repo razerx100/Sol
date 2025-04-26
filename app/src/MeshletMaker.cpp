@@ -1,5 +1,7 @@
 #include <MeshletMaker.hpp>
 
+namespace Sol
+{
 // Meshlet Generator
 MeshletGenerator::MeshletGenerator(
 	std::vector<std::uint32_t>& vertexIndices,
@@ -258,4 +260,4 @@ MeshletMaker::PrimitiveIndicesUnpacked MeshletMaker::UnpackPrim(
 
 	return unpackedIndices;
 }
-
+}

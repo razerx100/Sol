@@ -2,6 +2,8 @@
 #include <ExternalBindingIndices.hpp>
 #include <ConversionUtilities.hpp>
 
+namespace Sol
+{
 ShaderName BlinnPhongLightTechnique::s_opaqueLightSrcShaderName      = L"NoLightOpaqueShader";
 ShaderName BlinnPhongLightTechnique::s_opaqueLightDstShaderName      = L"BlinnPhongOpaqueShader";
 
@@ -251,4 +253,5 @@ ExternalGraphicsPipeline BlinnPhongLightTechnique::GetTransparentLightDstPipelin
 	transparentLightPipeline.SetFragmentShader(s_transparentLightDstShaderName);
 
 	return transparentLightPipeline;
+}
 }

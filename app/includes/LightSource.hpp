@@ -3,6 +3,8 @@
 #include <memory>
 #include <ModelBase.hpp>
 
+namespace Sol
+{
 class LightSource
 {
 public:
@@ -118,4 +120,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

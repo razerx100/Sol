@@ -6,6 +6,8 @@
 #include <MeshBundle.hpp>
 #include <Model.hpp>
 
+namespace Sol
+{
 struct Mesh
 {
 	std::vector<Vertex>        vertices;
@@ -89,4 +91,5 @@ void SetDefaultTextureDetails(std::uint32_t textureIndex, std::uint32_t bindingI
 
 [[nodiscard]]
 const MeshTextureDetails& GetDefaultTextureDetails() noexcept;
+}
 #endif

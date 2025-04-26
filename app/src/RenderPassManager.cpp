@@ -1,5 +1,7 @@
 #include <RenderPassManager.hpp>
 
+namespace Sol
+{
 void RenderPassManager::CreateResources()
 {
 	m_mainRenderTargetIndex = static_cast<std::uint32_t>(m_resourceFactory->CreateExternalTexture());
@@ -20,4 +22,5 @@ void RenderPassManager::SetTransparencyPass(
 	std::shared_ptr<WeightedTransparencyTechnique> transparencyExt
 ) {
 	m_transparencyExt = std::move(transparencyExt);
+}
 }

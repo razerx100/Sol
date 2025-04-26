@@ -24,6 +24,8 @@
 #include <VkDisplayManagerWin32.hpp>
 #endif
 
+namespace Sol
+{
 template<RendererModule rendererModule, class rendererEngine_t>
 class Sol
 {
@@ -317,4 +319,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

@@ -6,6 +6,8 @@
 #include <ExternalBuffer.hpp>
 #include <ReusableVector.hpp>
 
+namespace Sol
+{
 // This class should be used for single instance CPU buffers, where we would only update
 // data when a new item is added.
 template<class T>
@@ -95,4 +97,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

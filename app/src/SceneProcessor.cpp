@@ -3,6 +3,8 @@
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 
+namespace Sol
+{
 SceneProcessor::SceneProcessor(const std::string& scenePath)
 	: m_scene{
 		aiImportFile(
@@ -81,4 +83,5 @@ std::string SceneProcessor::GetFileDirectory(const std::string& filePath) noexce
 	}
 
 	return directoryPath;
+}
 }

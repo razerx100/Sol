@@ -2,6 +2,8 @@
 #include <exception>
 #include <ranges>
 
+namespace Sol
+{
 IniParser::IniParser(std::wstring fileName)
     : m_sections{}, m_fileName{ std::move(fileName) }
 {
@@ -178,4 +180,5 @@ std::vector<std::string> IniParser::Split(const std::string& str, char delimiter
         output.emplace_back(Strip(str.substr(startingPosition + 1u), ' '));
 
     return output;
+}
 }

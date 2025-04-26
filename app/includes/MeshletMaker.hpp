@@ -5,6 +5,8 @@
 #include <SolMeshUtility.hpp>
 #include <assimp/scene.h>
 
+namespace Sol
+{
 class MeshletGenerator
 {
 public:
@@ -125,4 +127,5 @@ private:
 	std::vector<std::uint32_t>  m_primitiveIndices;
 	std::vector<MeshletDetails> m_meshletDetails;
 };
+}
 #endif

@@ -1,6 +1,8 @@
 #include <SolScene.hpp>
 #include <ConversionUtilities.hpp>
 
+namespace Sol
+{
 void SolScene::SetSceneNodes(const SceneProcessor& sceneProcessor)
 {
 	using namespace DirectX;
@@ -151,4 +153,5 @@ void SolScene::TraverseMeshHierarchyDetails(
 			child, tempAccumulatedTransform, sceneNodeData, meshes, childrenOffset, modelIndex
 		);
 	}
+}
 }

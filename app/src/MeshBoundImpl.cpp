@@ -5,6 +5,8 @@
 #include <MeshletMaker.hpp>
 #include <DirectXPackedVector.h>
 
+namespace Sol
+{
 // AABB Generator
 void AABBGenerator::ProcessAxes(const DirectX::XMFLOAT3& position) noexcept
 {
@@ -440,4 +442,5 @@ ClusterNormalCone GenerateNormalCone(
 	}
 
 	return normalConeGen.GenerateNormalCone();
+}
 }

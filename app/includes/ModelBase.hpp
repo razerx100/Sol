@@ -7,6 +7,8 @@
 #include <SolMeshUtility.hpp>
 #include <Model.hpp>
 
+namespace Sol
+{
 class ModelTransform
 {
 public:
@@ -626,4 +628,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

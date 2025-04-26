@@ -3,6 +3,8 @@
 #include <optional>
 #include <GraphicsTechniqueExtension.hpp>
 
+namespace Sol
+{
 class GraphicsTechniqueExtensionBase : public GraphicsTechniqueExtension
 {
 public:
@@ -100,4 +102,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

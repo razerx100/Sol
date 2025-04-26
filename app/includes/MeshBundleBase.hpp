@@ -7,6 +7,8 @@
 #include <assimp/scene.h>
 #include <SceneMeshProcessor.hpp>
 
+namespace Sol
+{
 class MeshBundleTempIntermediate
 {
 public:
@@ -186,4 +188,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

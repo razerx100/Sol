@@ -2,6 +2,8 @@
 #define GLTF_OBJECT_HPP_
 #include <tiny_gltf.h>
 
+namespace Sol
+{
 class GLTFObject
 {
 public:
@@ -20,4 +22,5 @@ private:
 private:
 	tinygltf::Model m_gltf;
 };
+}
 #endif

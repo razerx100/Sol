@@ -8,6 +8,8 @@
 #include <DirectXMath.h>
 #include <Camera.hpp>
 
+namespace Sol
+{
 class _BaseCamera : public Camera
 {
 public:
@@ -144,4 +146,5 @@ private:
 	float             m_pitch;
 	float             m_yaw;
 };
+}
 #endif

@@ -9,6 +9,8 @@
 #include <SceneProcessor.hpp>
 #include <TextureAtlas.hpp>
 
+namespace Sol
+{
 class SceneMaterialProcessor
 {
 public:
@@ -223,4 +225,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

@@ -6,6 +6,8 @@
 #include <SolMeshUtility.hpp>
 #include <GLTFObject.hpp>
 
+namespace Sol
+{
 class SceneMeshProcessor
 {
 public:
@@ -60,4 +62,5 @@ namespace SceneMeshProcessor1
 	[[nodiscard]]
 	MeshBundleTemporaryData GenerateTemporaryMeshData(const GLTFObject& gltfObj, bool meshShader);
 };
+}
 #endif

@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <assimp/GltfMaterial.h>
 
+namespace Sol
+{
 // Scene Material Processor
 void SceneMaterialProcessor::ProcessMeshAndMaterialData()
 {
@@ -125,4 +127,5 @@ void SceneMaterialProcessor::ConfigureMaterialTextures(
 			}
 		);
 	}
+}
 }
