@@ -226,7 +226,9 @@ private:
 	static void SetInputCallback(Window_t& window, InputManager_t* inputManager)
 	{
 		if constexpr (inputModule == InputModule::Pluto)
+#ifdef SOL_WIN32
 			window.AddInputCallback(&Win32InputCallbackProxy, inputManager);
+#endif
 	}
 
 	static void ResizeCallback(void* callbackData, void* extraData)
@@ -275,6 +277,23 @@ private:
 		SetDefaultTextureDetails(static_cast<std::uint32_t>(defaultTexIndex), bindIndex);
 	}
 
+	void ResetCallbacks() noexcept
+	{
+		// Remove all the old callbacks.
+		m_inputManager.UnsubscribeAllCallbacks(InputEvent::Fullscreen);
+
+		m_inputManager.UnsubscribeAllCallbacks(InputEvent::Resize);
+
+		m_window.RemoveAllCallbacks();
+
+		// Add the new ones.
+		m_inputManager.SubscribeToEvent(InputEvent::Fullscreen, &FullscreenCallback, this);
+
+		m_inputManager.SubscribeToEvent(InputEvent::Resize, &ResizeCallback, this);
+
+		SetInputCallback(m_window, &m_inputManager);
+	}
+
 private:
 	// Default resolution
 	static constexpr std::uint32_t s_width      = 1920u;
@@ -282,16 +301,16 @@ private:
 	static constexpr std::uint32_t s_frameCount = 2u;
 
 private:
-	std::string                   m_appName;
-	ConfigManager                 m_configManager;
-	FrameTime                     m_frameTime;
-	std::shared_ptr<ThreadPool>   m_threadPool;
-	InputManager_t                m_inputManager;
-	Window_t                      m_window;
-	Renderer_t                    m_renderer;
-	RenderPassManager             m_renderPassManager;
-	ExtensionManager              m_extensionManager;
-	App<inputModule>              m_app;
+	std::string                 m_appName;
+	ConfigManager               m_configManager;
+	FrameTime                   m_frameTime;
+	std::shared_ptr<ThreadPool> m_threadPool;
+	InputManager_t              m_inputManager;
+	Window_t                    m_window;
+	Renderer_t                  m_renderer;
+	RenderPassManager           m_renderPassManager;
+	ExtensionManager            m_extensionManager;
+	App<inputModule>            m_app;
 
 public:
 	Sol(const Sol&) = delete;
@@ -308,7 +327,11 @@ public:
 		m_renderPassManager{ std::move(other.m_renderPassManager) },
 		m_extensionManager{ std::move(other.m_extensionManager) },
 		m_app{ std::move(other.m_app) }
-	{}
+	{
+		// Need to reset the callbacks after a move, as they would have the pointers
+		// to the old object, which should be destroyed after this function call.
+		ResetCallbacks();
+	}
 	Sol& operator=(Sol&& other) noexcept
 	{
 		m_appName           = std::move(other.m_appName);
@@ -321,6 +344,10 @@ public:
 		m_renderPassManager = std::move(other.m_renderPassManager);
 		m_extensionManager  = std::move(other.m_extensionManager);
 		m_app               = std::move(other.m_app);
+
+		// Need to reset the callbacks after a move, as they would have the pointers
+		// to the old object, which should be destroyed after this function call.
+		ResetCallbacks();
 
 		return *this;
 	}
