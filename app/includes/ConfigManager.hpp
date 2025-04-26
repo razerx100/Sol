@@ -41,6 +41,8 @@ public:
 		return m_parser.GetValue("Renderer", "Modules");
 	}
 	[[nodiscard]]
+	RendererModule GetRendererModuleType() const noexcept;
+	[[nodiscard]]
 	RenderEngineType GetRenderEngineType() const noexcept;
 	[[nodiscard]]
 	std::string GeIOName() const noexcept

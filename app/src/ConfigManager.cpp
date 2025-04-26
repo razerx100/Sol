@@ -50,6 +50,14 @@ void ConfigManager::ReadConfigFile() noexcept
 	}
 }
 
+RendererModule ConfigManager::GetRendererModuleType() const noexcept
+{
+	if (GetRendererName() == "Gaia")
+		return RendererModule::Gaia;
+	else
+		return RendererModule::Terra;
+}
+
 RenderEngineType ConfigManager::GetRenderEngineType() const noexcept
 {
 	RenderEngineType renderEngineType = RenderEngineType::IndividualDraw;
