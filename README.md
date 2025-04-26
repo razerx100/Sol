@@ -1,5 +1,5 @@
 # Sol
-Manager module/executable which dynamically links to different modules to form a game engine. Modules must have the required interfaces implemented.
+Manager module/executable with different library modules to form a game engine.
 
 # Dependencies
 1. [Pluto](https://github.com/razerx100/Pluto).
