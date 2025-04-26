@@ -3,7 +3,7 @@
 #include <cstring>
 #include <optional>
 #include <format>
-#include <Exception.hpp>
+#include <SolException.hpp>
 #include <unordered_map>
 
 #include <TextureAtlas.hpp>

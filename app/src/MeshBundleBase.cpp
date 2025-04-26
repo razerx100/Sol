@@ -4,7 +4,7 @@
 #include <cassert>
 #include <MeshBoundImpl.hpp>
 #include <BoundingVolumes.hpp>
-#include <Exception.hpp>
+#include <SolException.hpp>
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 #include <ConversionUtilities.hpp>

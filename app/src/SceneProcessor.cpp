@@ -1,5 +1,5 @@
 #include <SceneProcessor.hpp>
-#include <Exception.hpp>
+#include <SolException.hpp>
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 

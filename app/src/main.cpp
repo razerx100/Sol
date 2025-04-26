@@ -1,7 +1,7 @@
 #include <memory>
 #include <Sol.hpp>
 #include <ConfigManager.hpp>
-#include <Exception.hpp>
+#include <SolException.hpp>
 #include <ExceptionMessageBox.hpp>
 
 template<RendererModule module_t, class Engine_t>
