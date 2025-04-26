@@ -2,7 +2,6 @@
 #define SOL_HPP_
 #include <memory>
 #include <vector>
-#include <App.hpp>
 #include <InputManager.hpp>
 #include <ThreadPool.hpp>
 #include <ConfigManager.hpp>
@@ -27,7 +26,8 @@ template<
 	RendererModule rendererModule,
 	WindowModule windowModule,
 	InputModule inputModule,
-	class rendererEngine_t
+	class rendererEngine_t,
+	class App_t
 >
 class Sol
 {
@@ -310,7 +310,7 @@ private:
 	Renderer_t                  m_renderer;
 	RenderPassManager           m_renderPassManager;
 	ExtensionManager            m_extensionManager;
-	App<inputModule>            m_app;
+	App_t                       m_app;
 
 public:
 	Sol(const Sol&) = delete;

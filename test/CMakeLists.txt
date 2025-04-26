@@ -6,10 +6,6 @@ add_executable(SolTest
     ${SRC}
 )
 
-target_include_directories(SolTest PRIVATE ${SOL_PRIVATE_INCLUDES})
-
-unset(SOL_PRIVATE_INCLUDES)
-
 if(MSVC)
     target_compile_options(SolTest PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++latest /Zc:__cplusplus)
 endif()
@@ -30,10 +26,7 @@ endif()
 
 FetchContent_MakeAvailable(googletest)
 
-target_link_libraries(SolTest PRIVATE
-    GTest::gtest_main SolApp
-    razer::venus razer::pluto razer::gaiaX razer::terra razer::luna razer::DxMath razer::stb
-)
+target_link_libraries(SolTest PRIVATE GTest::gtest_main SolApp)
 
 include(GoogleTest)
 

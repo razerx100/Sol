@@ -14,8 +14,10 @@
 #include <AllocationLiterals.hpp>
 #include <SolScene.hpp>
 
-namespace Sol
+namespace ExampleApp
 {
+using namespace Sol;
+
 template<InputModule inputModule>
 class App
 {
