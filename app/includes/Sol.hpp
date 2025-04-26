@@ -8,8 +8,6 @@
 #include <ConfigManager.hpp>
 #include <TimeManager.hpp>
 
-#include <PlutoInstance.hpp>
-
 #include <RendererVK.hpp>
 #include <RendererDx12.hpp>
 #include <TextureAtlas.hpp>
@@ -28,6 +26,7 @@ namespace Sol
 template<
 	RendererModule rendererModule,
 	WindowModule windowModule,
+	InputModule inputModule,
 	class rendererEngine_t
 >
 class Sol
@@ -53,37 +52,45 @@ class Sol
 	template<>
 	struct RendererModuleConditional<RendererModule::Gaia> { using type = RendererD3D_t; };
 
-	using Renderer_t = typename RendererModuleConditional<rendererModule>::type;
+	template<InputModule inputModule>
+	struct InputModuleConditional { using type = Pluto::InputManager; };
 
-	using Window_t   = typename WindowModuleConditional<windowModule>::type;
+	using Renderer_t     = typename RendererModuleConditional<rendererModule>::type;
+
+	using Window_t       = typename WindowModuleConditional<windowModule>::type;
+
+	using InputManager_t = typename InputModuleConditional<inputModule>::type;
 
 public:
 	Sol(const std::string& appName, ConfigManager&& configManager)
 		: m_appName{ appName },
-		m_configManager{ std::move(configManager) }, m_frameTime{},
+		m_configManager{ std::move(configManager) },
+		m_frameTime{},
 		m_threadPool{ std::make_shared<ThreadPool>( 8u ) },
-		m_inputManager{ CreateInputManager(m_configManager.GeIOName()) },
+		m_inputManager{ CreateInputManager() },
 		m_window{ CreateWindowModule(s_width, s_height, appName) },
 		m_renderer{
 			CreateRenderer(
 				appName, s_width, s_height, s_frameCount,
 				m_threadPool, m_window.GetWindowHandle(), m_window.GetModuleInstance()
 			)
-		}, m_extensionManager{}, m_renderPassManager{ m_configManager.GetRenderEngineType() },
+		},
+		m_extensionManager{},
+		m_renderPassManager{ m_configManager.GetRenderEngineType() },
 		m_app{ m_extensionManager, m_renderPassManager, s_frameCount }
 	{
 		// Input Manager
-		m_inputManager->AddGamepadSupport(1u);
+		m_inputManager.AddGamepadSupport(1u);
 
-		m_inputManager->SubscribeToEvent(InputEvent::Fullscreen, &FullscreenCallback, this);
+		m_inputManager.SubscribeToEvent(InputEvent::Fullscreen, &FullscreenCallback, this);
 
-		m_inputManager->SubscribeToEvent(InputEvent::Resize, &ResizeCallback, this);
+		m_inputManager.SubscribeToEvent(InputEvent::Resize, &ResizeCallback, this);
 
 		// Window
 		m_window.SetWindowIcon(L"resources/icon/Sol.ico");
 		m_window.SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
 
-		SetInputCallback(m_window, m_inputManager.get(), m_configManager.GeIOName());
+		SetInputCallback(m_window, &m_inputManager);
 
 		// Renderer
 		m_renderer.SetShaderPath(L"resources/shaders/");
@@ -141,7 +148,7 @@ public:
 					while (accumulatedElapsedTime >= updateDelta)
 					{
 						m_app.PhysicsUpdate(
-							*m_inputManager, m_renderer, m_extensionManager, m_renderPassManager
+							m_inputManager, m_renderer, m_extensionManager, m_renderPassManager
 						);
 						accumulatedElapsedTime -= updateDelta;
 					}
@@ -151,7 +158,7 @@ public:
 				else
 					accumulatedElapsedTime += deltaTime;
 
-				m_inputManager->UpdateIndependentInputs();
+				m_inputManager.UpdateIndependentInputs();
 				m_renderer.Render();
 			}
 
@@ -176,14 +183,9 @@ public:
 
 private:
 	[[nodiscard]]
-	static std::unique_ptr<InputManager> CreateInputManager(const std::string& moduleName)
+	static InputManager_t CreateInputManager()
 	{
-		std::unique_ptr<InputManager> inputManager{};
-
-		if (moduleName == "Pluto")
-			inputManager = CreatePlutoInstance();
-
-		return inputManager;
+		return InputManager_t{};
 	}
 
 	[[nodiscard]]
@@ -216,15 +218,14 @@ private:
 		void* hwnd, std::uint32_t message, std::uint64_t wParam, std::uint64_t lParam,
 		void* extraData
 	) {
-		auto inputManager = static_cast<InputManager*>(extraData);
+		auto inputManager = static_cast<InputManager_t*>(extraData);
 
 		inputManager->InputCallback(hwnd, message, wParam, lParam);
 	}
 
-	static void SetInputCallback(
-		Window_t& window, InputManager* inputManager, const std::string& ioModuleName
-	) {
-		if (ioModuleName == "Pluto")
+	static void SetInputCallback(Window_t& window, InputManager_t* inputManager)
+	{
+		if constexpr (inputModule == InputModule::Pluto)
 			window.AddInputCallback(&Win32InputCallbackProxy, inputManager);
 	}
 
@@ -285,12 +286,12 @@ private:
 	ConfigManager                 m_configManager;
 	FrameTime                     m_frameTime;
 	std::shared_ptr<ThreadPool>   m_threadPool;
-	std::unique_ptr<InputManager> m_inputManager;
+	InputManager_t                m_inputManager;
 	Window_t                      m_window;
 	Renderer_t                    m_renderer;
 	RenderPassManager             m_renderPassManager;
 	ExtensionManager              m_extensionManager;
-	App                           m_app;
+	App<inputModule>              m_app;
 
 public:
 	Sol(const Sol&) = delete;

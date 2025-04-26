@@ -16,8 +16,18 @@
 
 namespace Sol
 {
+template<InputModule inputModule>
 class App
 {
+	template<InputModule inputModule>
+	struct KeycodeConditional { using type = Pluto::SKeyCodes; };
+
+	template<InputModule inputModule>
+	struct KeyboardConditional { using type = Pluto::Keyboard; };
+
+	using SKeyCodes = typename KeycodeConditional<inputModule>::type;
+	using Keyboard  = typename KeyboardConditional<inputModule>::type;
+
 public:
 	App(
 		ExtensionManager& extensionManager, RenderPassManager& renderPassManager,
@@ -416,9 +426,9 @@ public:
 		*/
 	}
 
-	template<class Renderer_t>
+	template<class InputManager_t, class Renderer_t>
 	void PhysicsUpdate(
-		InputManager& inputManager, Renderer_t& renderer, ExtensionManager& extensionManager,
+		InputManager_t& inputManager, Renderer_t& renderer, ExtensionManager& extensionManager,
 		RenderPassManager& renderPassManager
 	) {
 		const Keyboard& keyboard = inputManager.GetKeyboard();
@@ -704,8 +714,10 @@ public:
 
 		if (keyboard.IsKeyPressed(SKeyCodes::P))
 		{
-			const bool bundle1Exists = cubeBundleIndex1 != std::numeric_limits<std::uint32_t>::max();
-			const bool sphereExists  = sphereMeshBundleIndex != std::numeric_limits<std::uint32_t>::max();
+			const bool bundle1Exists
+				= cubeBundleIndex1 != std::numeric_limits<std::uint32_t>::max();
+			const bool sphereExists
+				= sphereMeshBundleIndex != std::numeric_limits<std::uint32_t>::max();
 
 			if (bundle1Exists && sphereExists)
 			{

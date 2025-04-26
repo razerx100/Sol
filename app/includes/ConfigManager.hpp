@@ -46,9 +46,11 @@ public:
 	RenderEngineType GetRenderEngineType() const noexcept;
 	[[nodiscard]]
 	WindowModule GetWindowModuleType() const noexcept;
+	[[nodiscard]]
+	InputModule GetInputModuleType() const noexcept;
 
 	[[nodiscard]]
-	std::string GeIOName() const noexcept
+	std::string GetIOName() const noexcept
 	{
 		return m_parser.GetValue("IO", "Modules");
 	}

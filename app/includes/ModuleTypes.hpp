@@ -20,5 +20,10 @@ enum class WindowModule
 {
 	Luna
 };
+
+enum class InputModule
+{
+	Pluto
+};
 }
 #endif

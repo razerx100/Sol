@@ -72,6 +72,16 @@ WindowModule ConfigManager::GetWindowModuleType() const noexcept
 	return moduleType;
 }
 
+InputModule ConfigManager::GetInputModuleType() const noexcept
+{
+	InputModule moduleType = InputModule::Pluto;
+
+	if (GetIOName() == "Pluto")
+		moduleType = InputModule::Pluto;
+
+	return moduleType;
+}
+
 RenderEngineType ConfigManager::GetRenderEngineType() const noexcept
 {
 	RenderEngineType renderEngineType = RenderEngineType::IndividualDraw;
