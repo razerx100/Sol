@@ -1,14 +1,57 @@
+#include <memory>
 #include <Sol.hpp>
+#include <ConfigManager.hpp>
 #include <Exception.hpp>
 #include <ExceptionMessageBox.hpp>
+
+template<RendererModule module_t, class Engine_t>
+int RunSol(ConfigManager&& configManager)
+{
+	using Sol_t = Sol<module_t, Engine_t>;
+
+	auto sol = std::make_unique<Sol_t>("Sol", std::move(configManager));
+
+	return sol->Run();
+}
 
 int main()
 {
 	try
 	{
-		Sol sol{ "Sol" };
+		ConfigManager configManager{ L"config.ini" };
 
-		return sol.Run();
+		const RenderEngineType engineType = configManager.GetRenderEngineType();
+
+		if (configManager.GetRendererName() == "Gaia")
+		{
+			constexpr RendererModule renderModule_t = RendererModule::Gaia;
+
+			if (engineType == RenderEngineType::MeshDraw)
+				return RunSol<renderModule_t, Gaia::RenderEngineMS>(std::move(configManager));
+			else if (engineType == RenderEngineType::IndirectDraw)
+				return RunSol<renderModule_t, Gaia::RenderEngineVSIndirect>(
+					std::move(configManager)
+				);
+			else
+				return RunSol<renderModule_t, Gaia::RenderEngineVSIndividual>(
+					std::move(configManager)
+				);
+		}
+		else
+		{
+			constexpr RendererModule renderModule_t = RendererModule::Terra;
+
+			if (engineType == RenderEngineType::MeshDraw)
+				return RunSol<renderModule_t, Terra::RenderEngineMS>(std::move(configManager));
+			else if (engineType == RenderEngineType::IndirectDraw)
+				return RunSol<renderModule_t, Terra::RenderEngineVSIndirect>(
+					std::move(configManager)
+				);
+			else
+				return RunSol<renderModule_t, Terra::RenderEngineVSIndividual>(
+					std::move(configManager)
+				);
+		}
 	}
 	catch (const Exception& e)
 	{

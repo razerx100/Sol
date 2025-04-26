@@ -4,7 +4,7 @@
 #include <memory>
 #include <BlinnPhongLightTechnique.hpp>
 #include <WeightedTransparencyTechnique.hpp>
-#include <Renderer.hpp>
+#include <ExternalResourceManager.hpp>
 
 class ExtensionManager
 {
@@ -14,13 +14,45 @@ public:
 		m_weightedTransparencyIndex{ 0u }
 	{}
 
-	void SetBlinnPhongLight(Renderer* renderer, std::uint32_t frameCount);
-	void SetWeightedTransparency(Renderer* renderer);
+	void SetBlinnPhongLight(std::uint32_t frameCount);
+	void SetWeightedTransparency();
 
-	void SetBuffers(Renderer* renderer);
-	void SetAllExtensions(Renderer* renderer);
+	template<class Renderer_t>
+	void SetBuffers(Renderer_t& renderer)
+	{
+		ExternalResourceManager* resourceManager = renderer.GetExternalResourceManager();
+		ExternalResourceFactory* resourceFactory = resourceManager->GetResourceFactory();
 
-	void SetFixedDescriptors();
+		if (m_blinnPhongLight)
+			m_blinnPhongLight->SetBuffers(resourceFactory);
+
+		if (m_weightedTransparency)
+			m_weightedTransparency->SetBuffers(resourceFactory);
+	}
+
+	template<class Renderer_t>
+	void SetAllExtensions(Renderer_t& renderer)
+	{
+		ExternalResourceManager* resourceManager = renderer.GetExternalResourceManager();
+
+		if (m_blinnPhongLight)
+			m_blinnPhongLightIndex
+				= resourceManager->AddGraphicsTechniqueExtension(m_blinnPhongLight);
+
+		if (m_weightedTransparency)
+			m_weightedTransparencyIndex
+				= resourceManager->AddGraphicsTechniqueExtension(m_weightedTransparency);
+	}
+
+	template<class Renderer_t>
+	void SetFixedDescriptors(Renderer_t& renderer)
+	{
+		if (m_blinnPhongLight)
+			m_blinnPhongLight->SetFixedDescriptors(renderer);
+
+		if (m_weightedTransparency)
+			m_weightedTransparency->SetFixedDescriptors(renderer);
+	}
 
 	[[nodiscard]]
 	WeightedTransparencyTechnique* GetWeightedTransparency() const noexcept

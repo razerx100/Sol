@@ -28,6 +28,8 @@ target_include_directories(SolApp PRIVATE ${SOL_PRIVATE_INCLUDES})
 if(MSVC)
     target_compile_options(SolApp PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++latest /Zc:__cplusplus)
 
+    target_compile_definitions(SolApp PRIVATE SOL_WIN32)
+
    if(NOT ADD_TEST_SOL)
        target_link_options(SolApp PRIVATE /subsystem:windows /ENTRY:mainCRTStartup)
    endif()

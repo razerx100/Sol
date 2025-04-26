@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <MeshBundle.hpp>
 #include <SolMeshUtility.hpp>
-#include <Renderer.hpp>
 #include <assimp/scene.h>
 #include <SceneMeshProcessor.hpp>
 

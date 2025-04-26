@@ -8,9 +8,10 @@ ShaderName BlinnPhongLightTechnique::s_opaqueLightDstShaderName      = L"BlinnPh
 ShaderName BlinnPhongLightTechnique::s_transparentLightSrcShaderName = L"NoLightTransparentShader";
 ShaderName BlinnPhongLightTechnique::s_transparentLightDstShaderName = L"BlinnPhongTransparentShader";
 
-BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount)
-	: GraphicsTechniqueExtensionBase{ renderer }, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
-	m_materials{}, m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u }, m_frameCount{ frameCount }
+BlinnPhongLightTechnique::BlinnPhongLightTechnique(std::uint32_t frameCount)
+	: GraphicsTechniqueExtensionBase{}, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
+	m_materials{}, m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u },
+	m_frameCount{ frameCount }
 {
 	constexpr size_t bufferBindingCount = 3u;
 
@@ -42,70 +43,6 @@ BlinnPhongLightTechnique::BlinnPhongLightTechnique(Renderer* renderer, std::uint
 			.type         = ExternalBufferType::CPUVisibleSSBO
 		}
 	};
-}
-
-std::uint32_t BlinnPhongLightTechnique::AddLight(
-	std::shared_ptr<LightSource> lightSource, BlinnPhongLightType type
-) {
-	const size_t lightIndex = m_lights.Add(
-		LightInfo
-		{
-			.source     = std::move(lightSource),
-			.properties = BlinnPhongLightProperties
-			{
-				.direction   = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
-				.ambient     = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.innerCutoff = 1.f,
-				.diffuse     = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.specular    = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
-				.outerCutoff = 1.f,
-				.constant    = 1.f,
-				.linear      = 0.f,
-				.quadratic   = 0.f,
-				.lightType   = static_cast<std::uint32_t>(type)
-			}
-		}, s_extraAllocationCount
-	);
-
-	if (lightIndex >= std::size(m_lightStatus))
-		m_lightStatus.resize(std::size(m_lights), false);
-
-	m_lightStatus[lightIndex] = true;
-
-	const NewBufferInfo_t newBufferSize = GetNewBufferSize(
-		*m_lightInfoExtBuffer, sizeof(LightData), std::size(m_lights), m_frameCount,
-		s_extraAllocationCount
-	);
-
-	if (newBufferSize)
-	{
-		const NewBufferInfo& newBufferInfo = newBufferSize.value();
-
-		m_lightInfoInstanceSize = newBufferInfo.instanceSize;
-
-		// Should wait for the gpu to finish before recreating the buffer.
-		m_renderer->WaitForGPUToFinish();
-
-		m_lightInfoExtBuffer->Create(newBufferInfo.bufferSize);
-
-		// The new light data will be copied on the next frame. And we don't
-		// need to worry about the GPU waiting for that. But we will need to
-		// update the descriptor if the buffer size is increased.
-		UpdateLightInfoDescriptors();
-	}
-
-	return static_cast<std::uint32_t>(lightIndex);
-}
-
-std::uint32_t BlinnPhongLightTechnique::AddMaterial(const BlinnPhongMaterial& material)
-{
-	m_renderer->WaitForGPUToFinish();
-
-	const auto index = static_cast<std::uint32_t>(m_materials.Add(material));
-
-	UpdateMaterialDescriptor();
-
-	return index;
 }
 
 void BlinnPhongLightTechnique::RemoveMaterial(size_t index)
@@ -269,32 +206,11 @@ void BlinnPhongLightTechnique::SetBuffers(ExternalResourceFactory* resourceFacto
 	}
 }
 
-void BlinnPhongLightTechnique::UpdateLightCountDescriptors()
-{
-	for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
-		UpdateCPUBufferDescriptor(s_lightCountBufferIndex, frameIndex, s_lightCountInstanceSize);
-}
-
-void BlinnPhongLightTechnique::UpdateLightInfoDescriptors()
-{
-	for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
-		UpdateCPUBufferDescriptor(s_lightInfoBufferIndex, frameIndex, m_lightInfoInstanceSize);
-}
-
-void BlinnPhongLightTechnique::UpdateMaterialDescriptor()
-{
-	UpdateCPUBufferDescriptor(s_materialBufferIndex, m_materials.GetExtBuffer()->BufferSize());
-}
-
-void BlinnPhongLightTechnique::SetFixedDescriptors()
-{
-	UpdateLightCountDescriptors();
-}
-
 ExternalGraphicsPipeline BlinnPhongLightTechnique::GetOpaqueLightSrcPipeline(
 	const GraphicsPipelineManager& graphicsPipelineManager
 ) noexcept {
-	ExternalGraphicsPipeline opaqueNoLightPipeline = graphicsPipelineManager.GetMainPassOpaqueSignature();
+	ExternalGraphicsPipeline opaqueNoLightPipeline
+		= graphicsPipelineManager.GetMainPassOpaqueSignature();
 
 	opaqueNoLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
 	opaqueNoLightPipeline.SetFragmentShader(s_opaqueLightSrcShaderName);

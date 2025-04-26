@@ -53,12 +53,75 @@ class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 	};
 
 public:
-	BlinnPhongLightTechnique(Renderer* renderer, std::uint32_t frameCount);
+	BlinnPhongLightTechnique(std::uint32_t frameCount);
 
+	template<class Renderer_t>
 	[[nodiscard]]
-	std::uint32_t AddLight(std::shared_ptr<LightSource> lightSource, BlinnPhongLightType type);
+	std::uint32_t AddLight(
+		Renderer_t& renderer, std::shared_ptr<LightSource> lightSource, BlinnPhongLightType type
+	) {
+		const size_t lightIndex = m_lights.Add(
+			LightInfo
+			{
+				.source     = std::move(lightSource),
+				.properties = BlinnPhongLightProperties
+				{
+					.direction   = DirectX::XMFLOAT3{ 0.f, 0.f, 0.f },
+					.ambient     = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+					.innerCutoff = 1.f,
+					.diffuse     = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+					.specular    = DirectX::XMFLOAT3{ 1.f, 1.f, 1.f },
+					.outerCutoff = 1.f,
+					.constant    = 1.f,
+					.linear      = 0.f,
+					.quadratic   = 0.f,
+					.lightType   = static_cast<std::uint32_t>(type)
+				}
+			}, s_extraAllocationCount
+		);
+
+		if (lightIndex >= std::size(m_lightStatus))
+			m_lightStatus.resize(std::size(m_lights), false);
+
+		m_lightStatus[lightIndex] = true;
+
+		const NewBufferInfo_t newBufferSize = GetNewBufferSize(
+			*m_lightInfoExtBuffer, sizeof(LightData), std::size(m_lights), m_frameCount,
+			s_extraAllocationCount
+		);
+
+		if (newBufferSize)
+		{
+			const NewBufferInfo& newBufferInfo = newBufferSize.value();
+
+			m_lightInfoInstanceSize = newBufferInfo.instanceSize;
+
+			// Should wait for the gpu to finish before recreating the buffer.
+			renderer.WaitForGPUToFinish();
+
+			m_lightInfoExtBuffer->Create(newBufferInfo.bufferSize);
+
+			// The new light data will be copied on the next frame. And we don't
+			// need to worry about the GPU waiting for that. But we will need to
+			// update the descriptor if the buffer size is increased.
+			UpdateLightInfoDescriptors(renderer);
+		}
+
+		return static_cast<std::uint32_t>(lightIndex);
+	}
+
+	template<class Renderer_t>
 	[[nodiscard]]
-	std::uint32_t AddMaterial(const BlinnPhongMaterial& material);
+	std::uint32_t AddMaterial(Renderer_t& renderer, const BlinnPhongMaterial& material)
+	{
+		renderer.WaitForGPUToFinish();
+
+		const auto index = static_cast<std::uint32_t>(m_materials.Add(material));
+
+		UpdateMaterialDescriptor(renderer);
+
+		return index;
+	}
 
 	void RemoveLight(size_t index) noexcept;
 	void ToggleLight(size_t index, bool value) noexcept;
@@ -82,7 +145,11 @@ public:
 
 	void RemoveMaterial(size_t index);
 
-	void SetFixedDescriptors();
+	template<class Renderer_t>
+	void SetFixedDescriptors(Renderer_t& renderer)
+	{
+		UpdateLightCountDescriptors(renderer);
+	}
 
 	void UpdateCPUData(size_t frameIndex) noexcept override;
 
@@ -126,9 +193,31 @@ private:
 	};
 
 private:
-	void UpdateLightCountDescriptors();
-	void UpdateLightInfoDescriptors();
-	void UpdateMaterialDescriptor();
+	template<class Renderer_t>
+	void UpdateLightCountDescriptors(Renderer_t& renderer)
+	{
+		for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
+			UpdateCPUBufferDescriptor(
+				s_lightCountBufferIndex, frameIndex, s_lightCountInstanceSize, renderer
+			);
+	}
+
+	template<class Renderer_t>
+	void UpdateLightInfoDescriptors(Renderer_t& renderer)
+	{
+		for (size_t frameIndex = 0u; frameIndex < m_frameCount; ++frameIndex)
+			UpdateCPUBufferDescriptor(
+				s_lightInfoBufferIndex, frameIndex, m_lightInfoInstanceSize, renderer
+			);
+	}
+
+	template<class Renderer_t>
+	void UpdateMaterialDescriptor(Renderer_t& renderer)
+	{
+		UpdateCPUBufferDescriptor(
+			s_materialBufferIndex, m_materials.GetExtBuffer()->BufferSize(), renderer
+		);
+	}
 
 private:
 	std::shared_ptr<ExternalBuffer>          m_lightCountExtBuffer;
