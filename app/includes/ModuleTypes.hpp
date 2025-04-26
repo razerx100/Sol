@@ -1,5 +1,5 @@
-#ifndef RENDERER_TYPES_HPP_
-#define RENDERER_TYPES_HPP_
+#ifndef SOL_MODULE_TYPES_HPP_
+#define SOL_MODULE_TYPES_HPP_
 
 namespace Sol
 {
@@ -14,6 +14,11 @@ enum class RendererModule
 {
 	Terra,
 	Gaia
+};
+
+enum class WindowModule
+{
+	Luna
 };
 }
 #endif

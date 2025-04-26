@@ -6,11 +6,11 @@
 
 using namespace Sol;
 
-template<RendererModule module_t, class Engine_t>
+template<RendererModule rendererModule_t, WindowModule windowModule_t, class Engine_t>
 [[nodiscard]]
 static int RunSol(ConfigManager&& configManager)
 {
-	using Sol_t = ::Sol::Sol<module_t, Engine_t>;
+	using Sol_t = ::Sol::Sol<rendererModule_t, windowModule_t, Engine_t>;
 
 	auto sol = std::make_unique<Sol_t>("Sol", std::move(configManager));
 
@@ -50,7 +50,7 @@ struct RenderEngineConditional<RendererModule::Gaia, RenderEngineType::MeshDraw>
 	using type = Gaia::RenderEngineMS;
 };
 
-template<RendererModule module_t>
+template<RendererModule rendererModule_t, WindowModule windowModule_t>
 [[nodiscard]]
 static int ConfigureRenderEngineAndRunSol(
 	ConfigManager&& configManager, RenderEngineType engineType
@@ -58,31 +58,48 @@ static int ConfigureRenderEngineAndRunSol(
 	using enum RenderEngineType;
 
 	if (engineType == MeshDraw)
-		return RunSol<module_t, typename RenderEngineConditional<module_t, MeshDraw>::type>(
-			std::move(configManager)
-		);
+		return RunSol<
+			rendererModule_t,
+			windowModule_t,
+			typename RenderEngineConditional<rendererModule_t, MeshDraw>::type
+		>(std::move(configManager));
 	else if (engineType == IndirectDraw)
-		return RunSol<module_t, typename RenderEngineConditional<module_t, IndirectDraw>::type>(
-			std::move(configManager)
-		);
+		return RunSol<
+			rendererModule_t,
+			windowModule_t,
+			typename RenderEngineConditional<rendererModule_t, IndirectDraw>::type
+		>(std::move(configManager));
 	else
-		return RunSol<module_t, typename RenderEngineConditional<module_t, IndividualDraw>::type>(
-			std::move(configManager)
-		);
+		return RunSol<
+			rendererModule_t,
+			windowModule_t,
+			typename RenderEngineConditional<rendererModule_t, IndividualDraw>::type
+		>(std::move(configManager));
+}
+
+template<WindowModule windowModule_t>
+[[nodiscard]]
+static int ConfigureRendererAndRunSol(
+	ConfigManager&& configManager, RendererModule rendererModuleType, RenderEngineType engineType
+) {
+	if (rendererModuleType == RendererModule::Gaia)
+		return ConfigureRenderEngineAndRunSol<
+			RendererModule::Gaia, windowModule_t
+		>(std::move(configManager), engineType);
+	else
+		return ConfigureRenderEngineAndRunSol<
+			RendererModule::Terra, windowModule_t
+		>(std::move(configManager), engineType);
 }
 
 [[nodiscard]]
-static int ConfigureRendererAndRunSol(
-	ConfigManager&& configManager, RendererModule moduleType, RenderEngineType engineType
+static int ConfigureWindowRendererAndRunSol(
+	ConfigManager&& configManager, RendererModule rendererModuleType,
+	RenderEngineType engineType, [[maybe_unused]] WindowModule windowModuleType
 ) {
-	if (moduleType == RendererModule::Gaia)
-		return ConfigureRenderEngineAndRunSol<RendererModule::Gaia>(
-			std::move(configManager), engineType
-		);
-	else
-		return ConfigureRenderEngineAndRunSol<RendererModule::Terra>(
-			std::move(configManager), engineType
-		);
+	return ConfigureRendererAndRunSol<WindowModule::Luna>(
+		std::move(configManager), rendererModuleType, engineType
+	);
 }
 
 int main()
@@ -91,11 +108,15 @@ int main()
 	{
 		ConfigManager configManager{ L"config.ini" };
 
-		const RendererModule moduleType   = configManager.GetRendererModuleType();
+		const RendererModule rendererModuleType = configManager.GetRendererModuleType();
 
-		const RenderEngineType engineType = configManager.GetRenderEngineType();
+		const RenderEngineType engineType       = configManager.GetRenderEngineType();
 
-		return ConfigureRendererAndRunSol(std::move(configManager), moduleType, engineType);
+		const WindowModule windowModuleType     = configManager.GetWindowModuleType();
+
+		return ConfigureWindowRendererAndRunSol(
+			std::move(configManager), rendererModuleType, engineType, windowModuleType
+		);
 	}
 	catch (const Exception& e)
 	{

@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_PIPELINE_MANAGER_HPP_
 #define GRAPHICS_PIPELINE_MANAGER_HPP_
 #include <ExternalPipeline.hpp>
-#include <RendererTypes.hpp>
+#include <ModuleTypes.hpp>
 
 namespace Sol
 {

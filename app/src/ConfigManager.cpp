@@ -52,10 +52,24 @@ void ConfigManager::ReadConfigFile() noexcept
 
 RendererModule ConfigManager::GetRendererModuleType() const noexcept
 {
+	RendererModule moduleType = RendererModule::Terra;
+
 	if (GetRendererName() == "Gaia")
-		return RendererModule::Gaia;
-	else
-		return RendererModule::Terra;
+		moduleType = RendererModule::Gaia;
+	else if (GetRendererName() == "Terra")
+		moduleType = RendererModule::Terra;
+
+	return moduleType;
+}
+
+WindowModule ConfigManager::GetWindowModuleType() const noexcept
+{
+	WindowModule moduleType = WindowModule::Luna;
+
+	if (GetWindowName() == "Luna")
+		moduleType = WindowModule::Luna;
+
+	return moduleType;
 }
 
 RenderEngineType ConfigManager::GetRenderEngineType() const noexcept

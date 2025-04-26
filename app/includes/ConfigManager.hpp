@@ -3,7 +3,7 @@
 #include <IniParser.hpp>
 #include <array>
 #include <optional>
-#include <RendererTypes.hpp>
+#include <ModuleTypes.hpp>
 
 namespace Sol
 {
@@ -44,6 +44,9 @@ public:
 	RendererModule GetRendererModuleType() const noexcept;
 	[[nodiscard]]
 	RenderEngineType GetRenderEngineType() const noexcept;
+	[[nodiscard]]
+	WindowModule GetWindowModuleType() const noexcept;
+
 	[[nodiscard]]
 	std::string GeIOName() const noexcept
 	{

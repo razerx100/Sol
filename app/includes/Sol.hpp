@@ -4,13 +4,11 @@
 #include <vector>
 #include <App.hpp>
 #include <InputManager.hpp>
-#include <Window.hpp>
 #include <ThreadPool.hpp>
 #include <ConfigManager.hpp>
 #include <TimeManager.hpp>
 
 #include <PlutoInstance.hpp>
-#include <LunaInstance.hpp>
 
 #include <RendererVK.hpp>
 #include <RendererDx12.hpp>
@@ -20,18 +18,29 @@
 #include <RenderPassManager.hpp>
 
 #ifdef SOL_WIN32
+#include <WinWindow.hpp>
 #include <VkSurfaceManagerWin32.hpp>
 #include <VkDisplayManagerWin32.hpp>
 #endif
 
 namespace Sol
 {
-template<RendererModule rendererModule, class rendererEngine_t>
+template<
+	RendererModule rendererModule,
+	WindowModule windowModule,
+	class rendererEngine_t
+>
 class Sol
 {
+	template<WindowModule windowModule>
+	struct WindowModuleConditional { using type = std::void_t<void>; };
+
 #ifdef SOL_WIN32
 	using SurfaceManager_t = Terra::SurfaceManagerWin32;
 	using DisplayManager_t = Terra::DisplayManagerWin32;
+
+	template<>
+	struct WindowModuleConditional<WindowModule::Luna> { using type = Luna::WinWindow; };
 #endif
 
 	using RendererVK_t  = Terra::RendererVK<SurfaceManager_t, DisplayManager_t, rendererEngine_t>;
@@ -46,19 +55,19 @@ class Sol
 
 	using Renderer_t = typename RendererModuleConditional<rendererModule>::type;
 
+	using Window_t   = typename WindowModuleConditional<windowModule>::type;
+
 public:
 	Sol(const std::string& appName, ConfigManager&& configManager)
 		: m_appName{ appName },
 		m_configManager{ std::move(configManager) }, m_frameTime{},
 		m_threadPool{ std::make_shared<ThreadPool>( 8u ) },
 		m_inputManager{ CreateInputManager(m_configManager.GeIOName()) },
-		m_window{
-			CreateWindowModule(m_configManager.GetWindowName(), appName, s_width, s_height)
-		},
+		m_window{ CreateWindowModule(s_width, s_height, appName) },
 		m_renderer{
 			CreateRenderer(
 				appName, s_width, s_height, s_frameCount,
-				m_threadPool, m_window->GetWindowHandle(), m_window->GetModuleInstance()
+				m_threadPool, m_window.GetWindowHandle(), m_window.GetModuleInstance()
 			)
 		}, m_extensionManager{}, m_renderPassManager{ m_configManager.GetRenderEngineType() },
 		m_app{ m_extensionManager, m_renderPassManager, s_frameCount }
@@ -71,10 +80,10 @@ public:
 		m_inputManager->SubscribeToEvent(InputEvent::Resize, &ResizeCallback, this);
 
 		// Window
-		m_window->SetWindowIcon(L"resources/icon/Sol.ico");
-		m_window->SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
+		m_window.SetWindowIcon(L"resources/icon/Sol.ico");
+		m_window.SetTitle(m_appName + " Renderer : " + m_configManager.GetRendererName());
 
-		SetInputCallback(*m_window, m_inputManager.get(), m_configManager.GeIOName());
+		SetInputCallback(m_window, m_inputManager.get(), m_configManager.GeIOName());
 
 		// Renderer
 		m_renderer.SetShaderPath(L"resources/shaders/");
@@ -113,7 +122,7 @@ public:
 		{
 			m_frameTime.GetTimer().SetTimer();
 
-			const std::int32_t exitCode = m_window->Update();
+			const std::int32_t exitCode = m_window.Update();
 
 			if (!exitCode)
 			{
@@ -122,7 +131,7 @@ public:
 				break;
 			}
 
-			if (!m_window->IsMinimised())
+			if (!m_window.IsMinimised())
 			{
 				float deltaTime   = m_frameTime.GetDeltaTime();
 				float updateDelta = m_frameTime.GetGraphicsUpdateDelta();
@@ -151,7 +160,8 @@ public:
 			if (m_frameTime.HasASecondPassed())
 			{
 				static std::string rendererName = m_configManager.GetRendererName();
-				m_window->SetTitle(
+
+				m_window.SetTitle(
 					m_appName + " Renderer : " + rendererName
 					+ " " + std::to_string(m_frameTime.GetFrameCount()) + "fps"
 				);
@@ -177,16 +187,10 @@ private:
 	}
 
 	[[nodiscard]]
-	static std::unique_ptr<Window> CreateWindowModule(
-		const std::string& moduleName, const std::string& appName,
-		std::uint32_t width, std::uint32_t height
+	static Window_t CreateWindowModule(
+		std::uint32_t width, std::uint32_t height, const std::string& appName
 	) {
-		std::unique_ptr<Window> window{};
-
-		if (moduleName == "Luna")
-			window = CreateLunaInstance(width, height, appName.c_str());
-
-		return window;
+		return Window_t{ width, height, appName.c_str() };
 	}
 
 	[[nodiscard]]
@@ -218,7 +222,7 @@ private:
 	}
 
 	static void SetInputCallback(
-		Window& window, InputManager* inputManager, const std::string& ioModuleName
+		Window_t& window, InputManager* inputManager, const std::string& ioModuleName
 	) {
 		if (ioModuleName == "Pluto")
 			window.AddInputCallback(&Win32InputCallbackProxy, inputManager);
@@ -242,7 +246,7 @@ private:
 
 		const RendererType::Extent resolution = sol->m_renderer.GetFirstDisplayCoordinates();
 
-		sol->m_window->ToggleFullscreen(resolution.width, resolution.height);
+		sol->m_window.ToggleFullscreen(resolution.width, resolution.height);
 	}
 
 	void AddDefaultTexture()
@@ -271,6 +275,7 @@ private:
 	}
 
 private:
+	// Default resolution
 	static constexpr std::uint32_t s_width      = 1920u;
 	static constexpr std::uint32_t s_height     = 1080u;
 	static constexpr std::uint32_t s_frameCount = 2u;
@@ -281,7 +286,7 @@ private:
 	FrameTime                     m_frameTime;
 	std::shared_ptr<ThreadPool>   m_threadPool;
 	std::unique_ptr<InputManager> m_inputManager;
-	std::unique_ptr<Window>       m_window;
+	Window_t                      m_window;
 	Renderer_t                    m_renderer;
 	RenderPassManager             m_renderPassManager;
 	ExtensionManager              m_extensionManager;
