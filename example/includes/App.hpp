@@ -133,7 +133,7 @@ public:
 			);
 		}
 
-		cubeLightBundle = std::make_shared<ModelBundleBase>();
+		cubeLightBundle = std::make_unique<ModelBundleBase>();
 
 		cubeLightBundle->AddModel(nonLightPSOIndex, 0.1f);
 
@@ -260,15 +260,13 @@ public:
 
 			cubeLightBundle->SetMeshBundleIndex(testMeshBundleIndex);
 
-			cubeLightBundleIndex = renderer.AddModelBundle(
-				std::make_shared<ModelBundleImpl>(cubeLightBundle)
-			);
+			cubeLightBundleIndex = renderer.AddModelBundle(cubeLightBundle->GetModelBundle());
 
 			renderPassManager.AddModelBundle(cubeLightBundleIndex);
 		}
 
 		{
-			cubeBundle1 = std::make_shared<ModelBundleBase>();
+			cubeBundle1 = std::make_unique<ModelBundleBase>();
 
 			cubeBundle1->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
@@ -309,15 +307,13 @@ public:
 
 			cubeBundle1->SetMeshBundleIndex(testMeshBundleIndex);
 
-			cubeBundleIndex1 = renderer.AddModelBundle(
-				std::make_shared<ModelBundleImpl>(cubeBundle1)
-			);
+			cubeBundleIndex1 = renderer.AddModelBundle(cubeBundle1->GetModelBundle());
 
 			renderPassManager.AddModelBundle(cubeBundleIndex1);
 		}
 
 		{
-			quadBundleT = std::make_shared<ModelBundleBase>();
+			quadBundleT = std::make_unique<ModelBundleBase>();
 
 			quadBundleT->AddModel(lightTransparentPSOIndex, 0.45f)
 				.AddModel(lightTransparentPSOIndex, 0.45f);
@@ -357,16 +353,14 @@ public:
 
 			quadBundleT->SetMeshBundleIndex(testMeshBundleIndex);
 
-			quadBundleIndexT = renderer.AddModelBundle(
-				std::make_shared<ModelBundleImpl>(quadBundleT)
-			);
+			quadBundleIndexT = renderer.AddModelBundle(quadBundleT->GetModelBundle());
 
 			if (transparencyPass)
 				transparencyPass->AddTransparentModelBundle(quadBundleIndexT);
 		}
 
 	{
-		assimpModelBundle1 = std::make_shared<ModelBundleBase>();
+		assimpModelBundle1 = std::make_unique<ModelBundleBase>();
 
 		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 0.5f, testScene);
 		assimpModelBundle1->MoveTowardsZ(0u, -1.f);
@@ -375,9 +369,7 @@ public:
 		assimpModelBundle1->RotatePitchDegree(0u, 90.f);
 		assimpModelBundle1->SetMeshBundleIndex(assimpMeshBundleIndex);
 
-		assimpBundleIndex1 = renderer.AddModelBundle(
-			std::make_shared<ModelBundleImpl>(assimpModelBundle1)
-		);
+		assimpBundleIndex1 = renderer.AddModelBundle(assimpModelBundle1->GetModelBundle());
 
 		renderPassManager.AddModelBundle(assimpBundleIndex1);
 
@@ -387,7 +379,7 @@ public:
 
 		/*
 		{
-			assimpModelBundle2 = std::make_shared<ModelBundleBase>();
+			assimpModelBundle2 = std::make_unique<ModelBundleBase>();
 
 			assimpModelBundle2->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
 			assimpModelBundle2->MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, 10.f);
@@ -396,9 +388,7 @@ public:
 			assimpModelBundle2->RotatePitchDegree(0u, 90.f);
 			assimpModelBundle2->SetMeshBundleIndex(assimpMeshBundleIndex);
 
-			assimpBundleIndex2 = m_renderer->AddModelBundle(
-				std::make_shared<ModelBundleImpl>(assimpModelBundle2)
-			);
+			assimpBundleIndex2 = m_renderer->AddModelBundle(assimpModelBundle2->GetModelBundle());
 
 			m_renderPassManager->AddModelBundle(assimpBundleIndex2);
 
@@ -407,7 +397,7 @@ public:
 		}
 
 		{
-			assimpModelBundle3 = std::make_shared<ModelBundleBase>();
+			assimpModelBundle3 = std::make_unique<ModelBundleBase>();
 
 			assimpModelBundle3->SetMeshBundle(assimpMeshBundleIndex, 0.5f, assimpMeshBundle);
 			assimpModelBundle3->MoveTowardsZ(0u, 1.f).MoveTowardsX(0u, -10.f);
@@ -416,9 +406,7 @@ public:
 			assimpModelBundle3->RotatePitchDegree(0u, 90.f);
 			assimpModelBundle3->SetMeshBundleIndex(assimpMeshBundleIndex);
 
-			assimpBundleIndex3 = m_renderer->AddModelBundle(
-				std::make_shared<ModelBundleImpl>(assimpModelBundle3)
-			);
+			assimpBundleIndex3 = m_renderer->AddModelBundle(assimpModelBundle3->GetModelBundle());
 
 			m_renderPassManager->AddModelBundle(assimpBundleIndex3);
 
@@ -469,7 +457,7 @@ public:
 		{
 			if (cubeBundleIndex2 == std::numeric_limits<std::uint32_t>::max())
 			{
-				cubeBundle2 = std::make_shared<ModelBundleBase>();
+				cubeBundle2 = std::make_unique<ModelBundleBase>();
 
 				cubeBundle2->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
@@ -504,9 +492,7 @@ public:
 
 				cubeBundle2->SetMeshBundleIndex(testMeshBundleIndex);
 
-				cubeBundleIndex2 = renderer.AddModelBundle(
-					std::make_shared<ModelBundleImpl>(cubeBundle2)
-				);
+				cubeBundleIndex2 = renderer.AddModelBundle(cubeBundle2->GetModelBundle());
 
 				renderPassManager.AddModelBundle(cubeBundleIndex2);
 			}
@@ -529,7 +515,7 @@ public:
 		{
 			if (cubeBundleIndex3 == std::numeric_limits<std::uint32_t>::max())
 			{
-				cubeBundle3 = std::make_shared<ModelBundleBase>();
+				cubeBundle3 = std::make_unique<ModelBundleBase>();
 
 				cubeBundle3->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
@@ -568,9 +554,7 @@ public:
 
 				cubeBundle3->SetMeshBundleIndex(testMeshBundleIndex);
 
-				cubeBundleIndex3 = renderer.AddModelBundle(
-					std::make_shared<ModelBundleImpl>(cubeBundle3)
-				);
+				cubeBundleIndex3 = renderer.AddModelBundle(cubeBundle3->GetModelBundle());
 
 				renderPassManager.AddModelBundle(cubeBundleIndex3);
 			}
@@ -592,7 +576,7 @@ public:
 		{
 			if (cubeBundleIndex4 == std::numeric_limits<std::uint32_t>::max())
 			{
-				cubeBundle4 = std::make_shared<ModelBundleBase>();
+				cubeBundle4 = std::make_unique<ModelBundleBase>();
 
 				cubeBundle4->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
 
@@ -631,9 +615,7 @@ public:
 
 				cubeBundle4->SetMeshBundleIndex(testMeshBundleIndex);
 
-				cubeBundleIndex4 = renderer.AddModelBundle(
-					std::make_shared<ModelBundleImpl>(cubeBundle4)
-				);
+				cubeBundleIndex4 = renderer.AddModelBundle(cubeBundle4->GetModelBundle());
 
 				renderPassManager.AddModelBundle(cubeBundleIndex4);
 			}
@@ -785,15 +767,15 @@ private:
 	std::uint32_t assimpMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 	std::uint32_t sphereMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
 
-	std::shared_ptr<ModelBundleBase> cubeBundle1{};
-	std::shared_ptr<ModelBundleBase> assimpModelBundle1{};
-	std::shared_ptr<ModelBundleBase> assimpModelBundle2{};
-	std::shared_ptr<ModelBundleBase> assimpModelBundle3{};
-	std::shared_ptr<ModelBundleBase> cubeBundle2{};
-	std::shared_ptr<ModelBundleBase> cubeBundle3{};
-	std::shared_ptr<ModelBundleBase> cubeBundle4{};
-	std::shared_ptr<ModelBundleBase> quadBundleT{};
-	std::shared_ptr<ModelBundleBase> cubeLightBundle{};
+	std::unique_ptr<ModelBundleBase> cubeBundle1{};
+	std::unique_ptr<ModelBundleBase> assimpModelBundle1{};
+	std::unique_ptr<ModelBundleBase> assimpModelBundle2{};
+	std::unique_ptr<ModelBundleBase> assimpModelBundle3{};
+	std::unique_ptr<ModelBundleBase> cubeBundle2{};
+	std::unique_ptr<ModelBundleBase> cubeBundle3{};
+	std::unique_ptr<ModelBundleBase> cubeBundle4{};
+	std::unique_ptr<ModelBundleBase> quadBundleT{};
+	std::unique_ptr<ModelBundleBase> cubeLightBundle{};
 	std::uint32_t cubeBundleIndex1     = std::numeric_limits<std::uint32_t>::max();
 	std::uint32_t assimpBundleIndex1   = std::numeric_limits<std::uint32_t>::max();
 	std::uint32_t assimpBundleIndex2   = std::numeric_limits<std::uint32_t>::max();

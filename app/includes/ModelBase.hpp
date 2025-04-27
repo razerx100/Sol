@@ -16,7 +16,10 @@ class ModelBundleBase
 
 public:
 	ModelBundleBase()
-		: m_modelNodeData{}, m_models{}, m_pipelines{}, m_meshBundleIndex{ 0u }
+		: m_modelNodeData{}, m_modelBundle{ std::make_shared<ModelBundle>() }
+	{}
+	ModelBundleBase(std::shared_ptr<ModelBundle> modelBundle)
+		: m_modelNodeData{}, m_modelBundle{ std::move(modelBundle) }
 	{}
 
 	ModelBundleBase& AddModel(std::uint32_t pipelineIndex, float scale) noexcept;
@@ -31,7 +34,7 @@ public:
 
 	void SetMeshBundleIndex(std::uint32_t index) noexcept
 	{
-		m_meshBundleIndex = index;
+		m_modelBundle->SetMeshBundleIndex(index);
 	}
 
 	std::uint32_t AddPipeline(std::uint32_t pipelineIndex) noexcept;
@@ -142,21 +145,29 @@ public:
 	[[nodiscard]]
 	auto&& GetModels(this auto&& self) noexcept
 	{
-		return std::forward_like<decltype(self)>(self.m_models);
+		return std::forward_like<decltype(self)>(self.m_modelBundle->GetModels());
 	}
 	[[nodiscard]]
 	auto&& GetPipelines(this auto&& self) noexcept
 	{
-		return std::forward_like<decltype(self)>(self.m_pipelines);
+		return std::forward_like<decltype(self)>(self.m_modelBundle->GetPipelineBundles());
 	}
 
 	[[nodiscard]]
 	auto&& GetModel(this auto&& self, size_t index) noexcept
 	{
-		return std::forward_like<decltype(self)>(self.m_models[index]);
+		auto&& models = std::forward_like<decltype(self)>(self.GetModels());
+
+		return std::forward_like<decltype(self)>(models[index]);
 	}
 	[[nodiscard]]
-	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
+	std::uint32_t GetMeshBundleIndex() const noexcept
+	{
+		return m_modelBundle->GetMeshBundleIndex();
+	}
+
+	[[nodiscard]]
+	std::shared_ptr<ModelBundle> GetModelBundle() const noexcept { return m_modelBundle; }
 
 private:
 	void SetModels(float modelScale, const std::vector<SceneNodeData>& sceneNodeData);
@@ -170,10 +181,8 @@ private:
 	) noexcept;
 
 private:
-	std::vector<ModelNodeData> m_modelNodeData;
-	ModelContainer_t           m_models;
-	PipelineContainer_t        m_pipelines;
-	std::uint32_t              m_meshBundleIndex;
+	std::vector<ModelNodeData>   m_modelNodeData;
+	std::shared_ptr<ModelBundle> m_modelBundle;
 
 public:
 	ModelBundleBase(const ModelBundleBase&) = delete;
@@ -181,63 +190,12 @@ public:
 
 	ModelBundleBase(ModelBundleBase&& other) noexcept
 		: m_modelNodeData{ std::move(other.m_modelNodeData) },
-		m_models{ std::move(other.m_models) },
-		m_pipelines{ std::move(other.m_pipelines) },
-		m_meshBundleIndex{ other.m_meshBundleIndex }
+		m_modelBundle{ std::move(other.m_modelBundle) }
 	{}
 	ModelBundleBase& operator=(ModelBundleBase&& other) noexcept
 	{
-		m_modelNodeData   = std::move(other.m_modelNodeData);
-		m_models          = std::move(other.m_models);
-		m_pipelines       = std::move(other.m_pipelines);
-		m_meshBundleIndex = other.m_meshBundleIndex;
-
-		return *this;
-	}
-};
-
-class ModelBundleImpl : public ModelBundle
-{
-public:
-	ModelBundleImpl(std::shared_ptr<ModelBundleBase> modelBundleBase)
-		: ModelBundle{}, m_modelBundleBase{ std::move(modelBundleBase) }
-	{}
-
-	[[nodiscard]]
-	const ModelContainer_t& GetModels() const noexcept override
-	{
-		return m_modelBundleBase->GetModels();
-	}
-	[[nodiscard]]
-	ModelContainer_t& GetModels() noexcept override
-	{
-		return m_modelBundleBase->GetModels();
-	}
-	[[nodiscard]]
-	const PipelineContainer_t& GetPipelineBundles() const noexcept override
-	{
-		return m_modelBundleBase->GetPipelines();
-	}
-
-	[[nodiscard]]
-	std::uint32_t GetMeshBundleIndex() const noexcept override
-	{
-		return m_modelBundleBase->GetMeshBundleIndex();
-	}
-
-private:
-	std::shared_ptr<ModelBundleBase> m_modelBundleBase;
-
-public:
-	ModelBundleImpl(const ModelBundleImpl&) = delete;
-	ModelBundleImpl& operator=(const ModelBundleImpl&) = delete;
-
-	ModelBundleImpl(ModelBundleImpl&& other) noexcept
-		: m_modelBundleBase{ std::move(other.m_modelBundleBase) }
-	{}
-	ModelBundleImpl& operator=(ModelBundleImpl&& other) noexcept
-	{
-		m_modelBundleBase = std::move(other.m_modelBundleBase);
+		m_modelNodeData = std::move(other.m_modelNodeData);
+		m_modelBundle   = std::move(other.m_modelBundle);
 
 		return *this;
 	}

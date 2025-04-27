@@ -142,7 +142,7 @@ public:
 		// passes.
 		if (!std::empty(m_renderTargetQuadModelBundle->GetModels()))
 			m_renderTargetQuadModelBundleIndex = renderer.AddModelBundle(
-				std::make_shared<ModelBundleImpl>(m_renderTargetQuadModelBundle)
+				m_renderTargetQuadModelBundle->GetModelBundle()
 			);
 
 		// This must be done at the end so all the other passes using the post processing pass
@@ -252,7 +252,7 @@ private:
 
 		m_quadMeshBundleIndex = renderer.AddMeshBundle(quadMesh.MoveTemporaryData());
 
-		m_renderTargetQuadModelBundle = std::make_shared<ModelBundleBase>();
+		m_renderTargetQuadModelBundle = std::make_unique<ModelBundleBase>();
 
 		m_renderTargetQuadModelBundle->SetMeshBundleIndex(m_quadMeshBundleIndex);
 	}
@@ -297,7 +297,7 @@ private:
 	std::uint32_t                       m_quadMeshBundleIndex;
 
 	std::uint32_t                       m_renderTargetQuadModelBundleIndex;
-	std::shared_ptr<ModelBundleBase>    m_renderTargetQuadModelBundle;
+	std::unique_ptr<ModelBundleBase>    m_renderTargetQuadModelBundle;
 
 	TransparencyExt_t                   m_transparencyExt;
 

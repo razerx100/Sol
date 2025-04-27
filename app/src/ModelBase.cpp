@@ -14,7 +14,10 @@ ModelBundleBase& ModelBundleBase::AddModel(
 ModelBundleBase& ModelBundleBase::AddModel(
 	std::uint32_t pipelineIndex, std::shared_ptr<Model> model
 ) noexcept {
-	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_models));
+	ModelContainer_t& models       = m_modelBundle->GetModels();
+	PipelineContainer_t& pipelines = m_modelBundle->GetPipelineBundles();
+
+	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(models));
 
 	m_modelNodeData.emplace_back(
 		ModelNodeData
@@ -27,25 +30,27 @@ ModelBundleBase& ModelBundleBase::AddModel(
 
 	const size_t pipelineLocalIndex = GetLocalPipelineIndex(pipelineIndex);
 
-	m_pipelines[pipelineLocalIndex]->AddModelIndex(
-		static_cast<std::uint32_t>(std::size(m_models))
+	pipelines[pipelineLocalIndex]->AddModelIndex(
+		static_cast<std::uint32_t>(std::size(models))
 	);
 
-	m_models.emplace_back(std::move(model));
+	models.emplace_back(std::move(model));
 
 	return *this;
 }
 
 size_t ModelBundleBase::GetLocalPipelineIndex(std::uint32_t pipelineIndex)
 {
-	const size_t pipelineCount = std::size(m_pipelines);
+	PipelineContainer_t& pipelines = m_modelBundle->GetPipelineBundles();
+
+	const size_t pipelineCount = std::size(pipelines);
 
 	size_t pipelineLocalIndex  = std::numeric_limits<size_t>::max();
 
 	// Can replace this search with an unordered_map but I don't think there will be too
 	// many pipelines, so gonna keep it a linear search for now.
 	for (size_t index = 0u; index < pipelineCount; ++index)
-		if (m_pipelines[index]->GetPipelineIndex() == pipelineIndex)
+		if (pipelines[index]->GetPipelineIndex() == pipelineIndex)
 		{
 			pipelineLocalIndex = index;
 
@@ -60,13 +65,15 @@ size_t ModelBundleBase::GetLocalPipelineIndex(std::uint32_t pipelineIndex)
 
 std::uint32_t ModelBundleBase::AddPipeline(std::uint32_t pipelineIndex) noexcept
 {
-	const auto pipelineIndexInBundle = static_cast<std::uint32_t>(std::size(m_pipelines));
+	PipelineContainer_t& pipelines = m_modelBundle->GetPipelineBundles();
 
-	auto basePipeline = std::make_shared<PipelineModelBundle>();
+	const auto pipelineIndexInBundle = static_cast<std::uint32_t>(std::size(pipelines));
 
-	basePipeline->SetPipelineIndex(pipelineIndex);
+	auto pipeline = std::make_shared<PipelineModelBundle>();
 
-	m_pipelines.emplace_back(std::move(basePipeline));
+	pipeline->SetPipelineIndex(pipelineIndex);
+
+	pipelines.emplace_back(std::move(pipeline));
 
 	return pipelineIndexInBundle;
 }
@@ -78,11 +85,13 @@ void ModelBundleBase::ChangeModelPipeline(
 	size_t oldPipelineIndexInBundle = std::numeric_limits<size_t>::max();
 	size_t newPipelineIndexInBundle = std::numeric_limits<size_t>::max();
 
-	const size_t pipelineCount = std::size(m_pipelines);
+	PipelineContainer_t& pipelines = m_modelBundle->GetPipelineBundles();
+
+	const size_t pipelineCount = std::size(pipelines);
 
 	for (size_t index = 0u; index < pipelineCount; ++index)
 	{
-		const size_t currentPipelineIndex = m_pipelines[index]->GetPipelineIndex();
+		const size_t currentPipelineIndex = pipelines[index]->GetPipelineIndex();
 
 		if (currentPipelineIndex == oldPipelineIndex)
 			oldPipelineIndexInBundle = index;
@@ -97,8 +106,8 @@ void ModelBundleBase::ChangeModelPipeline(
 			break;
 	}
 
-	m_pipelines[oldPipelineIndexInBundle]->RemoveModelIndex(modelIndexInBundle);
-	m_pipelines[newPipelineIndexInBundle]->AddModelIndex(modelIndexInBundle);
+	pipelines[oldPipelineIndexInBundle]->RemoveModelIndex(modelIndexInBundle);
+	pipelines[newPipelineIndexInBundle]->AddModelIndex(modelIndexInBundle);
 }
 
 void ModelBundleBase::SetMeshBundle(
@@ -114,6 +123,8 @@ void ModelBundleBase::SetMeshBundle(
 void ModelBundleBase::SetModels(
 	float modelScale, const std::vector<SceneNodeData>& sceneNodeData
 ) {
+	ModelContainer_t& models = m_modelBundle->GetModels();
+
 	const size_t nodeCount = std::size(sceneNodeData);
 
 	for (size_t index = 0u; index < nodeCount; ++index)
@@ -128,7 +139,7 @@ void ModelBundleBase::SetModels(
 
 			model->SetMeshIndex(currentNodeData.meshIndex);
 
-			m_models.emplace_back(std::move(model));
+			models.emplace_back(std::move(model));
 		}
 	}
 }
@@ -166,7 +177,10 @@ void ModelBundleBase::ChangeMeshBundle(
 	const std::vector<MeshMaterialDetails>& meshMaterialDetails,
 	bool discardExistingTransformation
 ) {
-	m_meshBundleIndex = meshBundleIndex;
+	ModelContainer_t& models       = m_modelBundle->GetModels();
+	PipelineContainer_t& pipelines = m_modelBundle->GetPipelineBundles();
+
+	m_modelBundle->SetMeshBundleIndex(meshBundleIndex);
 
 	const size_t newNodeCount = std::size(sceneNodeData);
 
@@ -185,7 +199,7 @@ void ModelBundleBase::ChangeMeshBundle(
 			const size_t modelIndex = currentModelNode.modelIndex;
 			const size_t meshIndex  = currentModelNode.meshIndex;
 
-			std::shared_ptr<Model>& model = m_models[modelIndex];
+			std::shared_ptr<Model>& model = models[modelIndex];
 			const MeshMaterialDetails& oneMeshMaterialDetails = meshMaterialDetails[meshIndex];
 
 			SetMaterial(model->GetMaterial(), oneMeshMaterialDetails);
@@ -195,7 +209,7 @@ void ModelBundleBase::ChangeMeshBundle(
 				oneMeshMaterialDetails.pipelineIndex
 			);
 
-			m_pipelines[pipelineLocalIndex]->AddModelIndex(
+			pipelines[pipelineLocalIndex]->AddModelIndex(
 				static_cast<std::uint32_t>(modelIndex)
 			);
 
@@ -217,7 +231,9 @@ void ModelBundleBase::Rotate(
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<Model>& model = m_models[nodeData.modelIndex];
+		ModelContainer_t& models = m_modelBundle->GetModels();
+
+		std::shared_ptr<Model>& model = models[nodeData.modelIndex];
 
 		model->GetTransform().Rotate(rotationAxis, angleRadian);
 	}
@@ -240,7 +256,9 @@ void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<Model>& model = m_models[nodeData.modelIndex];
+		ModelContainer_t& models = m_modelBundle->GetModels();
+
+		std::shared_ptr<Model>& model = models[nodeData.modelIndex];
 
 		model->GetTransform().Scale(scale);
 	}
@@ -263,7 +281,9 @@ void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offse
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<Model>& model = m_models[nodeData.modelIndex];
+		ModelContainer_t& models = m_modelBundle->GetModels();
+
+		std::shared_ptr<Model>& model = models[nodeData.modelIndex];
 
 		model->GetTransform().MoveModel(offset);
 	}

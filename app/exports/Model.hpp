@@ -441,15 +441,45 @@ public:
 	using PipelineContainer_t = std::vector<std::shared_ptr<PipelineModelBundle>>;
 
 public:
-	virtual ~ModelBundle() = default;
+	ModelBundle() : m_models{}, m_pipelines{}, m_meshBundleIndex{ 0u } {}
+
+	void SetMeshBundleIndex(std::uint32_t index) noexcept { m_meshBundleIndex = index; }
 
 	[[nodiscard]]
-	virtual std::uint32_t GetMeshBundleIndex() const noexcept = 0;
+	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
+
 	[[nodiscard]]
-	virtual const PipelineContainer_t& GetPipelineBundles() const noexcept = 0;
+	auto&& GetPipelineBundles(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_pipelines);
+	}
 	[[nodiscard]]
-	virtual const ModelContainer_t& GetModels() const noexcept = 0;
-	[[nodiscard]]
-	virtual ModelContainer_t& GetModels() noexcept = 0;
+	auto&& GetModels(this auto&& self) noexcept
+	{
+		return std::forward_like<decltype(self)>(self.m_models);
+	}
+
+private:
+	ModelContainer_t    m_models;
+	PipelineContainer_t m_pipelines;
+	std::uint32_t       m_meshBundleIndex;
+
+public:
+	ModelBundle(const ModelBundle&) = delete;
+	ModelBundle& operator=(const ModelBundle&) = delete;
+
+	ModelBundle(ModelBundle&& other) noexcept
+		: m_models{ std::move(other.m_models) },
+		m_pipelines{ std::move(other.m_pipelines) },
+		m_meshBundleIndex{ other.m_meshBundleIndex }
+	{}
+	ModelBundle& operator=(ModelBundle&& other) noexcept
+	{
+		m_models          = std::move(other.m_models);
+		m_pipelines       = std::move(other.m_pipelines);
+		m_meshBundleIndex = other.m_meshBundleIndex;
+
+		return *this;
+	}
 };
 #endif
