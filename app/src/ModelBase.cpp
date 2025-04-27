@@ -4,69 +4,6 @@
 
 namespace Sol
 {
-ModelTransform::BrokenDownMatrix ModelTransform::BreakDownMatrix(
-	const DirectX::XMMATRIX& matrix
-) noexcept {
-	using namespace DirectX;
-
-	BrokenDownMatrix brokenDownMatrix{ .matrix = XMMatrixIdentity() };
-
-	XMVECTOR scale{};
-	XMVECTOR rotationQuat{};
-	XMVECTOR translation{};
-
-	XMMatrixDecompose(&scale, &rotationQuat, &translation, matrix);
-
-	brokenDownMatrix.matrix *= XMMatrixScalingFromVector(scale);
-	brokenDownMatrix.matrix *= XMMatrixRotationQuaternion(rotationQuat);
-
-	XMStoreFloat3(&brokenDownMatrix.position, translation);
-
-	brokenDownMatrix.scale = XMVectorGetX(scale);
-
-	return brokenDownMatrix;
-}
-
-void ModelTransform::MultiplyAndBreakDownModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
-{
-	using namespace DirectX;
-
-	BrokenDownMatrix brokenDownMatrix = BreakDownMatrix(matrix);
-
-	{
-		XMVECTOR newOffset
-			= XMLoadFloat3(&m_modelOffset) + XMLoadFloat3(&brokenDownMatrix.position);
-
-		XMStoreFloat3(&m_modelOffset, newOffset);
-	}
-
-	m_modelMatrix *= brokenDownMatrix.matrix;
-	m_modelScale   = brokenDownMatrix.scale;
-}
-
-void ModelTransform::SetAndBreakDownModelMatrix(const DirectX::XMMATRIX& matrix) noexcept
-{
-	using namespace DirectX;
-
-	BrokenDownMatrix brokenDownMatrix = BreakDownMatrix(matrix);
-
-	m_modelOffset = brokenDownMatrix.position;
-	m_modelMatrix = brokenDownMatrix.matrix;
-	m_modelScale  = brokenDownMatrix.scale;
-}
-
-void ModelTransform::RecalculateScale() noexcept
-{
-	DirectX::XMVECTOR scale{};
-	DirectX::XMVECTOR rotationQuat{};
-	DirectX::XMVECTOR translation{};
-
-	DirectX::XMMatrixDecompose(&scale, &rotationQuat, &translation, m_modelMatrix);
-
-	// We are scaling all of the components by the same amount.
-	m_modelScale = DirectX::XMVectorGetX(scale);
-}
-
 template<typename To, std::derived_from<To> From>
 static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shared_ptr<From>>& from) noexcept
 {
@@ -97,13 +34,13 @@ void PipelineModelBundleBase::RemoveModelIndex(std::uint32_t indexInBundle) noex
 ModelBundleBase& ModelBundleBase::AddModel(
 	std::uint32_t pipelineIndex, float scale
 ) noexcept {
-	return AddModel(pipelineIndex, std::make_shared<ModelBase>(scale));
+	return AddModel(pipelineIndex, std::make_shared<Model>(scale));
 }
 
 ModelBundleBase& ModelBundleBase::AddModel(
-	std::uint32_t pipelineIndex, std::shared_ptr<ModelBase> model
+	std::uint32_t pipelineIndex, std::shared_ptr<Model> model
 ) noexcept {
-	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_baseModels));
+	const std::uint32_t modelIndex = static_cast<std::uint32_t>(std::size(m_models));
 
 	m_modelNodeData.emplace_back(
 		ModelNodeData
@@ -117,10 +54,9 @@ ModelBundleBase& ModelBundleBase::AddModel(
 	const size_t pipelineLocalIndex = GetLocalPipelineIndex(pipelineIndex);
 
 	m_basePipelines[pipelineLocalIndex]->AddModelIndex(
-		static_cast<std::uint32_t>(std::size(m_baseModels))
+		static_cast<std::uint32_t>(std::size(m_models))
 	);
 
-	m_baseModels.emplace_back(model);
 	m_models.emplace_back(std::move(model));
 
 	return *this;
@@ -215,11 +151,10 @@ void ModelBundleBase::SetModels(
 		// be the same ast the model index.
 		if (currentNodeData.HasMesh())
 		{
-			auto model = std::make_shared<ModelBase>(modelScale);
+			auto model = std::make_shared<Model>(modelScale);
 
 			model->SetMeshIndex(currentNodeData.meshIndex);
 
-			m_baseModels.emplace_back(model);
 			m_models.emplace_back(std::move(model));
 		}
 	}
@@ -277,7 +212,7 @@ void ModelBundleBase::ChangeMeshBundle(
 			const size_t modelIndex = currentModelNode.modelIndex;
 			const size_t meshIndex  = currentModelNode.meshIndex;
 
-			std::shared_ptr<ModelBase>& model = m_baseModels[modelIndex];
+			std::shared_ptr<Model>& model = m_models[modelIndex];
 			const MeshMaterialDetails& oneMeshMaterialDetails = meshMaterialDetails[meshIndex];
 
 			SetMaterial(model->GetMaterial(), oneMeshMaterialDetails);
@@ -309,7 +244,7 @@ void ModelBundleBase::Rotate(
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_baseModels[nodeData.modelIndex];
+		std::shared_ptr<Model>& model = m_models[nodeData.modelIndex];
 
 		model->GetTransform().Rotate(rotationAxis, angleRadian);
 	}
@@ -332,7 +267,7 @@ void ModelBundleBase::Scale(size_t nodeIndex, float scale) noexcept
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_baseModels[nodeData.modelIndex];
+		std::shared_ptr<Model>& model = m_models[nodeData.modelIndex];
 
 		model->GetTransform().Scale(scale);
 	}
@@ -355,7 +290,7 @@ void ModelBundleBase::MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offse
 
 	if (nodeData.HasMesh())
 	{
-		std::shared_ptr<ModelBase>& model = m_baseModels[nodeData.modelIndex];
+		std::shared_ptr<Model>& model = m_models[nodeData.modelIndex];
 
 		model->GetTransform().MoveModel(offset);
 	}

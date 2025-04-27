@@ -124,13 +124,13 @@ public:
 
 		postProcessingPass->AddPipeline(compositePipelineIndex);
 
-		auto quadModel = std::make_shared<ModelBase>();
+		auto quadModel = std::make_shared<Model>();
 
-		const auto& models = renderTargetQuadBundle.GetBaseModels();
+		const auto& models = renderTargetQuadBundle.GetModels();
 
 		// Copy the shared values if exists. As we just need a different instance with a different pipeline.
 		if (!std::empty(models))
-			quadModel->CopySharedValues(*models[0]);
+			quadModel->CopyCharacteristics(*models[0]);
 
 		quadModel->SetMeshIndex(renderTargetQuadMeshIndex);
 

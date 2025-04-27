@@ -75,7 +75,7 @@ public:
 class LightSourceWithModel : public LightSource
 {
 public:
-	LightSourceWithModel(std::shared_ptr<ModelBase> model) : m_model{ std::move(model) } {}
+	LightSourceWithModel(std::shared_ptr<Model> model) : m_model{ std::move(model) } {}
 
 	void Move(const DirectX::XMFLOAT3& offset) noexcept
 	{
@@ -104,7 +104,7 @@ public:
 	}
 
 private:
-	std::shared_ptr<ModelBase> m_model;
+	std::shared_ptr<Model> m_model;
 
 public:
 	LightSourceWithModel(const LightSourceWithModel&) = delete;

@@ -139,7 +139,7 @@ public:
 
 		constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Spotlight;
 
-		std::shared_ptr<ModelBase> lightModel   = cubeLightBundle->GetBaseModel(0u);
+		std::shared_ptr<Model> lightModel = cubeLightBundle->GetModel(0u);
 
 		std::uint32_t lightIndex = blinnPhong->AddLight(
 			renderer, std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
@@ -247,7 +247,7 @@ public:
 
 		{
 			{
-				ModelBase& model1 = *cubeLightBundle->GetBaseModel(0u);
+				Model& model1 = *cubeLightBundle->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 
@@ -274,7 +274,7 @@ public:
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *cubeBundle1->GetBaseModel(0u);
+				Model& model1 = *cubeBundle1->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 
@@ -290,7 +290,7 @@ public:
 			}
 
 			{
-				ModelBase& model2 = *cubeBundle1->GetBaseModel(1u);
+				Model& model2 = *cubeBundle1->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 
@@ -324,7 +324,7 @@ public:
 
 			// We have only a single mesh in the bundle.
 			{
-				ModelBase& model1 = *quadBundleT->GetBaseModel(0u);
+				Model& model1 = *quadBundleT->GetModel(0u);
 
 				model1.SetMeshIndex(1u);
 
@@ -340,7 +340,7 @@ public:
 			}
 
 			{
-				ModelBase& model2 = *quadBundleT->GetBaseModel(1u);
+				Model& model2 = *quadBundleT->GetModel(1u);
 
 				model2.SetMeshIndex(1u);
 
@@ -475,7 +475,7 @@ public:
 
 				// We have only a single mesh in the bundle.
 				{
-					ModelBase& model1 = *cubeBundle2->GetBaseModel(0u);
+					Model& model1 = *cubeBundle2->GetModel(0u);
 
 					model1.SetMeshIndex(0u);
 
@@ -487,7 +487,7 @@ public:
 				}
 
 				{
-					ModelBase& model2 = *cubeBundle2->GetBaseModel(1u);
+					Model& model2 = *cubeBundle2->GetModel(1u);
 
 					model2.SetMeshIndex(0u);
 
@@ -535,7 +535,7 @@ public:
 
 				// We have only a single mesh in the bundle.
 				{
-					ModelBase& model1 = *cubeBundle3->GetBaseModel(0u);
+					Model& model1 = *cubeBundle3->GetModel(0u);
 
 					model1.SetMeshIndex(0u);
 
@@ -551,7 +551,7 @@ public:
 				}
 
 				{
-					ModelBase& model2 = *cubeBundle3->GetBaseModel(1u);
+					Model& model2 = *cubeBundle3->GetModel(1u);
 
 					model2.SetMeshIndex(0u);
 
@@ -598,7 +598,7 @@ public:
 
 				// We have only a single mesh in the bundle.
 				{
-					ModelBase& model1 = *cubeBundle4->GetBaseModel(0u);
+					Model& model1 = *cubeBundle4->GetModel(0u);
 
 					model1.SetMeshIndex(0u);
 
@@ -614,7 +614,7 @@ public:
 				}
 
 				{
-					ModelBase& model2 = *cubeBundle4->GetBaseModel(1u);
+					Model& model2 = *cubeBundle4->GetModel(1u);
 
 					model2.SetMeshIndex(0u);
 
@@ -679,7 +679,7 @@ public:
 				if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
 					index = tealMatIndex;
 
-				ModelBase& model1 = *cubeBundle2->GetBaseModel(0u);
+				Model& model1 = *cubeBundle2->GetModel(0u);
 
 				model1.GetMaterial().SetMaterialIndex(index);
 			}
@@ -723,7 +723,7 @@ public:
 
 			if (bundle1Exists && sphereExists)
 			{
-				ModelBase& model1 = *cubeBundle1->GetBaseModel(0u);
+				Model& model1 = *cubeBundle1->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 
@@ -734,7 +734,7 @@ public:
 				modelMaterial.SetDiffuseUVInfo(UVInfo{});
 				modelMaterial.SetSpecularUVInfo(UVInfo{});
 
-				ModelBase& model2 = *cubeBundle1->GetBaseModel(1u);
+				Model& model2 = *cubeBundle1->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 
@@ -769,7 +769,7 @@ public:
 		{
 			if (secondTextureIndex != std::numeric_limits<size_t>::max())
 			{
-				ModelBase& model1 = *cubeBundle1->GetBaseModel(0u);
+				Model& model1 = *cubeBundle1->GetModel(0u);
 
 				ModelMaterial& modelMaterial = model1.GetMaterial();
 
