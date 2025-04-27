@@ -390,12 +390,47 @@ public:
 class PipelineModelBundle
 {
 public:
-	virtual ~PipelineModelBundle() = default;
+	PipelineModelBundle() : m_modelIndicesInBundle{}, m_pipelineIndex{ 0u } {}
+
+	void SetPipelineIndex(std::uint32_t index) noexcept { m_pipelineIndex = index; }
+
+	void AddModelIndex(std::uint32_t indexInBundle) noexcept
+	{
+		m_modelIndicesInBundle.emplace_back(indexInBundle);
+	}
+
+	void RemoveModelIndex(std::uint32_t indexInBundle) noexcept
+	{
+		std::erase(m_modelIndicesInBundle, indexInBundle);
+	}
 
 	[[nodiscard]]
-	virtual std::uint32_t GetPipelineIndex() const noexcept = 0;
+	std::uint32_t GetPipelineIndex() const noexcept { return m_pipelineIndex; }
 	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetModelIndicesInBundle() const noexcept = 0;
+	const std::vector<std::uint32_t>& GetModelIndicesInBundle() const noexcept
+	{
+		return m_modelIndicesInBundle;
+	}
+
+private:
+	std::vector<std::uint32_t> m_modelIndicesInBundle;
+	std::uint32_t              m_pipelineIndex;
+
+public:
+	PipelineModelBundle(const PipelineModelBundle&) = delete;
+	PipelineModelBundle& operator=(const PipelineModelBundle&) = delete;
+
+	PipelineModelBundle(PipelineModelBundle&& other) noexcept
+		: m_modelIndicesInBundle{ std::move(other.m_modelIndicesInBundle) },
+		m_pipelineIndex{ other.m_pipelineIndex }
+	{}
+	PipelineModelBundle& operator=(PipelineModelBundle&& other) noexcept
+	{
+		m_modelIndicesInBundle = std::move(other.m_modelIndicesInBundle);
+		m_pipelineIndex        = other.m_pipelineIndex;
+
+		return *this;
+	}
 };
 
 // Should typically have a complex model with multiple models.

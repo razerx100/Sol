@@ -4,32 +4,6 @@
 
 namespace Sol
 {
-template<typename To, std::derived_from<To> From>
-static std::vector<std::shared_ptr<To>> UpCastVector(const std::vector<std::shared_ptr<From>>& from) noexcept
-{
-	std::vector<std::shared_ptr<To>> to{};
-
-	const size_t elementCount = std::size(from);
-
-	to.resize(elementCount);
-
-	for (size_t index = 0u; index < elementCount; ++index)
-		to[index] = from[index];
-
-	return to;
-}
-
-// Pipeline Model Bundle Base
-void PipelineModelBundleBase::AddModelIndex(std::uint32_t indexInBundle) noexcept
-{
-	m_modelIndicesInBundle.emplace_back(indexInBundle);
-}
-
-void PipelineModelBundleBase::RemoveModelIndex(std::uint32_t indexInBundle) noexcept
-{
-	std::erase(m_modelIndicesInBundle, indexInBundle);
-}
-
 // Model Bundle Base
 ModelBundleBase& ModelBundleBase::AddModel(
 	std::uint32_t pipelineIndex, float scale
@@ -53,7 +27,7 @@ ModelBundleBase& ModelBundleBase::AddModel(
 
 	const size_t pipelineLocalIndex = GetLocalPipelineIndex(pipelineIndex);
 
-	m_basePipelines[pipelineLocalIndex]->AddModelIndex(
+	m_pipelines[pipelineLocalIndex]->AddModelIndex(
 		static_cast<std::uint32_t>(std::size(m_models))
 	);
 
@@ -64,14 +38,14 @@ ModelBundleBase& ModelBundleBase::AddModel(
 
 size_t ModelBundleBase::GetLocalPipelineIndex(std::uint32_t pipelineIndex)
 {
-	const size_t pipelineCount = std::size(m_basePipelines);
+	const size_t pipelineCount = std::size(m_pipelines);
 
 	size_t pipelineLocalIndex  = std::numeric_limits<size_t>::max();
 
 	// Can replace this search with an unordered_map but I don't think there will be too
 	// many pipelines, so gonna keep it a linear search for now.
 	for (size_t index = 0u; index < pipelineCount; ++index)
-		if (m_basePipelines[index]->GetPipelineIndex() == pipelineIndex)
+		if (m_pipelines[index]->GetPipelineIndex() == pipelineIndex)
 		{
 			pipelineLocalIndex = index;
 
@@ -86,13 +60,12 @@ size_t ModelBundleBase::GetLocalPipelineIndex(std::uint32_t pipelineIndex)
 
 std::uint32_t ModelBundleBase::AddPipeline(std::uint32_t pipelineIndex) noexcept
 {
-	const auto pipelineIndexInBundle = static_cast<std::uint32_t>(std::size(m_basePipelines));
+	const auto pipelineIndexInBundle = static_cast<std::uint32_t>(std::size(m_pipelines));
 
-	auto basePipeline = std::make_shared<PipelineModelBundleBase>();
+	auto basePipeline = std::make_shared<PipelineModelBundle>();
 
 	basePipeline->SetPipelineIndex(pipelineIndex);
 
-	m_basePipelines.emplace_back(basePipeline);
 	m_pipelines.emplace_back(std::move(basePipeline));
 
 	return pipelineIndexInBundle;
@@ -105,11 +78,11 @@ void ModelBundleBase::ChangeModelPipeline(
 	size_t oldPipelineIndexInBundle = std::numeric_limits<size_t>::max();
 	size_t newPipelineIndexInBundle = std::numeric_limits<size_t>::max();
 
-	const size_t pipelineCount = std::size(m_basePipelines);
+	const size_t pipelineCount = std::size(m_pipelines);
 
 	for (size_t index = 0u; index < pipelineCount; ++index)
 	{
-		const size_t currentPipelineIndex = m_basePipelines[index]->GetPipelineIndex();
+		const size_t currentPipelineIndex = m_pipelines[index]->GetPipelineIndex();
 
 		if (currentPipelineIndex == oldPipelineIndex)
 			oldPipelineIndexInBundle = index;
@@ -124,8 +97,8 @@ void ModelBundleBase::ChangeModelPipeline(
 			break;
 	}
 
-	m_basePipelines[oldPipelineIndexInBundle]->RemoveModelIndex(modelIndexInBundle);
-	m_basePipelines[newPipelineIndexInBundle]->AddModelIndex(modelIndexInBundle);
+	m_pipelines[oldPipelineIndexInBundle]->RemoveModelIndex(modelIndexInBundle);
+	m_pipelines[newPipelineIndexInBundle]->AddModelIndex(modelIndexInBundle);
 }
 
 void ModelBundleBase::SetMeshBundle(
@@ -222,7 +195,7 @@ void ModelBundleBase::ChangeMeshBundle(
 				oneMeshMaterialDetails.pipelineIndex
 			);
 
-			m_basePipelines[pipelineLocalIndex]->AddModelIndex(
+			m_pipelines[pipelineLocalIndex]->AddModelIndex(
 				static_cast<std::uint32_t>(modelIndex)
 			);
 

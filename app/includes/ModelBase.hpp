@@ -9,55 +9,14 @@
 
 namespace Sol
 {
-class PipelineModelBundleBase : public PipelineModelBundle
-{
-public:
-	PipelineModelBundleBase() : m_modelIndicesInBundle{}, m_pipelineIndex{ 0u } {}
-
-	void SetPipelineIndex(std::uint32_t index) noexcept { m_pipelineIndex = index; }
-
-	void AddModelIndex(std::uint32_t indexInBundle) noexcept;
-	void RemoveModelIndex(std::uint32_t indexInBundle) noexcept;
-
-	[[nodiscard]]
-	std::uint32_t GetPipelineIndex() const noexcept override { return m_pipelineIndex; }
-	[[nodiscard]]
-	const std::vector<std::uint32_t>& GetModelIndicesInBundle() const noexcept override
-	{
-		return m_modelIndicesInBundle;
-	}
-
-private:
-	std::vector<std::uint32_t> m_modelIndicesInBundle;
-	std::uint32_t              m_pipelineIndex;
-
-public:
-	PipelineModelBundleBase(const PipelineModelBundleBase&) = delete;
-	PipelineModelBundleBase& operator=(const PipelineModelBundleBase&) = delete;
-
-	PipelineModelBundleBase(PipelineModelBundleBase&& other) noexcept
-		: m_modelIndicesInBundle{ std::move(other.m_modelIndicesInBundle) },
-		m_pipelineIndex{ other.m_pipelineIndex }
-	{}
-	PipelineModelBundleBase& operator=(PipelineModelBundleBase&& other) noexcept
-	{
-		m_modelIndicesInBundle = std::move(other.m_modelIndicesInBundle);
-		m_pipelineIndex        = other.m_pipelineIndex;
-
-		return *this;
-	}
-};
-
 class ModelBundleBase
 {
-	using ModelContainer_t        = ModelBundle::ModelContainer_t;
-	using PipelineContainer_t     = ModelBundle::PipelineContainer_t;
-	using PipelineContainerBase_t = std::vector<std::shared_ptr<PipelineModelBundleBase>>;
+	using ModelContainer_t    = ModelBundle::ModelContainer_t;
+	using PipelineContainer_t = ModelBundle::PipelineContainer_t;
 
 public:
 	ModelBundleBase()
-		: m_modelNodeData{}, m_basePipelines{}, m_models{}, m_pipelines{},
-		m_meshBundleIndex{ 0u }
+		: m_modelNodeData{}, m_models{}, m_pipelines{}, m_meshBundleIndex{ 0u }
 	{}
 
 	ModelBundleBase& AddModel(std::uint32_t pipelineIndex, float scale) noexcept;
@@ -212,7 +171,6 @@ private:
 
 private:
 	std::vector<ModelNodeData> m_modelNodeData;
-	PipelineContainerBase_t    m_basePipelines;
 	ModelContainer_t           m_models;
 	PipelineContainer_t        m_pipelines;
 	std::uint32_t              m_meshBundleIndex;
@@ -223,7 +181,6 @@ public:
 
 	ModelBundleBase(ModelBundleBase&& other) noexcept
 		: m_modelNodeData{ std::move(other.m_modelNodeData) },
-		m_basePipelines{ std::move(other.m_basePipelines) },
 		m_models{ std::move(other.m_models) },
 		m_pipelines{ std::move(other.m_pipelines) },
 		m_meshBundleIndex{ other.m_meshBundleIndex }
@@ -231,7 +188,6 @@ public:
 	ModelBundleBase& operator=(ModelBundleBase&& other) noexcept
 	{
 		m_modelNodeData   = std::move(other.m_modelNodeData);
-		m_basePipelines   = std::move(other.m_basePipelines);
 		m_models          = std::move(other.m_models);
 		m_pipelines       = std::move(other.m_pipelines);
 		m_meshBundleIndex = other.m_meshBundleIndex;
