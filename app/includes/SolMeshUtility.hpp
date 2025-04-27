@@ -20,15 +20,6 @@ struct MeshExtraForMesh
 	std::vector<MeshletDetails> meshletDetails;
 };
 
-struct MeshBundleTemporaryData
-{
-	std::vector<Vertex>         vertices;
-	std::vector<std::uint32_t>  indices;
-	std::vector<std::uint32_t>  primIndices;
-	std::vector<MeshletDetails> meshletDetails;
-	MeshBundleTemporaryDetails  bundleDetails;
-};
-
 struct ModelNodeChildrenData
 {
 	std::uint32_t count         = 0u;

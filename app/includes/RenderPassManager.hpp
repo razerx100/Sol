@@ -246,11 +246,13 @@ private:
 
 		RenderTargetQuadMesh{}.SetMesh(mesh);
 
-		MeshBundleImpl quadMesh{ true };
+		MeshBundleTempCustom quadMesh{};
 
 		quadMesh.AddMesh(std::move(mesh));
 
-		m_quadMeshBundleIndex = renderer.AddMeshBundle(quadMesh.MoveTemporaryData());
+		m_quadMeshBundleIndex = renderer.AddMeshBundle(
+			quadMesh.GenerateTemporaryData(m_graphicsPipelineManager.IsMeshShaderPipeline())
+		);
 
 		m_renderTargetQuadModelBundle = std::make_unique<ModelBundleBase>();
 

@@ -55,36 +55,12 @@ struct MeshletDetails
 	ClusterNormalCone    coneNormal;
 };
 
-class MeshBundleTemporary
+struct MeshBundleTemporaryData
 {
-public:
-	virtual ~MeshBundleTemporary() = default;
-
-	virtual void GenerateTemporaryData(bool meshShader) = 0;
-
-	// For both the Vertex and Mesh shader
-	[[nodiscard]]
-	virtual const std::vector<Vertex>& GetVertices() const noexcept = 0;
-	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetVertexIndices() const noexcept = 0;
-	[[nodiscard]]
-	virtual const MeshBundleTemporaryDetails& GetTemporaryBundleDetails() const noexcept = 0;
-	[[nodiscard]]
-	virtual MeshBundleTemporaryDetails&& GetTemporaryBundleDetails() noexcept = 0;
-
-	// For the Mesh shader only
-	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetPrimIndices() const noexcept = 0;
-	[[nodiscard]]
-	virtual const std::vector<MeshletDetails>& GetMeshletDetails() const noexcept = 0;
-};
-
-class MeshBundle
-{
-public:
-	virtual ~MeshBundle() = default;
-
-	[[nodiscard]]
-	virtual std::unique_ptr<MeshBundleTemporary> MoveTemporaryData() = 0;
+	std::vector<Vertex>         vertices;
+	std::vector<std::uint32_t>  indices;
+	std::vector<std::uint32_t>  primIndices;
+	std::vector<MeshletDetails> meshletDetails;
+	MeshBundleTemporaryDetails  bundleDetails;
 };
 #endif

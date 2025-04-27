@@ -86,7 +86,7 @@ public:
 		}
 
 		{
-			MeshBundleImpl testMeshBundle{ true };
+			MeshBundleTempCustom testMeshBundle{};
 
 			Mesh mesh{};
 
@@ -98,11 +98,13 @@ public:
 			QuadMesh{}.SetMesh(quadMesh);
 			testMeshBundle.AddMesh(std::move(quadMesh));
 
-			testMeshBundleIndex = renderer.AddMeshBundle(testMeshBundle.MoveTemporaryData());
+			testMeshBundleIndex = renderer.AddMeshBundle(
+				GetPipelineSpecificMeshBundle(testMeshBundle, renderPassManager)
+			);
 		}
 
 		{
-			MeshBundleImpl assimpMeshBundle{ false };
+			MeshBundleTempAssimp assimpMeshBundle{};
 
 			auto sceneProcessor = std::make_shared<SceneProcessor>(
 				"resources/meshes/shiba/scene.gltf"
@@ -115,12 +117,14 @@ public:
 			//materialProcessor.LoadTextures(*m_renderer);
 			materialProcessor.LoadTexturesAsAtlas(renderer);
 
-			assimpMeshBundle.SetMeshBundle(sceneProcessor);
+			assimpMeshBundle.SetSceneProcessor(sceneProcessor);
 
 			testScene.SetSceneNodes(*sceneProcessor);
 			testScene.SetMeshMaterialDetails(*sceneProcessor, materialProcessor);
 
-			assimpMeshBundleIndex = renderer.AddMeshBundle(assimpMeshBundle.MoveTemporaryData());
+			assimpMeshBundleIndex = renderer.AddMeshBundle(
+				GetPipelineSpecificMeshBundle(assimpMeshBundle, renderPassManager)
+			);
 		}
 
 		{
@@ -683,7 +687,7 @@ public:
 		{
 			if (sphereMeshBundleIndex == std::numeric_limits<std::uint32_t>::max())
 			{
-				MeshBundleImpl sphereMeshBundle{ true };
+				MeshBundleTempCustom sphereMeshBundle{};
 
 				Mesh mesh{};
 
@@ -691,7 +695,7 @@ public:
 				sphereMeshBundle.AddMesh(std::move(mesh));
 
 				sphereMeshBundleIndex = renderer.AddMeshBundle(
-					sphereMeshBundle.MoveTemporaryData()
+					GetPipelineSpecificMeshBundle(sphereMeshBundle, renderPassManager)
 				);
 			}
 		}
@@ -759,6 +763,18 @@ public:
 				modelMaterial.SetDiffuseIndex(secondTextureIndex);
 			}
 		}
+	}
+
+private:
+	template<class MeshBundle_t>
+	[[nodiscard]]
+	MeshBundleTemporaryData GetPipelineSpecificMeshBundle(
+		MeshBundle_t& meshBundle, const RenderPassManager& renderPassManager
+	) {
+		const bool isMeshPipeline
+			= renderPassManager.GetGraphicsPipelineManager().IsMeshShaderPipeline();
+
+		return meshBundle.GenerateTemporaryData(isMeshPipeline);
 	}
 
 private:

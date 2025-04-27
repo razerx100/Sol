@@ -3,6 +3,55 @@
 
 namespace Sol
 {
+[[nodiscard]]
+static DirectX::XMFLOAT3 GetFaceNormal(
+	const DirectX::XMFLOAT3& position1, const DirectX::XMFLOAT3& position2,
+	const DirectX::XMFLOAT3& position3
+) noexcept {
+	DirectX::XMVECTOR vertex1 = DirectX::XMLoadFloat3(&position1);
+	DirectX::XMVECTOR vertex2 = DirectX::XMLoadFloat3(&position2);
+	DirectX::XMVECTOR vertex3 = DirectX::XMLoadFloat3(&position3);
+
+	// Edges should be calculated in this subtraction order for ClockWise triangle vertices
+	// drawing order
+	DirectX::XMVECTOR edge1 = DirectX::XMVectorSubtract(vertex2, vertex1);
+	DirectX::XMVECTOR edge2 = DirectX::XMVectorSubtract(vertex3, vertex1);
+
+	DirectX::XMVECTOR faceNormalV = DirectX::XMVector3Normalize(
+		DirectX::XMVector3Cross(edge1, edge2)
+	);
+	DirectX::XMFLOAT3 faceNormal{};
+	DirectX::XMStoreFloat3(&faceNormal, faceNormalV);
+
+	return faceNormal;
+}
+
+static void CalculateNormalsIndependentFaces(
+	std::vector<Vertex>& vertices, std::vector<std::uint32_t>& indices
+) noexcept {
+	for (size_t index = 0u; index < std::size(indices); index += 3)
+	{
+		Vertex& vertex1 = vertices[indices[index]];
+		Vertex& vertex2 = vertices[indices[index + 1u]];
+		Vertex& vertex3 = vertices[indices[index + 2u]];
+
+		DirectX::XMFLOAT3 faceNormal = GetFaceNormal(
+			vertex1.position, vertex2.position, vertex3.position
+		);
+
+		vertex1.normal = faceNormal;
+		vertex2.normal = faceNormal;
+		vertex3.normal = faceNormal;
+	}
+}
+
+static void SetUVToVertices(
+	std::vector<Vertex>& vertices, const std::vector<DirectX::XMFLOAT2>& uvs
+) noexcept {
+	for (size_t index = 0u; index < std::size(uvs); ++index)
+		vertices[index].uv = uvs[index];
+}
+
 // Triangle
 void TriangleMesh::SetMesh(Mesh& mesh) noexcept
 {
@@ -19,13 +68,13 @@ void TriangleMesh::SetMesh(Mesh& mesh) noexcept
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { 3u, singleColourUV };
 
-	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+	SetUVToVertices(vertices, uvs);
 
 	std::vector<std::uint32_t>& indices = mesh.indices;
 
 	indices = { 0u, 1u, 2u, 5u, 4u, 3u };
 
-	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
+	CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 // Cube
@@ -77,7 +126,7 @@ void CubeMesh::SetMesh(Mesh& mesh, CubeUVMode uvMode) noexcept
 			20u, 23u, 21u,  20u, 22u, 23u
 	};
 
-	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
+	CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 std::string CubeMesh::GetName(CubeUVMode uvMode) noexcept
@@ -98,7 +147,7 @@ void CubeMesh::SetSingleColourUV(std::vector<Vertex>& vertices) noexcept
 
 	std::vector<DirectX::XMFLOAT2> uvs{ 24u, singleColourUV };
 
-	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+	SetUVToVertices(vertices, uvs);
 }
 
 void CubeMesh::SetIndependentFaceTexUV(std::vector<Vertex>& vertices) noexcept
@@ -130,7 +179,7 @@ void CubeMesh::SetIndependentFaceTexUV(std::vector<Vertex>& vertices) noexcept
 	uvs.emplace_back(DirectX::XMFLOAT2{ 0.f, 0.f });
 	uvs.emplace_back(DirectX::XMFLOAT2{ 1.f, 0.f });
 
-	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+	SetUVToVertices(vertices, uvs);
 }
 
 // Quad
@@ -158,7 +207,7 @@ void QuadMesh::SetMesh(Mesh& mesh) noexcept
 		{ 1.f, 1.f }, { 0.f, 1.f }
 	};
 
-	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+	SetUVToVertices(vertices, uvs);
 
 	std::vector<std::uint32_t>& indices = mesh.indices;
 
@@ -167,7 +216,7 @@ void QuadMesh::SetMesh(Mesh& mesh) noexcept
 		6u, 7u, 5u, 5u, 4u, 6u
 	};
 
-	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
+	CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 // Render Target Quad Mesh
@@ -190,13 +239,13 @@ void RenderTargetQuadMesh::SetMesh(Mesh& mesh) noexcept
 		{ 0.f, 1.f }, { 1.f, 1.f }
 	};
 
-	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+	SetUVToVertices(vertices, uvs);
 
 	std::vector<std::uint32_t>& indices = mesh.indices;
 
 	indices = { 0u, 1u, 2u, 2u, 1u, 3u };
 
-	MeshBundleImpl::CalculateNormalsIndependentFaces(vertices, indices);
+	CalculateNormalsIndependentFaces(vertices, indices);
 }
 
 // Sphere
@@ -250,7 +299,7 @@ void SphereMesh::SetMesh(Mesh& mesh) noexcept
 	constexpr DirectX::XMFLOAT2 singleColourUV { 0.f, 0.f };
 	std::vector<DirectX::XMFLOAT2> uvs { std::size(vertices), singleColourUV};
 
-	MeshBundleImpl::SetUVToVertices(vertices, uvs);
+	SetUVToVertices(vertices, uvs);
 
 	// Normals
 	CalculateNormals(vertices);

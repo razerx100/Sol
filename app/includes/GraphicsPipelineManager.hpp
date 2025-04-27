@@ -51,6 +51,11 @@ public:
 	{
 		return m_transparencyCombinePassSignature;
 	}
+	[[nodiscard]]
+	bool IsMeshShaderPipeline() const noexcept
+	{
+		return m_engineType == RenderEngineType::MeshDraw;
+	}
 
 private:
 	ExternalGraphicsPipeline m_mainPassOpaqueSignature;
