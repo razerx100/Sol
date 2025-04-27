@@ -142,11 +142,11 @@ public:
 		std::shared_ptr<Model> lightModel = cubeLightBundle->GetModel(0u);
 
 		std::uint32_t lightIndex = blinnPhong->AddLight(
-			renderer, std::make_shared<LightSourceWithModel>(std::move(lightModel)), lightType
+			renderer, std::make_shared<LightSource>(std::move(lightModel)), lightType
 		);
 
 		std::uint32_t lightIndex1 = blinnPhong->AddLight(
-			renderer, std::make_shared<LightSourceWithoutModel>(),
+			renderer, std::make_shared<LightSource>(),
 			BlinnPhongLightType::Directional
 		);
 
