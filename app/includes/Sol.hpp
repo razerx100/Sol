@@ -95,8 +95,9 @@ public:
 		// Renderer
 		m_renderer.SetShaderPath(L"resources/shaders/");
 
-		m_renderPassManager.SetResourceFactory(m_renderer);
-		m_renderPassManager.CreateResources();
+		m_renderPassManager.CreateResources(
+			m_renderer.GetExternalResourceManager().GetResourceFactory()
+		);
 
 		m_extensionManager.SetBuffers(m_renderer);
 		m_extensionManager.SetAllExtensions(m_renderer);

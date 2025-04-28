@@ -1,7 +1,6 @@
 #ifndef BLINN_PHONG_LIGHT_TECHNIQUE_HPP_
 #define BLINN_PHONG_LIGHT_TECHNIQUE_HPP_
 #include <GraphicsTechniqueExtensionBase.hpp>
-#include <ExternalResourceFactory.hpp>
 #include <GraphicsPipelineManager.hpp>
 #include <LightSource.hpp>
 #include <ReusableVector.hpp>
@@ -155,7 +154,66 @@ public:
 
 	void UpdateCPUData(size_t frameIndex) noexcept override;
 
-	void SetBuffers(ExternalResourceFactory* resourceFactory);
+	template<class ResourceFactory_t>
+	void SetBuffers(ResourceFactory_t& resourceFactory)
+	{
+		constexpr size_t externalBufferCount = 3u;
+
+		m_externalBufferIndices.resize(externalBufferCount);
+
+		// Light Count
+		{
+			const size_t bufferIndex    = s_lightCountBufferIndex;
+			const size_t extBufferIndex = resourceFactory.CreateExternalBuffer(
+				ExternalBufferType::CPUVisibleUniform
+			);
+
+			m_lightCountExtBuffer = resourceFactory.GetExternalBufferSP(extBufferIndex);
+
+			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
+
+			m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex
+				= extBufferIndexU32;
+			m_externalBufferIndices[bufferIndex] = extBufferIndexU32;
+
+			// The Light Count bufferSize should be fixed.
+			m_lightCountExtBuffer->Create(m_frameCount * s_lightCountInstanceSize);
+		}
+
+		// Light Info
+		{
+			const size_t bufferIndex    = s_lightInfoBufferIndex;
+			const size_t extBufferIndex = resourceFactory.CreateExternalBuffer(
+				ExternalBufferType::CPUVisibleSSBO
+			);
+
+			m_lightInfoExtBuffer = resourceFactory.GetExternalBufferSP(extBufferIndex);
+
+			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
+
+			m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex
+				= extBufferIndexU32;
+			m_externalBufferIndices[bufferIndex] = extBufferIndexU32;
+		}
+
+		// Material
+		{
+			const size_t bufferIndex    = s_materialBufferIndex;
+			const size_t extBufferIndex = resourceFactory.CreateExternalBuffer(
+				ExternalBufferType::CPUVisibleSSBO
+			);
+
+			m_materials.SetCPUExtBuffer(
+				resourceFactory.GetExternalBufferSP(extBufferIndex)
+			);
+
+			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
+
+			m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex
+				= extBufferIndexU32;
+			m_externalBufferIndices[bufferIndex] = extBufferIndexU32;
+		}
+	}
 
 	// For generic opaque light objects without light shading. With the main pass' signature.
 	[[nodiscard]]

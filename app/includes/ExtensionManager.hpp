@@ -4,7 +4,6 @@
 #include <memory>
 #include <BlinnPhongLightTechnique.hpp>
 #include <WeightedTransparencyTechnique.hpp>
-#include <ExternalResourceManager.hpp>
 
 namespace Sol
 {
@@ -22,8 +21,8 @@ public:
 	template<class Renderer_t>
 	void SetBuffers(Renderer_t& renderer)
 	{
-		ExternalResourceManager* resourceManager = renderer.GetExternalResourceManager();
-		ExternalResourceFactory* resourceFactory = resourceManager->GetResourceFactory();
+		auto& resourceManager = renderer.GetExternalResourceManager();
+		auto& resourceFactory = resourceManager.GetResourceFactory();
 
 		if (m_blinnPhongLight)
 			m_blinnPhongLight->SetBuffers(resourceFactory);
@@ -35,15 +34,17 @@ public:
 	template<class Renderer_t>
 	void SetAllExtensions(Renderer_t& renderer)
 	{
-		ExternalResourceManager* resourceManager = renderer.GetExternalResourceManager();
+		auto& resourceManager = renderer.GetExternalResourceManager();
 
 		if (m_blinnPhongLight)
-			m_blinnPhongLightIndex
-				= resourceManager->AddGraphicsTechniqueExtension(m_blinnPhongLight);
+			m_blinnPhongLightIndex = resourceManager.AddGraphicsTechniqueExtension(
+				m_blinnPhongLight
+			);
 
 		if (m_weightedTransparency)
-			m_weightedTransparencyIndex
-				= resourceManager->AddGraphicsTechniqueExtension(m_weightedTransparency);
+			m_weightedTransparencyIndex = resourceManager.AddGraphicsTechniqueExtension(
+				m_weightedTransparency
+			);
 	}
 
 	template<class Renderer_t>

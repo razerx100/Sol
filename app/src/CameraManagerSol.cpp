@@ -2,7 +2,6 @@
 #include <algorithm>
 
 #include <CameraManagerSol.hpp>
-#include <Sol.hpp>
 
 namespace Sol
 {

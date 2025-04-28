@@ -151,63 +151,6 @@ void BlinnPhongLightTechnique::ToggleLight(size_t index, bool value) noexcept
 	m_lightStatus[index] = value;
 }
 
-void BlinnPhongLightTechnique::SetBuffers(ExternalResourceFactory* resourceFactory)
-{
-	constexpr size_t externalBufferCount = 3u;
-
-	m_externalBufferIndices.resize(externalBufferCount);
-
-	// Light Count
-	{
-		const size_t bufferIndex    = s_lightCountBufferIndex;
-		const size_t extBufferIndex = resourceFactory->CreateExternalBuffer(
-			ExternalBufferType::CPUVisibleUniform
-		);
-
-		m_lightCountExtBuffer = resourceFactory->GetExternalBufferSP(extBufferIndex);
-
-		const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
-
-		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = extBufferIndexU32;
-		m_externalBufferIndices[bufferIndex]                                   = extBufferIndexU32;
-
-		// The Light Count bufferSize should be fixed.
-		m_lightCountExtBuffer->Create(m_frameCount * s_lightCountInstanceSize);
-	}
-
-	// Light Info
-	{
-		const size_t bufferIndex    = s_lightInfoBufferIndex;
-		const size_t extBufferIndex = resourceFactory->CreateExternalBuffer(
-			ExternalBufferType::CPUVisibleSSBO
-		);
-
-		m_lightInfoExtBuffer         = resourceFactory->GetExternalBufferSP(extBufferIndex);
-
-		const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
-
-		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = extBufferIndexU32;
-		m_externalBufferIndices[bufferIndex]                                   = extBufferIndexU32;
-	}
-
-	// Material
-	{
-		const size_t bufferIndex    = s_materialBufferIndex;
-		const size_t extBufferIndex = resourceFactory->CreateExternalBuffer(
-			ExternalBufferType::CPUVisibleSSBO
-		);
-
-		m_materials.SetCPUExtBuffer(
-			resourceFactory->GetExternalBufferSP(extBufferIndex)
-		);
-
-		const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
-
-		m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex = extBufferIndexU32;
-		m_externalBufferIndices[bufferIndex]                                   = extBufferIndexU32;
-	}
-}
-
 ExternalGraphicsPipeline BlinnPhongLightTechnique::GetOpaqueLightSrcPipeline(
 	const GraphicsPipelineManager& graphicsPipelineManager
 ) noexcept {

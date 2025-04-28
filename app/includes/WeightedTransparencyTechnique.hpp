@@ -1,7 +1,6 @@
 #ifndef WEIGHTED_TRANSPARENCY_TECHNIQUE_HPP_
 #define WEIGHTED_TRANSPARENCY_TECHNIQUE_HPP_
 #include <GraphicsTechniqueExtensionBase.hpp>
-#include <ExternalResourceFactory.hpp>
 #include <ExternalRenderPass.hpp>
 #include <GraphicsPipelineManager.hpp>
 #include <ModelBase.hpp>
@@ -83,7 +82,53 @@ public:
 		);
 	}
 
-	void SetBuffers(ExternalResourceFactory* resourceFactory);
+	template<class ResourceFactory_t>
+	void SetBuffers(ResourceFactory_t& resourceFactory)
+	{
+		constexpr size_t externalBufferCount = 1u;
+
+		m_externalBufferIndices.resize(externalBufferCount);
+
+		// Render Target Binding Data
+		{
+			const size_t bufferIndex    = s_rtBindingDataBufferIndex;
+			const size_t extBufferIndex = resourceFactory.CreateExternalBuffer(
+				ExternalBufferType::CPUVisibleUniform
+			);
+
+			m_renderTargetBindingDataExtBuffer = resourceFactory.GetExternalBufferSP(
+				extBufferIndex
+			);
+
+			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
+
+			m_bufferBindingDetails[bufferIndex].descriptorInfo.externalBufferIndex
+				= extBufferIndexU32;
+			m_externalBufferIndices[bufferIndex] = extBufferIndexU32;
+
+			m_renderTargetBindingDataExtBuffer->Create(sizeof(RenderTargetBindingData));
+		}
+
+		// Accumulation Render Target
+		{
+			const size_t accumulationTextureIndex = resourceFactory.CreateExternalTexture();
+
+			m_accumulationTextureIndex = static_cast<std::uint32_t>(accumulationTextureIndex);
+
+			m_accumulationRenderTarget = resourceFactory.GetExternalTextureSP(
+				accumulationTextureIndex
+			);
+		}
+
+		// Revealage Render Target
+		{
+			const size_t revealageTextureIndex = resourceFactory.CreateExternalTexture();
+
+			m_revealageTextureIndex = static_cast<std::uint32_t>(revealageTextureIndex);
+
+			m_revealageRenderTarget = resourceFactory.GetExternalTextureSP(revealageTextureIndex);
+		}
+	}
 
 	template<class Renderer_t>
 	void ResizeRenderTargets(std::uint32_t width, std::uint32_t height, Renderer_t& renderer)

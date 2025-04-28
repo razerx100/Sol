@@ -4,7 +4,6 @@
 #include <utility>
 #include <ExternalBuffer.hpp>
 #include <ExternalRenderPass.hpp>
-#include <ExternalResourceFactory.hpp>
 #include <GraphicsPipelineManager.hpp>
 #include <WeightedTransparencyTechnique.hpp>
 #include <ModelBase.hpp>
@@ -23,8 +22,7 @@ public:
 		: m_mainPass{}, m_postProcessingPass{}, m_mainRenderTarget{}, m_depthTarget{},
 		m_mainRenderTargetIndex{ 0u }, m_depthTargetIndex{ 0u }, m_quadMeshBundleIndex{ 0u },
 		m_renderTargetQuadModelBundleIndex{ 0u }, m_renderTargetQuadModelBundle{},
-		m_transparencyExt{}, m_graphicsPipelineManager{ engineType },
-		m_resourceFactory{ nullptr }
+		m_transparencyExt{}, m_graphicsPipelineManager{ engineType }
 	{}
 
 	void AddPipeline(std::uint32_t pipelineIndex)
@@ -48,13 +46,19 @@ public:
 
 	void SetTransparencyPass(std::shared_ptr<WeightedTransparencyTechnique> transparencyExt);
 
-	template<class Renderer_t>
-	void SetResourceFactory(Renderer_t& renderer) noexcept
+	template<class ResourceFactory_t>
+	void CreateResources(ResourceFactory_t& resourceFactory)
 	{
-		m_resourceFactory = renderer.GetExternalResourceManager()->GetResourceFactory();
-	}
+		m_mainRenderTargetIndex = static_cast<std::uint32_t>(
+			resourceFactory.CreateExternalTexture()
+		);
 
-	void CreateResources();
+		m_mainRenderTarget = resourceFactory.GetExternalTextureSP(m_mainRenderTargetIndex);
+
+		m_depthTargetIndex = static_cast<std::uint32_t>(resourceFactory.CreateExternalTexture());
+
+		m_depthTarget = resourceFactory.GetExternalTextureSP(m_depthTargetIndex);
+	}
 
 	template<class Renderer_t>
 	void SetupRenderPassesFromRenderer(Renderer_t& renderer)
@@ -305,8 +309,6 @@ private:
 
 	GraphicsPipelineManager             m_graphicsPipelineManager;
 
-	ExternalResourceFactory*            m_resourceFactory;
-
 	static constexpr std::uint32_t s_renderTargetQuadMeshIndex = 0u;
 
 public:
@@ -324,8 +326,7 @@ public:
 		m_renderTargetQuadModelBundleIndex{ other.m_renderTargetQuadModelBundleIndex },
 		m_renderTargetQuadModelBundle{ std::move(other.m_renderTargetQuadModelBundle) },
 		m_transparencyExt{ std::move(other.m_transparencyExt) },
-		m_graphicsPipelineManager{ std::move(other.m_graphicsPipelineManager) },
-		m_resourceFactory{ std::exchange(other.m_resourceFactory, nullptr) }
+		m_graphicsPipelineManager{ std::move(other.m_graphicsPipelineManager) }
 	{}
 	RenderPassManager& operator=(RenderPassManager&& other) noexcept
 	{
@@ -340,7 +341,6 @@ public:
 		m_renderTargetQuadModelBundle      = std::move(other.m_renderTargetQuadModelBundle);
 		m_transparencyExt                  = std::move(other.m_transparencyExt);
 		m_graphicsPipelineManager          = std::move(other.m_graphicsPipelineManager);
-		m_resourceFactory                  = std::exchange(other.m_resourceFactory, nullptr);
 
 		return *this;
 	}
