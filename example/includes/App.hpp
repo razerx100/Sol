@@ -31,8 +31,9 @@ class App
 	using Keyboard  = typename KeyboardConditional<inputModule>::type;
 
 public:
+	template<class ExtensionManager_t, class RenderPassManager_t>
 	App(
-		ExtensionManager& extensionManager, RenderPassManager& renderPassManager,
+		ExtensionManager_t& extensionManager, RenderPassManager_t& renderPassManager,
 		std::uint32_t frameCount
 	) {
 		extensionManager.SetBlinnPhongLight(frameCount);
@@ -41,15 +42,14 @@ public:
 		renderPassManager.SetTransparencyPass(extensionManager.GetWeightedTransparencySP());
 	}
 
-	template<class Renderer_t>
+	template<class Renderer_t, class ExtensionManager_t, class RenderPassManager_t>
 	void Init(
-		Renderer_t& renderer, ExtensionManager& extensionManager,
-		RenderPassManager& renderPassManager
+		Renderer_t& renderer, ExtensionManager_t& extensionManager,
+		RenderPassManager_t& renderPassManager
 	) {
 		BlinnPhongLightTechnique* blinnPhong = extensionManager.GetBlinnPhongLight();
 
-		WeightedTransparencyTechnique* transparencyPass
-			= extensionManager.GetWeightedTransparency();
+		auto* transparencyPass = extensionManager.GetWeightedTransparency();
 
 		{
 			const ExternalGraphicsPipeline nonLightOpaquePipeline
@@ -266,7 +266,7 @@ public:
 
 			cubeLightBundleIndex = renderer.AddModelBundle(cubeLightBundle->GetModelBundle());
 
-			renderPassManager.AddModelBundle(cubeLightBundleIndex);
+			renderPassManager.AddModelBundle(cubeLightBundleIndex, renderer);
 		}
 
 		{
@@ -313,7 +313,7 @@ public:
 
 			cubeBundleIndex1 = renderer.AddModelBundle(cubeBundle1->GetModelBundle());
 
-			renderPassManager.AddModelBundle(cubeBundleIndex1);
+			renderPassManager.AddModelBundle(cubeBundleIndex1, renderer);
 		}
 
 		{
@@ -360,7 +360,7 @@ public:
 			quadBundleIndexT = renderer.AddModelBundle(quadBundleT->GetModelBundle());
 
 			if (transparencyPass)
-				transparencyPass->AddTransparentModelBundle(quadBundleIndexT);
+				transparencyPass->AddTransparentModelBundle(quadBundleIndexT, renderer);
 		}
 
 	{
@@ -375,10 +375,10 @@ public:
 
 		assimpBundleIndex1 = renderer.AddModelBundle(assimpModelBundle1->GetModelBundle());
 
-		renderPassManager.AddModelBundle(assimpBundleIndex1);
+		renderPassManager.AddModelBundle(assimpBundleIndex1, renderer);
 
 		if (transparencyPass)
-			transparencyPass->AddTransparentModelBundle(assimpBundleIndex1);
+			transparencyPass->AddTransparentModelBundle(assimpBundleIndex1, renderer);
 	}
 
 		/*
@@ -392,12 +392,12 @@ public:
 			assimpModelBundle2->RotatePitchDegree(0u, 90.f);
 			assimpModelBundle2->SetMeshBundleIndex(assimpMeshBundleIndex);
 
-			assimpBundleIndex2 = m_renderer->AddModelBundle(assimpModelBundle2->GetModelBundle());
+			assimpBundleIndex2 = renderer.AddModelBundle(assimpModelBundle2->GetModelBundle());
 
-			m_renderPassManager->AddModelBundle(assimpBundleIndex2);
+			renderPassManager.AddModelBundle(assimpBundleIndex2, renderer);
 
-			if (m_transparencyPass)
-				m_transparencyPass->AddTransparentModelBundle(assimpBundleIndex2);
+			if (transparencyPass)
+				transparencyPass->AddTransparentModelBundle(assimpBundleIndex2, renderer);
 		}
 
 		{
@@ -410,20 +410,25 @@ public:
 			assimpModelBundle3->RotatePitchDegree(0u, 90.f);
 			assimpModelBundle3->SetMeshBundleIndex(assimpMeshBundleIndex);
 
-			assimpBundleIndex3 = m_renderer->AddModelBundle(assimpModelBundle3->GetModelBundle());
+			assimpBundleIndex3 = renderer.AddModelBundle(assimpModelBundle3->GetModelBundle());
 
-			m_renderPassManager->AddModelBundle(assimpBundleIndex3);
+			renderPassManager.AddModelBundle(assimpBundleIndex3, renderer);
 
-			if (m_transparencyPass)
-				m_transparencyPass->AddTransparentModelBundle(assimpBundleIndex3);
+			if (transparencyPass)
+				transparencyPass->AddTransparentModelBundle(assimpBundleIndex3, renderer);
 		}
 		*/
 	}
 
-	template<class InputManager_t, class Renderer_t>
+	template<
+		class InputManager_t,
+		class Renderer_t,
+		class ExtensionManager_t,
+		class RenderPassManager_t
+	>
 	void PhysicsUpdate(
-		InputManager_t& inputManager, Renderer_t& renderer, ExtensionManager& extensionManager,
-		RenderPassManager& renderPassManager
+		InputManager_t& inputManager, Renderer_t& renderer, ExtensionManager_t& extensionManager,
+		RenderPassManager_t& renderPassManager
 	) {
 		const Keyboard& keyboard = inputManager.GetKeyboard();
 
@@ -498,7 +503,7 @@ public:
 
 				cubeBundleIndex2 = renderer.AddModelBundle(cubeBundle2->GetModelBundle());
 
-				renderPassManager.AddModelBundle(cubeBundleIndex2);
+				renderPassManager.AddModelBundle(cubeBundleIndex2, renderer);
 			}
 		}
 
@@ -560,7 +565,7 @@ public:
 
 				cubeBundleIndex3 = renderer.AddModelBundle(cubeBundle3->GetModelBundle());
 
-				renderPassManager.AddModelBundle(cubeBundleIndex3);
+				renderPassManager.AddModelBundle(cubeBundleIndex3, renderer);
 			}
 		}
 
@@ -621,7 +626,7 @@ public:
 
 				cubeBundleIndex4 = renderer.AddModelBundle(cubeBundle4->GetModelBundle());
 
-				renderPassManager.AddModelBundle(cubeBundleIndex4);
+				renderPassManager.AddModelBundle(cubeBundleIndex4, renderer);
 			}
 		}
 
@@ -766,10 +771,10 @@ public:
 	}
 
 private:
-	template<class MeshBundle_t>
+	template<class MeshBundle_t, class RenderPassManager_t>
 	[[nodiscard]]
 	MeshBundleTemporaryData GetPipelineSpecificMeshBundle(
-		MeshBundle_t& meshBundle, const RenderPassManager& renderPassManager
+		MeshBundle_t& meshBundle, const RenderPassManager_t& renderPassManager
 	) {
 		const bool isMeshPipeline
 			= renderPassManager.GetGraphicsPipelineManager().IsMeshShaderPipeline();

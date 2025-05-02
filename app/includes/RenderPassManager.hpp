@@ -13,13 +13,20 @@
 
 namespace Sol
 {
+template<class ExternalRenderPassImpl_t>
 class RenderPassManager
 {
-	using TransparencyExt_t = std::shared_ptr<WeightedTransparencyTechnique>;
+public:
+	using WeightedTransparency_t = WeightedTransparencyTechnique<ExternalRenderPassImpl_t>;
+	using TransparencyExt_t      = std::shared_ptr<WeightedTransparency_t>;
+	using ExternalRenderPass_t   = ExternalRenderPass<ExternalRenderPassImpl_t>;
 
 public:
 	RenderPassManager(RenderEngineType engineType)
-		: m_mainPass{}, m_postProcessingPass{}, m_mainRenderTarget{}, m_depthTarget{},
+		: m_mainPass{}, m_postProcessingPass{},
+		m_mainPassIndex{ std::numeric_limits<std::uint32_t>::max() },
+		m_postProcessingPassIndex{ std::numeric_limits<std::uint32_t>::max() },
+		m_mainRenderTarget{}, m_depthTarget{},
 		m_mainRenderTargetIndex{ 0u }, m_depthTargetIndex{ 0u }, m_quadMeshBundleIndex{ 0u },
 		m_renderTargetQuadModelBundleIndex{ 0u }, m_renderTargetQuadModelBundle{},
 		m_transparencyExt{}, m_graphicsPipelineManager{ engineType }
@@ -27,24 +34,30 @@ public:
 
 	void AddPipeline(std::uint32_t pipelineIndex)
 	{
-		m_mainPass->AddPipeline(pipelineIndex);
+		m_mainPass.AddPipeline(pipelineIndex);
 	}
 
-	void AddModelBundle(std::uint32_t bundleIndex)
+	template<class Renderer_t>
+	void AddModelBundle(std::uint32_t bundleIndex, Renderer_t& renderer) const
 	{
-		m_mainPass->AddModelBundle(bundleIndex);
+		renderer.AddLocalPipelinesInExternalRenderPass(
+			bundleIndex, m_mainPassIndex
+		);
 	}
 
 	void RemoveModelBundle(std::uint32_t bundleIndex) noexcept
 	{
-		m_mainPass->RemoveModelBundle(bundleIndex);
+		m_mainPass.RemoveModelBundle(bundleIndex);
 	}
 	void RemovePipeline(std::uint32_t pipelineIndex) noexcept
 	{
-		m_mainPass->RemovePipeline(pipelineIndex);
+		m_mainPass.RemovePipeline(pipelineIndex);
 	}
 
-	void SetTransparencyPass(std::shared_ptr<WeightedTransparencyTechnique> transparencyExt);
+	void SetTransparencyPass(TransparencyExt_t transparencyExt)
+	{
+		m_transparencyExt = std::move(transparencyExt);
+	}
 
 	template<class ResourceFactory_t>
 	void CreateResources(ResourceFactory_t& resourceFactory)
@@ -82,7 +95,13 @@ public:
 		if (hasPostProcessingPass)
 			++totalPassCount;
 
-		std::vector<std::shared_ptr<ExternalRenderPass>> renderPasses{};
+		struct ExternalRenderPassData
+		{
+			std::shared_ptr<ExternalRenderPassImpl_t> renderPass;
+			std::uint32_t                             renderPassIndex;
+		};
+
+		std::vector<ExternalRenderPassData> renderPasses{};
 
 		renderPasses.reserve(totalPassCount);
 
@@ -90,13 +109,19 @@ public:
 		{
 			const size_t renderPassIndex = renderer.AddExternalRenderPass();
 
-			renderPasses.emplace_back(renderer.GetExternalRenderPassSP(renderPassIndex));
+			renderPasses.emplace_back(
+				ExternalRenderPassData
+				{
+					.renderPass      = renderer.GetExternalRenderPassSP(renderPassIndex),
+					.renderPassIndex = static_cast<std::uint32_t>(renderPassIndex)
+				}
+			);
 		}
 
 		// The swapchain should be the last pass.
 		renderer.SetSwapchainExternalRenderPass();
 
-		std::shared_ptr<ExternalRenderPass> swapchainPass
+		std::shared_ptr<ExternalRenderPassImpl_t> swapchainPass
 			= renderer.GetSwapchainExternalRenderPassSP();
 
 		const bool isMainPassSwapchainSource = !hasPostProcessingPass;
@@ -107,16 +132,34 @@ public:
 			size_t mainPassIndex         = 0u;
 			size_t transparencyPassIndex = 1u;
 
-			m_mainPass = std::move(renderPasses[mainPassIndex]);
+			ExternalRenderPassData& mainPassData = renderPasses[mainPassIndex];
+
+			m_mainPass.SetRenderPassImpl(std::move(mainPassData.renderPass));
+
+			m_mainPassIndex = mainPassData.renderPassIndex;
 
 			if (hasTransparencyPass)
-				m_transparencyExt->SetTransparencyPass(renderPasses[transparencyPassIndex]);
+			{
+				ExternalRenderPassData& transparencyPassData = renderPasses[transparencyPassIndex];
+
+				m_transparencyExt->SetTransparencyPass(
+					std::move(transparencyPassData.renderPass),
+					transparencyPassData.renderPassIndex
+				);
+			}
 
 			if (hasPostProcessingPass)
-				m_postProcessingPass = swapchainPass;
+			{
+				m_postProcessingPass.SetRenderPassImpl(swapchainPass);
+
+				// Since the swapchain pass doesn't need an index, no need to set it.
+			}
 		}
 		else
-			m_mainPass = swapchainPass;
+		{
+			m_mainPass.SetRenderPassImpl(swapchainPass);
+			// Since the swapchain pass doesn't need an index, no need to set it.
+		}
 
 		std::uint32_t swapchainCopySourceIndex = SetupMainDrawingPass(renderer);
 
@@ -125,16 +168,18 @@ public:
 
 		if (hasTransparencyPass)
 		{
-			m_transparencyExt->SetupTransparencyPass(m_depthTargetIndex);
+			auto& resourceFactory = renderer.GetExternalResourceManager().GetResourceFactory();
+
+			m_transparencyExt->SetupTransparencyPass(m_depthTargetIndex, resourceFactory);
 
 			m_transparencyExt->SetupTransparencyGraphicsPipelineSignatures(
 				m_graphicsPipelineManager, s_renderDepthFormat
 			);
 
-			m_transparencyExt->SetCompositePass(m_postProcessingPass);
+			m_transparencyExt->SetCompositePass(m_postProcessingPass, resourceFactory);
 
 			m_transparencyExt->SetupCompositePassPipeline(
-				m_postProcessingPass.get(), m_graphicsPipelineManager,
+				m_postProcessingPass, m_graphicsPipelineManager,
 				*m_renderTargetQuadModelBundle, s_renderTargetQuadMeshIndex,
 				renderer
 			);
@@ -152,9 +197,12 @@ public:
 		// This must be done at the end so all the other passes using the post processing pass
 		// can add their pipelines before we add the model bundle to the pass.
 		if (hasPostProcessingPass)
-			AddRenderTargetQuadToPostProcessing();
+			AddRenderTargetQuadToPostProcessing(renderer);
 
-		swapchainPass->SetSwapchainCopySource(swapchainCopySourceIndex);
+		swapchainPass->SetSwapchainCopySource(
+			swapchainCopySourceIndex,
+			renderer.GetExternalResourceManager().GetResourceFactory()
+		);
 	}
 
 	// The render area might be a bit
@@ -175,15 +223,17 @@ public:
 			ExternalTexture2DType::Depth
 		);
 
-		self.m_mainPass->ResetAttachmentReferences();
+		auto& resourceFactory = renderer.GetExternalResourceManager().GetResourceFactory();
+
+		self.m_mainPass.ResetAttachmentReferences(resourceFactory);
 
 		if (self.m_transparencyExt)
 			self.m_transparencyExt->ResizeRenderTargets(
 				renderArea.width, renderArea.height, renderer
 			);
 
-		if (self.m_postProcessingPass)
-			self.m_postProcessingPass->ResetAttachmentReferences();
+		if (self.m_postProcessingPass.HasImpl())
+			self.m_postProcessingPass.ResetAttachmentReferences(resourceFactory);
 	}
 
 	[[nodiscard]]
@@ -203,21 +253,24 @@ private:
 	[[nodiscard]]
 	std::uint32_t SetupMainDrawingPass(Renderer_t& renderer)
 	{
-		const std::uint32_t renderTargetIndex = m_mainPass->AddRenderTarget(
+		auto& resourceFactory = renderer.GetExternalResourceManager().GetResourceFactory();
+
+		const std::uint32_t renderTargetIndex = m_mainPass.AddRenderTarget(
 			m_mainRenderTargetIndex, ExternalAttachmentLoadOp::Clear,
-			ExternalAttachmentStoreOp::Store
+			ExternalAttachmentStoreOp::Store, resourceFactory
 		);
 
-		m_mainPass->SetRenderTargetClearColour(
-			renderTargetIndex, DirectX::XMFLOAT4{ 0.005f, 0.005f, 0.005f, 1.f }
+		m_mainPass.SetRenderTargetClearColour(
+			renderTargetIndex, DirectX::XMFLOAT4{ 0.005f, 0.005f, 0.005f, 1.f },
+			resourceFactory
 		);
 
-		m_mainPass->SetDepthTesting(
+		m_mainPass.SetDepthTesting(
 			m_depthTargetIndex, ExternalAttachmentLoadOp::Clear,
-			ExternalAttachmentStoreOp::Store
+			ExternalAttachmentStoreOp::Store, resourceFactory
 		);
 
-		m_mainPass->SetDepthClearColour(1.f);
+		m_mainPass.SetDepthClearColour(1.f, resourceFactory);
 
 		SetupMainPassSignatures(renderer);
 
@@ -228,9 +281,10 @@ private:
 	[[nodiscard]]
 	std::uint32_t SetupPostProcessingPass(Renderer_t& renderer)
 	{
-		const std::uint32_t renderTargetIndex = m_postProcessingPass->AddRenderTarget(
+		const std::uint32_t renderTargetIndex = m_postProcessingPass.AddRenderTarget(
 			m_mainRenderTargetIndex, ExternalAttachmentLoadOp::Load,
-			ExternalAttachmentStoreOp::Store
+			ExternalAttachmentStoreOp::Store,
+			renderer.GetExternalResourceManager().GetResourceFactory()
 		);
 
 		SetupPostProcessingSignatures(renderer);
@@ -288,26 +342,34 @@ private:
 			);
 	}
 
-	void AddRenderTargetQuadToPostProcessing();
+	template<class Renderer_t>
+	void AddRenderTargetQuadToPostProcessing(Renderer_t& renderer)
+	{
+		renderer.AddLocalPipelinesInExternalRenderPass(
+			m_renderTargetQuadModelBundleIndex, m_postProcessingPassIndex
+		);
+	}
 
 private:
-	std::shared_ptr<ExternalRenderPass> m_mainPass;
-	std::shared_ptr<ExternalRenderPass> m_postProcessingPass;
+	ExternalRenderPass_t             m_mainPass;
+	ExternalRenderPass_t             m_postProcessingPass;
+	std::uint32_t                    m_mainPassIndex;
+	std::uint32_t                    m_postProcessingPassIndex;
 
-	std::shared_ptr<ExternalTexture>    m_mainRenderTarget;
-	std::shared_ptr<ExternalTexture>    m_depthTarget;
+	std::shared_ptr<ExternalTexture> m_mainRenderTarget;
+	std::shared_ptr<ExternalTexture> m_depthTarget;
 
-	std::uint32_t                       m_mainRenderTargetIndex;
-	std::uint32_t                       m_depthTargetIndex;
+	std::uint32_t                    m_mainRenderTargetIndex;
+	std::uint32_t                    m_depthTargetIndex;
 
-	std::uint32_t                       m_quadMeshBundleIndex;
+	std::uint32_t                    m_quadMeshBundleIndex;
 
-	std::uint32_t                       m_renderTargetQuadModelBundleIndex;
-	std::unique_ptr<ModelBundleBase>    m_renderTargetQuadModelBundle;
+	std::uint32_t                    m_renderTargetQuadModelBundleIndex;
+	std::unique_ptr<ModelBundleBase> m_renderTargetQuadModelBundle;
 
-	TransparencyExt_t                   m_transparencyExt;
+	TransparencyExt_t                m_transparencyExt;
 
-	GraphicsPipelineManager             m_graphicsPipelineManager;
+	GraphicsPipelineManager          m_graphicsPipelineManager;
 
 	static constexpr std::uint32_t s_renderTargetQuadMeshIndex = 0u;
 
@@ -318,6 +380,8 @@ public:
 	RenderPassManager(RenderPassManager&& other) noexcept
 		: m_mainPass{ std::move(other.m_mainPass) },
 		m_postProcessingPass{ std::move(other.m_postProcessingPass) },
+		m_mainPassIndex{ other.m_mainPassIndex },
+		m_postProcessingPassIndex{ other.m_postProcessingPassIndex },
 		m_mainRenderTarget{ std::move(other.m_mainRenderTarget) },
 		m_depthTarget{ std::move(other.m_depthTarget) },
 		m_mainRenderTargetIndex{ other.m_mainRenderTargetIndex },
@@ -332,6 +396,8 @@ public:
 	{
 		m_mainPass                         = std::move(other.m_mainPass);
 		m_postProcessingPass               = std::move(other.m_postProcessingPass);
+		m_mainPassIndex                    = other.m_mainPassIndex;
+		m_postProcessingPassIndex          = other.m_postProcessingPassIndex;
 		m_mainRenderTarget                 = std::move(other.m_mainRenderTarget);
 		m_depthTarget                      = std::move(other.m_depthTarget);
 		m_mainRenderTargetIndex            = other.m_mainRenderTargetIndex;

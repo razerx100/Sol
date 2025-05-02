@@ -7,16 +7,28 @@
 
 namespace Sol
 {
+template<class ExternalRenderPassImpl_t>
 class ExtensionManager
 {
+public:
+	using WeightedTransparency_t = WeightedTransparencyTechnique<ExternalRenderPassImpl_t>;
+	using TransparencyExt_t      = std::shared_ptr<WeightedTransparency_t>;
+
 public:
 	ExtensionManager()
 		: m_blinnPhongLight{}, m_weightedTransparency{}, m_blinnPhongLightIndex { 0u },
 		m_weightedTransparencyIndex{ 0u }
 	{}
 
-	void SetBlinnPhongLight(std::uint32_t frameCount);
-	void SetWeightedTransparency();
+	void SetBlinnPhongLight(std::uint32_t frameCount)
+	{
+		m_blinnPhongLight = std::make_shared<BlinnPhongLightTechnique>(frameCount);
+	}
+
+	void SetWeightedTransparency()
+	{
+		m_weightedTransparency = std::make_shared<WeightedTransparency_t>();
+	}
 
 	template<class Renderer_t>
 	void SetBuffers(Renderer_t& renderer)
@@ -58,12 +70,12 @@ public:
 	}
 
 	[[nodiscard]]
-	WeightedTransparencyTechnique* GetWeightedTransparency() const noexcept
+	WeightedTransparency_t* GetWeightedTransparency() const noexcept
 	{
 		return m_weightedTransparency.get();
 	}
 	[[nodiscard]]
-	std::shared_ptr<WeightedTransparencyTechnique> GetWeightedTransparencySP() const noexcept
+	TransparencyExt_t GetWeightedTransparencySP() const noexcept
 	{
 		return m_weightedTransparency;
 	}
@@ -77,11 +89,11 @@ public:
 	}
 
 private:
-	std::shared_ptr<BlinnPhongLightTechnique>      m_blinnPhongLight;
-	std::shared_ptr<WeightedTransparencyTechnique> m_weightedTransparency;
+	std::shared_ptr<BlinnPhongLightTechnique> m_blinnPhongLight;
+	TransparencyExt_t                         m_weightedTransparency;
 	// Could use the indices to remove the extensions.
-	std::uint32_t                                  m_blinnPhongLightIndex;
-	std::uint32_t                                  m_weightedTransparencyIndex;
+	std::uint32_t                             m_blinnPhongLightIndex;
+	std::uint32_t                             m_weightedTransparencyIndex;
 
 public:
 	ExtensionManager(const ExtensionManager&) = delete;

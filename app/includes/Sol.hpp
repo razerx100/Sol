@@ -47,6 +47,13 @@ class Sol
 	using RendererD3D_t = Gaia::RendererDx12<rendererEngine_t>;
 
 	template<RendererModule rendererModule>
+	struct RenderPassImplConditional { using type = Terra::VkExternalRenderPass; };
+
+	template<>
+	struct RenderPassImplConditional<RendererModule::Gaia>
+	{ using type = Gaia::D3DExternalRenderPass; };
+
+	template<RendererModule rendererModule>
 	struct RendererModuleConditional { using type = RendererVK_t; };
 
 	template<>
@@ -55,11 +62,17 @@ class Sol
 	template<InputModule inputModule>
 	struct InputModuleConditional { using type = Pluto::InputManager; };
 
-	using Renderer_t     = typename RendererModuleConditional<rendererModule>::type;
+	using Renderer_t          = typename RendererModuleConditional<rendererModule>::type;
 
-	using Window_t       = typename WindowModuleConditional<windowModule>::type;
+	using Window_t            = typename WindowModuleConditional<windowModule>::type;
 
-	using InputManager_t = typename InputModuleConditional<inputModule>::type;
+	using InputManager_t      = typename InputModuleConditional<inputModule>::type;
+
+	using RenderPassImpl_t    = typename RenderPassImplConditional<rendererModule>::type;
+
+	using RenderPassManager_t = RenderPassManager<RenderPassImpl_t>;
+
+	using ExtensionManager_t  = ExtensionManager<RenderPassImpl_t>;
 
 public:
 	Sol(const std::string& appName, ConfigManager&& configManager)
@@ -309,8 +322,8 @@ private:
 	InputManager_t              m_inputManager;
 	Window_t                    m_window;
 	Renderer_t                  m_renderer;
-	RenderPassManager           m_renderPassManager;
-	ExtensionManager            m_extensionManager;
+	RenderPassManager_t         m_renderPassManager;
+	ExtensionManager_t          m_extensionManager;
 	App_t                       m_app;
 
 public:
