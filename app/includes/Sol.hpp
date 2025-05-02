@@ -173,6 +173,11 @@ public:
 					accumulatedElapsedTime += deltaTime;
 
 				m_inputManager.UpdateIndependentInputs();
+
+				m_renderer.WaitForCurrentBackBuffer();
+
+				m_renderer.Update();
+
 				m_renderer.Render();
 			}
 
