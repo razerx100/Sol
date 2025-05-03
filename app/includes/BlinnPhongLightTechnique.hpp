@@ -45,11 +45,9 @@ struct BlinnPhongMaterial
 
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 {
-	using Light_t = std::shared_ptr<LightSource>;
-
 	struct LightInfo
 	{
-		Light_t                   source;
+		LightSource               source;
 		BlinnPhongLightProperties properties;
 	};
 
@@ -59,7 +57,7 @@ public:
 	template<class Renderer_t>
 	[[nodiscard]]
 	std::uint32_t AddLight(
-		Renderer_t& renderer, std::shared_ptr<LightSource> lightSource, BlinnPhongLightType type
+		Renderer_t& renderer, LightSource&& lightSource, BlinnPhongLightType type
 	) {
 		const size_t lightIndex = m_lights.Add(
 			LightInfo

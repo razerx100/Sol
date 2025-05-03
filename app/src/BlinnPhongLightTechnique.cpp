@@ -110,12 +110,12 @@ void BlinnPhongLightTechnique::UpdateCPUData(size_t frameIndex) noexcept
 		if (m_lightStatus[index])
 		{
 			const LightInfo& lightInfo = lights[index];
-			const Light_t& light       = lightInfo.source;
+			const LightSource& light   = lightInfo.source;
 			const size_t lightOffset   = sizeof(LightData) * activeLightIndex;
 
 			const LightData lightData
 			{
-				.lightPosition = light->GetPosition(),
+				.lightPosition = light.GetPosition(),
 				.properties    = lightInfo.properties
 			};
 
