@@ -150,7 +150,7 @@ public:
 		UpdateLightCountDescriptors(renderer);
 	}
 
-	void UpdateCPUData(size_t frameIndex) noexcept override;
+	void UpdateCPUData(size_t frameIndex) noexcept;
 
 	template<class ResourceFactory_t>
 	void SetBuffers(ResourceFactory_t& resourceFactory)

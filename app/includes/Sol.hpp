@@ -174,11 +174,13 @@ public:
 
 				m_inputManager.UpdateIndependentInputs();
 
-				m_renderer.WaitForCurrentBackBuffer();
+				const size_t backBufferIndex = m_renderer.WaitForCurrentBackBuffer();
 
-				m_renderer.Update();
+				m_renderer.Update(backBufferIndex);
 
-				m_renderer.Render();
+				m_extensionManager.UpdateCPUData(backBufferIndex);
+
+				m_renderer.Render(backBufferIndex);
 			}
 
 			m_frameTime.EndTimer();

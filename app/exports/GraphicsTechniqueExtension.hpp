@@ -25,13 +25,63 @@ struct ExternalBufferBindingDetails
 class GraphicsTechniqueExtension
 {
 public:
-	virtual ~GraphicsTechniqueExtension() = default;
+	GraphicsTechniqueExtension() : m_externalBufferIndices{}, m_bufferBindingDetails{} {}
+	GraphicsTechniqueExtension(
+		std::vector<std::uint32_t> bufferIndices,
+		std::vector<ExternalBufferBindingDetails> bindingDetails
+	) : m_externalBufferIndices{ std::move(bufferIndices) },
+		m_bufferBindingDetails{ std::move(bindingDetails) }
+	{}
 
-	virtual void UpdateCPUData(size_t frameIndex) noexcept = 0;
+	void AddExternalBufferIndex(std::uint32_t bufferIndex) noexcept
+	{
+		m_externalBufferIndices.emplace_back(bufferIndex);
+	}
+
+	void AddBindingDetails(const ExternalBufferBindingDetails& bindingDetails) noexcept
+	{
+		m_bufferBindingDetails.emplace_back(bindingDetails);
+	}
+
+	void SetExternalBufferIndices(std::vector<std::uint32_t> bufferIndices) noexcept
+	{
+		m_externalBufferIndices = std::move(bufferIndices);
+	}
+
+	void SetBindingDetails(std::vector<ExternalBufferBindingDetails> bindingDetails) noexcept
+	{
+		m_bufferBindingDetails = std::move(bindingDetails);
+	}
 
 	[[nodiscard]]
-	virtual const std::vector<std::uint32_t>& GetExternalBufferIndices() const noexcept = 0;
+	const std::vector<std::uint32_t>& GetExternalBufferIndices() const noexcept
+	{
+		return m_externalBufferIndices;
+	}
 	[[nodiscard]]
-	virtual const std::vector<ExternalBufferBindingDetails>& GetBindingDetails() const noexcept = 0;
+	const std::vector<ExternalBufferBindingDetails>& GetBindingDetails() const noexcept
+	{
+		return m_bufferBindingDetails;
+	}
+
+private:
+	std::vector<std::uint32_t>                m_externalBufferIndices;
+	std::vector<ExternalBufferBindingDetails> m_bufferBindingDetails;
+
+public:
+	GraphicsTechniqueExtension(const GraphicsTechniqueExtension&) = delete;
+	GraphicsTechniqueExtension& operator=(const GraphicsTechniqueExtension&) = delete;
+
+	GraphicsTechniqueExtension(GraphicsTechniqueExtension&& other) noexcept
+		: m_externalBufferIndices{ std::move(other.m_externalBufferIndices) },
+		m_bufferBindingDetails{ std::move(other.m_bufferBindingDetails) }
+	{}
+	GraphicsTechniqueExtension& operator=(GraphicsTechniqueExtension&& other) noexcept
+	{
+		m_externalBufferIndices = std::move(other.m_externalBufferIndices);
+		m_bufferBindingDetails  = std::move(other.m_bufferBindingDetails);
+
+		return *this;
+	}
 };
 #endif

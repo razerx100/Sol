@@ -5,22 +5,26 @@
 
 namespace Sol
 {
-class GraphicsTechniqueExtensionBase : public GraphicsTechniqueExtension
+class GraphicsTechniqueExtensionBase
 {
 public:
 	GraphicsTechniqueExtensionBase() : m_externalBufferIndices{}, m_bufferBindingDetails{} {}
 
-	void UpdateCPUData([[maybe_unused]] size_t frameIndex) noexcept override {}
-
 	[[nodiscard]]
-	const std::vector<std::uint32_t>& GetExternalBufferIndices() const noexcept override
+	const std::vector<std::uint32_t>& GetExternalBufferIndices() const noexcept
 	{
 		return m_externalBufferIndices;
 	}
 	[[nodiscard]]
-	const std::vector<ExternalBufferBindingDetails>& GetBindingDetails() const noexcept override
+	const std::vector<ExternalBufferBindingDetails>& GetBindingDetails() const noexcept
 	{
 		return m_bufferBindingDetails;
+	}
+
+	[[nodiscard]]
+	GraphicsTechniqueExtension GetGfxTechniqueData() const noexcept
+	{
+		return GraphicsTechniqueExtension{ m_externalBufferIndices, m_bufferBindingDetails };
 	}
 
 protected:

@@ -30,6 +30,12 @@ public:
 		m_weightedTransparency = std::make_shared<WeightedTransparency_t>();
 	}
 
+	void UpdateCPUData(size_t frameIndex) noexcept
+	{
+		if (m_blinnPhongLight)
+			m_blinnPhongLight->UpdateCPUData(frameIndex);
+	}
+
 	template<class Renderer_t>
 	void SetBuffers(Renderer_t& renderer)
 	{
@@ -50,12 +56,12 @@ public:
 
 		if (m_blinnPhongLight)
 			m_blinnPhongLightIndex = resourceManager.AddGraphicsTechniqueExtension(
-				m_blinnPhongLight
+				m_blinnPhongLight->GetGfxTechniqueData()
 			);
 
 		if (m_weightedTransparency)
 			m_weightedTransparencyIndex = resourceManager.AddGraphicsTechniqueExtension(
-				m_weightedTransparency
+				m_weightedTransparency->GetGfxTechniqueData()
 			);
 	}
 
