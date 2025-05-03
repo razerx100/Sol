@@ -180,7 +180,7 @@ public:
 
 			m_transparencyExt->SetupCompositePassPipeline(
 				m_postProcessingPass, m_graphicsPipelineManager,
-				*m_renderTargetQuadModelBundle, s_renderTargetQuadMeshIndex,
+				m_renderTargetQuadModelBundle, s_renderTargetQuadMeshIndex,
 				renderer
 			);
 		}
@@ -189,9 +189,9 @@ public:
 		// modelBundle can add their instance of the quad model with their own pipeline.
 		// And we also must add the model bundle to the renderer before adding them to the render
 		// passes.
-		if (!std::empty(m_renderTargetQuadModelBundle->GetModels()))
+		if (!std::empty(m_renderTargetQuadModelBundle.GetModels()))
 			m_renderTargetQuadModelBundleIndex = renderer.AddModelBundle(
-				m_renderTargetQuadModelBundle->GetModelBundle()
+				m_renderTargetQuadModelBundle.GetModelBundle()
 			);
 
 		// This must be done at the end so all the other passes using the post processing pass
@@ -312,9 +312,7 @@ private:
 			quadMesh.GenerateTemporaryData(m_graphicsPipelineManager.IsMeshShaderPipeline())
 		);
 
-		m_renderTargetQuadModelBundle = std::make_unique<ModelBundleBase>();
-
-		m_renderTargetQuadModelBundle->SetMeshBundleIndex(m_quadMeshBundleIndex);
+		m_renderTargetQuadModelBundle.SetMeshBundleIndex(m_quadMeshBundleIndex);
 	}
 
 	template<class Renderer_t>
@@ -365,7 +363,7 @@ private:
 	std::uint32_t                    m_quadMeshBundleIndex;
 
 	std::uint32_t                    m_renderTargetQuadModelBundleIndex;
-	std::unique_ptr<ModelBundleBase> m_renderTargetQuadModelBundle;
+	ModelBundleBase                  m_renderTargetQuadModelBundle;
 
 	TransparencyExt_t                m_transparencyExt;
 
