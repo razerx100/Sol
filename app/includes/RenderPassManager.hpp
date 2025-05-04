@@ -26,7 +26,7 @@ public:
 		: m_mainPass{}, m_postProcessingPass{},
 		m_mainPassIndex{ std::numeric_limits<std::uint32_t>::max() },
 		m_postProcessingPassIndex{ std::numeric_limits<std::uint32_t>::max() },
-		m_mainRenderTarget{}, m_depthTarget{},
+		m_mainRenderTarget{}, m_depthTarget{}, m_mainPassCameraIndex{ 0u },
 		m_mainRenderTargetIndex{ 0u }, m_depthTargetIndex{ 0u }, m_quadMeshBundleIndex{ 0u },
 		m_renderTargetQuadModelBundleIndex{ 0u }, m_renderTargetQuadModelBundle{},
 		m_transparencyExt{}, m_graphicsPipelineManager{ engineType }
@@ -74,8 +74,9 @@ public:
 	}
 
 	template<class Renderer_t>
-	void SetupRenderPassesFromRenderer(Renderer_t& renderer)
+	void SetupRenderPassesFromRenderer(Renderer_t& renderer, CameraManager& cameraManager)
 	{
+		SetupCameras(cameraManager);
 		// Need to setup here, as adding meshes/models require the descriptor heaps/buffer to be
 		// created first.
 		SetupRenderTargetQuad(renderer);
@@ -209,9 +210,12 @@ public:
 	// smaller because of the title or something else, so we need to grab the render area from
 	// the renderer.
 	template<class Renderer_t>
-	void Resize(this RenderPassManager& self, Renderer_t& renderer)
-	{
+	void Resize(
+		this RenderPassManager& self, Renderer_t& renderer, CameraManager& cameraManager
+	) {
 		RendererType::Extent renderArea = renderer.GetCurrentRenderingExtent();
+
+		self.ResizeCameras(renderArea.width, renderArea.height, cameraManager);
 
 		self.m_mainRenderTarget->Create(
 			renderArea.width, renderArea.height, renderer.GetSwapchainFormat(),
@@ -236,6 +240,19 @@ public:
 			self.m_postProcessingPass.ResetAttachmentReferences(resourceFactory);
 	}
 
+	template<class Renderer_t>
+	void UpdateCameras(
+		size_t frameIndex, CameraManager& cameraManager, Renderer_t& renderer
+	) {
+		PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(
+			m_mainPassCameraIndex
+		);
+
+		camera.CalculateViewMatrix();
+
+		renderer.UpdateCamera(frameIndex, camera.GetCamera());
+	}
+
 	[[nodiscard]]
 	const GraphicsPipelineManager& GetGraphicsPipelineManager() const noexcept
 	{
@@ -244,6 +261,9 @@ public:
 
 	[[nodiscard]]
 	std::uint32_t GetQuadMeshBundleIndex() const noexcept { return m_quadMeshBundleIndex; }
+
+	[[nodiscard]]
+	std::uint32_t GetMainPassCameraIndex() const noexcept { return m_mainPassCameraIndex; }
 
 private:
 	static constexpr ExternalFormat s_renderDepthFormat = ExternalFormat::D32_FLOAT;
@@ -315,6 +335,24 @@ private:
 		m_renderTargetQuadModelBundle.SetMeshBundleIndex(m_quadMeshBundleIndex);
 	}
 
+	void SetupCameras(CameraManager& cameraManager)
+	{
+		m_mainPassCameraIndex = cameraManager.AddPerspectiveCamera();
+
+		PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(m_mainPassCameraIndex);
+
+		camera.SetProjectionMatrix(1920u, 1080u);
+		camera.SetCameraPosition(DirectX::XMFLOAT3{ 0.f, 0.f, -1.f });
+	}
+
+	void ResizeCameras(
+		std::uint32_t width, std::uint32_t height, CameraManager& cameraManager
+	) noexcept {
+		PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(m_mainPassCameraIndex);
+
+		camera.SetProjectionMatrix(width, height);
+	}
+
 	template<class Renderer_t>
 	void SetupMainPassSignatures(Renderer_t& renderer)
 	{
@@ -357,6 +395,8 @@ private:
 	std::shared_ptr<ExternalTexture> m_mainRenderTarget;
 	std::shared_ptr<ExternalTexture> m_depthTarget;
 
+	std::uint32_t                    m_mainPassCameraIndex;
+
 	std::uint32_t                    m_mainRenderTargetIndex;
 	std::uint32_t                    m_depthTargetIndex;
 
@@ -382,6 +422,7 @@ public:
 		m_postProcessingPassIndex{ other.m_postProcessingPassIndex },
 		m_mainRenderTarget{ std::move(other.m_mainRenderTarget) },
 		m_depthTarget{ std::move(other.m_depthTarget) },
+		m_mainPassCameraIndex{ other.m_mainPassCameraIndex },
 		m_mainRenderTargetIndex{ other.m_mainRenderTargetIndex },
 		m_depthTargetIndex{ other.m_depthTargetIndex },
 		m_quadMeshBundleIndex{ other.m_quadMeshBundleIndex },
@@ -398,6 +439,7 @@ public:
 		m_postProcessingPassIndex          = other.m_postProcessingPassIndex;
 		m_mainRenderTarget                 = std::move(other.m_mainRenderTarget);
 		m_depthTarget                      = std::move(other.m_depthTarget);
+		m_mainPassCameraIndex              = other.m_mainPassCameraIndex;
 		m_mainRenderTargetIndex            = other.m_mainRenderTargetIndex;
 		m_depthTargetIndex                 = other.m_depthTargetIndex;
 		m_quadMeshBundleIndex              = other.m_quadMeshBundleIndex;

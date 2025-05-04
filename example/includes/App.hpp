@@ -202,15 +202,6 @@ public:
 		blinnPhong->SetDirection(lightIndex1, DirectX::XMFLOAT3{ 1.f, 0.f, 0.f });
 		blinnPhong->SetType(lightIndex1, BlinnPhongLightType::Directional);
 
-		camera = std::make_shared<PerspectiveCameraEuler>();
-
-		camera->SetProjectionMatrix(1920u, 1080u);
-		camera->SetCameraPosition(DirectX::XMFLOAT3{ 0.f, 0.f, -1.f });
-
-		const std::uint32_t cameraIndex = renderer.AddCamera(camera);
-
-		renderer.SetCamera(cameraIndex);
-
 		{
 			// White
 			DirectX::XMFLOAT4 colourBuffer{ 1.f, 0.f, 0.f, 1.f };
@@ -427,7 +418,7 @@ public:
 	>
 	void PhysicsUpdate(
 		InputManager_t& inputManager, Renderer_t& renderer, ExtensionManager_t& extensionManager,
-		RenderPassManager_t& renderPassManager
+		RenderPassManager_t& renderPassManager, CameraManager& cameraManager
 	) {
 		const Keyboard& keyboard = inputManager.GetKeyboard();
 
@@ -444,16 +435,40 @@ public:
 			cubeLightBundle->MoveTowardsX(0u, -0.05f);
 
 		if (keyboard.IsKeyPressed(SKeyCodes::W))
-			camera->MoveForward(0.01f).MoveCamera();
+		{
+			PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(
+				renderPassManager.GetMainPassCameraIndex()
+			);
+
+			camera.MoveForward(0.01f);
+		}
 
 		if (keyboard.IsKeyPressed(SKeyCodes::S))
-			camera->MoveBackward(0.01f).MoveCamera();
+		{
+			PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(
+				renderPassManager.GetMainPassCameraIndex()
+			);
+
+			camera.MoveBackward(0.01f);
+		}
 
 		if (keyboard.IsKeyPressed(SKeyCodes::E))
-			camera->LookAround(0.01f, 0.f);
+		{
+			PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(
+				renderPassManager.GetMainPassCameraIndex()
+			);
+
+			camera.LookAround(0.01f, 0.f);
+		}
 
 		if (keyboard.IsKeyPressed(SKeyCodes::Q))
-			camera->LookAround(-0.01f, 0.f);
+		{
+			PerspectiveCameraEuler& camera = cameraManager.GetPerspectiveCamera(
+				renderPassManager.GetMainPassCameraIndex()
+			);
+
+			camera.LookAround(-0.01f, 0.f);
+		}
 
 		if (keyboard.IsKeyPressed(SKeyCodes::D))
 			cubeBundle1->MoveTowardsX(0u, 0.01f);
@@ -816,8 +831,6 @@ private:
 	std::uint32_t lightPSOIndex            = std::numeric_limits<std::uint32_t>::max();
 	std::uint32_t lightTransparentPSOIndex = std::numeric_limits<std::uint32_t>::max();
 
-	std::shared_ptr<PerspectiveCameraEuler> camera{};
-
 public:
 	App(const App&) = delete;
 	App& operator=(const App&) = delete;
@@ -855,9 +868,7 @@ public:
 
 		nonLightPSOIndex{ other.nonLightPSOIndex },
 		lightPSOIndex{ other.lightPSOIndex },
-		lightTransparentPSOIndex{ other.lightTransparentPSOIndex },
-
-		camera{ std::move(other.camera) }
+		lightTransparentPSOIndex{ other.lightTransparentPSOIndex }
 	{}
 
 	App& operator=(App&& other) noexcept
@@ -895,8 +906,6 @@ public:
 		nonLightPSOIndex         = other.nonLightPSOIndex;
 		lightPSOIndex            = other.lightPSOIndex;
 		lightTransparentPSOIndex = other.lightTransparentPSOIndex;
-
-		camera = std::move(other.camera);
 
 		return *this;
 	}

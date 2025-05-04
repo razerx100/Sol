@@ -13,6 +13,7 @@
 #include <CameraManagerSol.hpp>
 #include <ExtensionManager.hpp>
 #include <RenderPassManager.hpp>
+#include <CameraManagerSol.hpp>
 
 #ifdef SOL_WIN32
 #include <WinWindow.hpp>
@@ -82,6 +83,7 @@ public:
 		m_threadPool{ std::make_shared<ThreadPool>( 8u ) },
 		m_inputManager{ CreateInputManager() },
 		m_window{ CreateWindowModule(s_width, s_height, appName) },
+		m_cameraManager{},
 		m_renderer{
 			CreateRenderer(
 				appName, s_width, s_height, s_frameCount,
@@ -122,9 +124,9 @@ public:
 		// And before any other textures have been bound.
 		AddDefaultTexture();
 
-		m_renderPassManager.SetupRenderPassesFromRenderer(m_renderer);
+		m_renderPassManager.SetupRenderPassesFromRenderer(m_renderer, m_cameraManager);
 		// Resize to create all the textures. The queues should be not running now.
-		m_renderPassManager.Resize(m_renderer);
+		m_renderPassManager.Resize(m_renderer, m_cameraManager);
 
 		// The descriptor layouts should be set with the FinaliseInitialisation function. So,
 		// Create the fixed Descriptors here.
@@ -162,7 +164,8 @@ public:
 					while (accumulatedElapsedTime >= updateDelta)
 					{
 						m_app.PhysicsUpdate(
-							m_inputManager, m_renderer, m_extensionManager, m_renderPassManager
+							m_inputManager, m_renderer, m_extensionManager, m_renderPassManager,
+							m_cameraManager
 						);
 						accumulatedElapsedTime -= updateDelta;
 					}
@@ -175,6 +178,8 @@ public:
 				m_inputManager.UpdateIndependentInputs();
 
 				const size_t backBufferIndex = m_renderer.WaitForCurrentBackBuffer();
+
+				m_renderPassManager.UpdateCameras(backBufferIndex, m_cameraManager, m_renderer);
 
 				m_renderer.Update(backBufferIndex);
 
@@ -257,11 +262,12 @@ private:
 		auto resizeData = static_cast<ResizeData*>(callbackData);
 		auto sol        = static_cast<Sol*>(extraData);
 
-		Renderer_t& renderer = sol->m_renderer;
+		Renderer_t& renderer         = sol->m_renderer;
+		CameraManager& cameraManager = sol->m_cameraManager;
 
 		renderer.Resize(resizeData->width, resizeData->height);
 
-		sol->m_renderPassManager.Resize(renderer);
+		sol->m_renderPassManager.Resize(renderer, cameraManager);
 	}
 
 	static void FullscreenCallback([[maybe_unused]] void* callbackData, void* extraData)
@@ -328,6 +334,7 @@ private:
 	std::shared_ptr<ThreadPool> m_threadPool;
 	InputManager_t              m_inputManager;
 	Window_t                    m_window;
+	CameraManager               m_cameraManager;
 	Renderer_t                  m_renderer;
 	RenderPassManager_t         m_renderPassManager;
 	ExtensionManager_t          m_extensionManager;
@@ -344,6 +351,7 @@ public:
 		m_threadPool{ std::move(other.m_threadPool) },
 		m_inputManager{ std::move(other.m_inputManager) },
 		m_window{ std::move(other.m_window) },
+		m_cameraManager{ std::move(other.m_cameraManager) },
 		m_renderer{ std::move(other.m_renderer) },
 		m_renderPassManager{ std::move(other.m_renderPassManager) },
 		m_extensionManager{ std::move(other.m_extensionManager) },
@@ -361,6 +369,7 @@ public:
 		m_threadPool        = std::move(other.m_threadPool);
 		m_inputManager      = std::move(other.m_inputManager);
 		m_window            = std::move(other.m_window);
+		m_cameraManager     = std::move(other.m_cameraManager);
 		m_renderer          = std::move(other.m_renderer);
 		m_renderPassManager = std::move(other.m_renderPassManager);
 		m_extensionManager  = std::move(other.m_extensionManager);
