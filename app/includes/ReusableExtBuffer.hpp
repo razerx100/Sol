@@ -10,15 +10,17 @@ namespace Sol
 {
 // This class should be used for single instance CPU buffers, where we would only update
 // data when a new item is added.
-template<class T>
+template<class T, class ExternalBufferImpl_t>
 class ReusableCPUExtBuffer
 {
+	using ExternalBuffer_t = ExternalBuffer<ExternalBufferImpl_t>;
+
 public:
 	ReusableCPUExtBuffer() : m_buffer{}, m_elements{} {}
 
-	void SetCPUExtBuffer(std::shared_ptr<ExternalBuffer> buffer) noexcept
+	void SetCPUExtBuffer(std::shared_ptr<ExternalBufferImpl_t> buffer) noexcept
 	{
-		m_buffer = std::move(buffer);
+		m_buffer.SetBufferImpl(std::move(buffer));
 	}
 
 	template<class U>
@@ -58,7 +60,7 @@ public:
 private:
 	void Update(size_t index) noexcept
 	{
-		std::uint8_t* bufferStart = m_buffer->CPUHandle();
+		std::uint8_t* bufferStart = m_buffer.CPUHandle();
 		constexpr size_t stride   = sizeof(T);
 		size_t elementOffset      = index * stride;
 
@@ -69,16 +71,16 @@ private:
 	{
 		const size_t newBufferSize = std::size(m_elements) * sizeof(T);
 
-		m_buffer->Create(newBufferSize);
+		m_buffer.Create(newBufferSize);
 
-		std::uint8_t* bufferStart = m_buffer->CPUHandle();
+		std::uint8_t* bufferStart = m_buffer.CPUHandle();
 
 		memcpy(bufferStart, std::data(m_elements), newBufferSize);
 	}
 
 private:
-	std::shared_ptr<ExternalBuffer> m_buffer;
-	Callisto::ReusableVector<T>     m_elements;
+	ExternalBuffer_t            m_buffer;
+	Callisto::ReusableVector<T> m_elements;
 
 	static constexpr size_t s_extraElementCount = 4u;
 

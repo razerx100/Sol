@@ -5,6 +5,8 @@
 #include <LightSource.hpp>
 #include <ReusableVector.hpp>
 #include <ReusableExtBuffer.hpp>
+#include <ExternalBindingIndices.hpp>
+#include <ConversionUtilities.hpp>
 
 namespace Sol
 {
@@ -39,10 +41,11 @@ struct BlinnPhongMaterial
 	DirectX::XMFLOAT4 ambient{};
 	DirectX::XMFLOAT4 diffuse{};
 	DirectX::XMFLOAT4 specular{};
-	float             shininess = 1.f;
+	float             shininess  = 1.f;
 	float             padding[3] = {};
 };
 
+template<class ExternalBufferImpl_t>
 class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 {
 	struct LightInfo
@@ -51,8 +54,46 @@ class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 		BlinnPhongLightProperties properties;
 	};
 
+	using ExternalBuffer_t       = ExternalBuffer<ExternalBufferImpl_t>;
+	using ReusableCPUExtBuffer_t = ReusableCPUExtBuffer<BlinnPhongMaterial, ExternalBufferImpl_t>;
+
 public:
-	BlinnPhongLightTechnique(std::uint32_t frameCount);
+	BlinnPhongLightTechnique(std::uint32_t frameCount)
+		: GraphicsTechniqueExtensionBase{}, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
+		m_materials{}, m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u },
+		m_frameCount{ frameCount }
+	{
+		constexpr size_t bufferBindingCount = 3u;
+
+		m_bufferBindingDetails.resize(bufferBindingCount);
+
+		m_bufferBindingDetails[s_lightCountBufferIndex] = ExternalBufferBindingDetails
+		{
+			.layoutInfo =
+			{
+				.bindingIndex = ExternalBinding::s_lightCount,
+				.type         = ExternalBufferType::CPUVisibleUniform
+			}
+		};
+
+		m_bufferBindingDetails[s_lightInfoBufferIndex] = ExternalBufferBindingDetails
+		{
+			.layoutInfo =
+			{
+				.bindingIndex = ExternalBinding::s_lightInfo,
+				.type         = ExternalBufferType::CPUVisibleSSBO
+			}
+		};
+
+		m_bufferBindingDetails[s_materialBufferIndex] = ExternalBufferBindingDetails
+		{
+			.layoutInfo =
+			{
+				.bindingIndex = ExternalBinding::s_material,
+				.type         = ExternalBufferType::CPUVisibleSSBO
+			}
+		};
+	}
 
 	template<class Renderer_t>
 	[[nodiscard]]
@@ -85,8 +126,8 @@ public:
 		m_lightStatus[lightIndex] = true;
 
 		const NewBufferInfo_t newBufferSize = GetNewBufferSize(
-			*m_lightInfoExtBuffer, sizeof(LightData), std::size(m_lights), m_frameCount,
-			s_extraAllocationCount
+			m_lightInfoExtBuffer.BufferSize(), sizeof(LightData), std::size(m_lights),
+			m_frameCount, s_extraAllocationCount
 		);
 
 		if (newBufferSize)
@@ -98,7 +139,7 @@ public:
 			// Should wait for the gpu to finish before recreating the buffer.
 			renderer.WaitForGPUToFinish();
 
-			m_lightInfoExtBuffer->Create(newBufferInfo.bufferSize);
+			m_lightInfoExtBuffer.Create(newBufferInfo.bufferSize);
 
 			// The new light data will be copied on the next frame. And we don't
 			// need to worry about the GPU waiting for that. But we will need to
@@ -122,27 +163,63 @@ public:
 		return index;
 	}
 
-	void RemoveLight(size_t index) noexcept;
-	void ToggleLight(size_t index, bool value) noexcept;
+	void RemoveLight(size_t index) noexcept
+	{
+		m_lights.RemoveElement(index);
 
-	void SetProperties(size_t lightIndex, const BlinnPhongLightProperties& properties) noexcept;
+		m_lightStatus[index] = false;
+	}
+
+	void ToggleLight(size_t index, bool value) noexcept
+	{
+		m_lightStatus[index] = value;
+	}
+
+	void SetProperties(size_t lightIndex, const BlinnPhongLightProperties& properties) noexcept
+	{
+		m_lights[lightIndex].properties           = properties;
+		m_lights[lightIndex].properties.direction = NormaliseFloat3(properties.direction);
+	}
 
 	void SetLightColour(
 		size_t lightIndex, const DirectX::XMFLOAT3& ambient, const DirectX::XMFLOAT3& diffuse,
 		const DirectX::XMFLOAT3& specular
-	) noexcept;
+	) noexcept {
+		m_lights[lightIndex].properties.ambient  = ambient;
+		m_lights[lightIndex].properties.diffuse  = diffuse;
+		m_lights[lightIndex].properties.specular = specular;
+	}
 
 	// Works for Directional and Spotlight.
-	void SetDirection(size_t lightIndex, const DirectX::XMFLOAT3& direction) noexcept;
+	void SetDirection(size_t lightIndex, const DirectX::XMFLOAT3& direction) noexcept
+	{
+		m_lights[lightIndex].properties.direction = NormaliseFloat3(direction);
+	}
 	// Works for Point Light and Spotlight.
 	void SetAttenuationCoefficients(
 		size_t lightIndex, float constant, float linear, float quadratic
-	) noexcept;
-	// Works only for SpotLight
-	void SetCutoffs(size_t lightIndex, float innerCutoff, float outerCutoff) noexcept;
-	void SetType(size_t lightIndex, BlinnPhongLightType type) noexcept;
+	) noexcept {
+		m_lights[lightIndex].properties.constant  = constant;
+		m_lights[lightIndex].properties.linear    = linear;
+		m_lights[lightIndex].properties.quadratic = quadratic;
+	}
 
-	void RemoveMaterial(size_t index);
+	// Works only for SpotLight
+	void SetCutoffs(size_t lightIndex, float innerCutoff, float outerCutoff) noexcept
+	{
+		m_lights[lightIndex].properties.innerCutoff = innerCutoff;
+		m_lights[lightIndex].properties.outerCutoff = outerCutoff;
+	}
+
+	void SetType(size_t lightIndex, BlinnPhongLightType type) noexcept
+	{
+		m_lights[lightIndex].properties.lightType = static_cast<std::uint32_t>(type);
+	}
+
+	void RemoveMaterial(size_t index)
+	{
+		m_materials.Remove(index);
+	}
 
 	template<class Renderer_t>
 	void SetFixedDescriptors(Renderer_t& renderer)
@@ -150,7 +227,52 @@ public:
 		UpdateLightCountDescriptors(renderer);
 	}
 
-	void UpdateCPUData(size_t frameIndex) noexcept;
+	void UpdateCPUData(size_t frameIndex) noexcept
+	{
+		const std::vector<LightInfo>& lights = m_lights.Get();
+
+		// We care about the light indices on the CPU but don't care about it on the GPU.
+		// So, to avoid unnecessary branches in the Fragment shader, we are going to rewrite the buffer and the
+		// element count every frame with only the active lights.
+		std::uint8_t* lightInfoCpuStart      = m_lightInfoExtBuffer.CPUHandle();
+		const size_t lightInfoInstanceOffset = m_lightInfoInstanceSize * frameIndex;
+		size_t activeLightIndex              = 0u;
+
+		for (size_t index = 0u; index < std::size(lights); ++index)
+		{
+			if (m_lightStatus[index])
+			{
+				const LightInfo& lightInfo = lights[index];
+				const LightSource& light   = lightInfo.source;
+				const size_t lightOffset   = sizeof(LightData) * activeLightIndex;
+
+				const LightData lightData
+				{
+					.lightPosition = light.GetPosition(),
+					.properties    = lightInfo.properties
+				};
+
+				memcpy(
+					lightInfoCpuStart + lightInfoInstanceOffset + lightOffset,
+					&lightData, sizeof(LightData)
+				);
+
+				++activeLightIndex;
+			}
+		}
+
+		// Copy the new light count.
+		std::uint8_t* lightCountCpuStart      = m_lightCountExtBuffer.CPUHandle();
+		const size_t lightCountInstanceOffset = s_lightCountInstanceSize * frameIndex;
+		const auto activeLightCountU32        = static_cast<std::uint32_t>(activeLightIndex);
+
+		// Can't use the lightCount instance size here as it is bigger than the data size.
+		memcpy(
+			lightCountCpuStart + lightCountInstanceOffset, &activeLightCountU32,
+			sizeof(std::uint32_t)
+		);
+	}
+
 
 	template<class ResourceFactory_t>
 	void SetBuffers(ResourceFactory_t& resourceFactory)
@@ -166,7 +288,9 @@ public:
 				ExternalBufferType::CPUVisibleUniform
 			);
 
-			m_lightCountExtBuffer = resourceFactory.GetExternalBufferSP(extBufferIndex);
+			m_lightCountExtBuffer.SetBufferImpl(
+				resourceFactory.GetExternalBufferSP(extBufferIndex)
+			);
 
 			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
 
@@ -175,7 +299,7 @@ public:
 			m_externalBufferIndices[bufferIndex] = extBufferIndexU32;
 
 			// The Light Count bufferSize should be fixed.
-			m_lightCountExtBuffer->Create(m_frameCount * s_lightCountInstanceSize);
+			m_lightCountExtBuffer.Create(m_frameCount * s_lightCountInstanceSize);
 		}
 
 		// Light Info
@@ -185,7 +309,9 @@ public:
 				ExternalBufferType::CPUVisibleSSBO
 			);
 
-			m_lightInfoExtBuffer = resourceFactory.GetExternalBufferSP(extBufferIndex);
+			m_lightInfoExtBuffer.SetBufferImpl(
+				resourceFactory.GetExternalBufferSP(extBufferIndex)
+			);
 
 			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
 
@@ -217,23 +343,59 @@ public:
 	[[nodiscard]]
 	static ExternalGraphicsPipeline GetOpaqueLightSrcPipeline(
 		const GraphicsPipelineManager& graphicsPipelineManager
-	) noexcept;
+	) noexcept {
+		ExternalGraphicsPipeline opaqueNoLightPipeline
+			= graphicsPipelineManager.GetMainPassOpaqueSignature();
+
+		opaqueNoLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
+		opaqueNoLightPipeline.SetFragmentShader(s_opaqueLightSrcShaderName);
+
+		return opaqueNoLightPipeline;
+	}
+
 	// For generic opaque light objects with light shading. With the main pass' signature.
 	[[nodiscard]]
 	static ExternalGraphicsPipeline GetOpaqueLightDstPipeline(
 		const GraphicsPipelineManager& graphicsPipelineManager
-	) noexcept;
+	) noexcept {
+		ExternalGraphicsPipeline opaqueLightPipeline
+			= graphicsPipelineManager.GetMainPassOpaqueSignature();
+
+		opaqueLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
+		opaqueLightPipeline.SetFragmentShader(s_opaqueLightDstShaderName);
+
+		return opaqueLightPipeline;
+	}
 
 	// For transparent light objects without light shading. Requires the transparency extension.
 	[[nodiscard]]
 	static ExternalGraphicsPipeline GetTransparentLightSrcPipeline(
 		const GraphicsPipelineManager& graphicsPipelineManager
-	) noexcept;
+	) noexcept {
+		ExternalGraphicsPipeline transparentNoLightPipeline
+			= graphicsPipelineManager.GetTransparencyPassSignature();
+
+		transparentNoLightPipeline.SetVertexShader(
+			graphicsPipelineManager.GetDefaultVertexShader()
+		);
+		transparentNoLightPipeline.SetFragmentShader(s_transparentLightSrcShaderName);
+
+		return transparentNoLightPipeline;
+	}
+
 	// For transparent light objects wit light shading. Requires the transparency extension.
 	[[nodiscard]]
 	static ExternalGraphicsPipeline GetTransparentLightDstPipeline(
 		const GraphicsPipelineManager& graphicsPipelineManager
-	) noexcept;
+	) noexcept {
+		ExternalGraphicsPipeline transparentLightPipeline
+			= graphicsPipelineManager.GetTransparencyPassSignature();
+
+		transparentLightPipeline.SetVertexShader(graphicsPipelineManager.GetDefaultVertexShader());
+		transparentLightPipeline.SetFragmentShader(s_transparentLightDstShaderName);
+
+		return transparentLightPipeline;
+	}
 
 	[[nodiscard]]
 	auto&& GetLightSource(this auto&& self, size_t index) noexcept
@@ -273,23 +435,23 @@ private:
 	void UpdateMaterialDescriptor(Renderer_t& renderer)
 	{
 		UpdateCPUBufferDescriptor(
-			s_materialBufferIndex, m_materials.GetExtBuffer()->BufferSize(), renderer
+			s_materialBufferIndex, m_materials.GetExtBuffer().BufferSize(), renderer
 		);
 	}
 
 private:
-	std::shared_ptr<ExternalBuffer>          m_lightCountExtBuffer;
-	std::shared_ptr<ExternalBuffer>          m_lightInfoExtBuffer;
-	ReusableCPUExtBuffer<BlinnPhongMaterial> m_materials;
-	Callisto::ReusableVector<LightInfo>      m_lights;
-	std::vector<bool>                        m_lightStatus;
-	size_t                                   m_lightInfoInstanceSize;
-	std::uint32_t                            m_frameCount;
+	ExternalBuffer_t                    m_lightCountExtBuffer;
+	ExternalBuffer_t                    m_lightInfoExtBuffer;
+	ReusableCPUExtBuffer_t              m_materials;
+	Callisto::ReusableVector<LightInfo> m_lights;
+	std::vector<bool>                   m_lightStatus;
+	size_t                              m_lightInfoInstanceSize;
+	std::uint32_t                       m_frameCount;
 
-	static ShaderName s_opaqueLightSrcShaderName;
-	static ShaderName s_opaqueLightDstShaderName;
-	static ShaderName s_transparentLightSrcShaderName;
-	static ShaderName s_transparentLightDstShaderName;
+	inline static ShaderName s_opaqueLightSrcShaderName      = L"NoLightOpaqueShader";
+	inline static ShaderName s_opaqueLightDstShaderName      = L"BlinnPhongOpaqueShader";
+	inline static ShaderName s_transparentLightSrcShaderName = L"NoLightTransparentShader";
+	inline static ShaderName s_transparentLightDstShaderName = L"BlinnPhongTransparentShader";
 
 	static constexpr std::uint32_t s_lightCountBufferIndex = 0u;
 	static constexpr std::uint32_t s_lightInfoBufferIndex  = 1u;

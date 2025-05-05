@@ -13,13 +13,16 @@
 
 namespace Sol
 {
-template<class ExternalRenderPassImpl_t>
+template<class ExternalRenderPassImpl_t, class ExternalBufferImpl_t, class ExternalTextureImpl_t>
 class RenderPassManager
 {
 public:
-	using WeightedTransparency_t = WeightedTransparencyTechnique<ExternalRenderPassImpl_t>;
-	using TransparencyExt_t      = std::shared_ptr<WeightedTransparency_t>;
-	using ExternalRenderPass_t   = ExternalRenderPass<ExternalRenderPassImpl_t>;
+	using WeightedTransparency_t = WeightedTransparencyTechnique<
+		ExternalRenderPassImpl_t, ExternalBufferImpl_t, ExternalTextureImpl_t
+	>;
+	using TransparencyExt_t    = std::shared_ptr<WeightedTransparency_t>;
+	using ExternalRenderPass_t = ExternalRenderPass<ExternalRenderPassImpl_t>;
+	using ExternalTexture_t    = ExternalTexture<ExternalTextureImpl_t>;
 
 public:
 	RenderPassManager(RenderEngineType engineType)
@@ -66,11 +69,15 @@ public:
 			resourceFactory.CreateExternalTexture()
 		);
 
-		m_mainRenderTarget = resourceFactory.GetExternalTextureSP(m_mainRenderTargetIndex);
+		m_mainRenderTarget.SetTextureImpl(
+			resourceFactory.GetExternalTextureSP(m_mainRenderTargetIndex)
+		);
 
 		m_depthTargetIndex = static_cast<std::uint32_t>(resourceFactory.CreateExternalTexture());
 
-		m_depthTarget = resourceFactory.GetExternalTextureSP(m_depthTargetIndex);
+		m_depthTarget.SetTextureImpl(
+			resourceFactory.GetExternalTextureSP(m_depthTargetIndex)
+		);
 	}
 
 	template<class Renderer_t>
@@ -217,12 +224,12 @@ public:
 
 		self.ResizeCameras(renderArea.width, renderArea.height, cameraManager);
 
-		self.m_mainRenderTarget->Create(
+		self.m_mainRenderTarget.Create(
 			renderArea.width, renderArea.height, renderer.GetSwapchainFormat(),
 			ExternalTexture2DType::RenderTarget, ExternalTextureCreationFlags{ .copySrc = true }
 		);
 
-		self.m_depthTarget->Create(
+		self.m_depthTarget.Create(
 			renderArea.width, renderArea.height, s_renderDepthFormat,
 			ExternalTexture2DType::Depth
 		);
@@ -387,27 +394,27 @@ private:
 	}
 
 private:
-	ExternalRenderPass_t             m_mainPass;
-	ExternalRenderPass_t             m_postProcessingPass;
-	std::uint32_t                    m_mainPassIndex;
-	std::uint32_t                    m_postProcessingPassIndex;
+	ExternalRenderPass_t    m_mainPass;
+	ExternalRenderPass_t    m_postProcessingPass;
+	std::uint32_t           m_mainPassIndex;
+	std::uint32_t           m_postProcessingPassIndex;
 
-	std::shared_ptr<ExternalTexture> m_mainRenderTarget;
-	std::shared_ptr<ExternalTexture> m_depthTarget;
+	ExternalTexture_t       m_mainRenderTarget;
+	ExternalTexture_t       m_depthTarget;
 
-	std::uint32_t                    m_mainPassCameraIndex;
+	std::uint32_t           m_mainPassCameraIndex;
 
-	std::uint32_t                    m_mainRenderTargetIndex;
-	std::uint32_t                    m_depthTargetIndex;
+	std::uint32_t           m_mainRenderTargetIndex;
+	std::uint32_t           m_depthTargetIndex;
 
-	std::uint32_t                    m_quadMeshBundleIndex;
+	std::uint32_t           m_quadMeshBundleIndex;
 
-	std::uint32_t                    m_renderTargetQuadModelBundleIndex;
-	ModelBundleBase                  m_renderTargetQuadModelBundle;
+	std::uint32_t           m_renderTargetQuadModelBundleIndex;
+	ModelBundleBase         m_renderTargetQuadModelBundle;
 
-	TransparencyExt_t                m_transparencyExt;
+	TransparencyExt_t       m_transparencyExt;
 
-	GraphicsPipelineManager          m_graphicsPipelineManager;
+	GraphicsPipelineManager m_graphicsPipelineManager;
 
 	static constexpr std::uint32_t s_renderTargetQuadMeshIndex = 0u;
 

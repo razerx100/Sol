@@ -45,9 +45,9 @@ public:
 
 	void ProcessMeshAndMaterialData();
 
-	template<class Renderer_t>
+	template<class Renderer_t, class BlinnPhongLightTechnique_t>
 	void LoadBlinnPhongMaterials(
-		Renderer_t& renderer, BlinnPhongLightTechnique& blinnPhongTechnique
+		Renderer_t& renderer, BlinnPhongLightTechnique_t& blinnPhongTechnique
 	) {
 		const size_t materialCount = std::size(m_materialData);
 

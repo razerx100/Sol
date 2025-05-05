@@ -7,12 +7,17 @@
 
 namespace Sol
 {
-template<class ExternalRenderPassImpl_t>
+template<class ExternalRenderPassImpl_t, class ExternalBufferImpl_t, class ExternalTextureImpl_t>
 class ExtensionManager
 {
 public:
-	using WeightedTransparency_t = WeightedTransparencyTechnique<ExternalRenderPassImpl_t>;
+	using WeightedTransparency_t = WeightedTransparencyTechnique<
+		ExternalRenderPassImpl_t, ExternalBufferImpl_t, ExternalTextureImpl_t
+	>;
 	using TransparencyExt_t      = std::shared_ptr<WeightedTransparency_t>;
+
+	using BlinnPhongLightTechnique_t = BlinnPhongLightTechnique<ExternalBufferImpl_t>;
+	using BlinnPhongLightExt_t       = std::shared_ptr<BlinnPhongLightTechnique_t>;
 
 public:
 	ExtensionManager()
@@ -22,7 +27,7 @@ public:
 
 	void SetBlinnPhongLight(std::uint32_t frameCount)
 	{
-		m_blinnPhongLight = std::make_shared<BlinnPhongLightTechnique>(frameCount);
+		m_blinnPhongLight = std::make_shared<BlinnPhongLightTechnique_t>(frameCount);
 	}
 
 	void SetWeightedTransparency()
@@ -87,19 +92,22 @@ public:
 	}
 
 	[[nodiscard]]
-	BlinnPhongLightTechnique* GetBlinnPhongLight() const noexcept { return m_blinnPhongLight.get(); }
+	BlinnPhongLightTechnique_t* GetBlinnPhongLight() const noexcept
+	{
+		return m_blinnPhongLight.get();
+	}
 	[[nodiscard]]
-	std::shared_ptr<BlinnPhongLightTechnique> GetBlinnPhongLightSP() const noexcept
+	BlinnPhongLightExt_t GetBlinnPhongLightSP() const noexcept
 	{
 		return m_blinnPhongLight;
 	}
 
 private:
-	std::shared_ptr<BlinnPhongLightTechnique> m_blinnPhongLight;
-	TransparencyExt_t                         m_weightedTransparency;
+	BlinnPhongLightExt_t m_blinnPhongLight;
+	TransparencyExt_t    m_weightedTransparency;
 	// Could use the indices to remove the extensions.
-	std::uint32_t                             m_blinnPhongLightIndex;
-	std::uint32_t                             m_weightedTransparencyIndex;
+	std::uint32_t        m_blinnPhongLightIndex;
+	std::uint32_t        m_weightedTransparencyIndex;
 
 public:
 	ExtensionManager(const ExtensionManager&) = delete;

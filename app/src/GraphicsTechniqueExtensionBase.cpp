@@ -4,10 +4,9 @@
 namespace Sol
 {
 GraphicsTechniqueExtensionBase::NewBufferInfo_t GraphicsTechniqueExtensionBase::GetNewBufferSize(
-	const ExternalBuffer& buffer, size_t strideSize, size_t elementCount,
+	size_t currentBufferSize, size_t strideSize, size_t elementCount,
 	size_t instanceCount, size_t extraAllocationCount
 ) noexcept {
-	const size_t currentBufferSize   = buffer.BufferSize();
 	const size_t minimumInstanceSize = elementCount * strideSize;
 	const size_t requiredMinimumSize = minimumInstanceSize * instanceCount;
 

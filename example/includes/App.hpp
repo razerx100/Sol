@@ -47,7 +47,7 @@ public:
 		Renderer_t& renderer, ExtensionManager_t& extensionManager,
 		RenderPassManager_t& renderPassManager
 	) {
-		BlinnPhongLightTechnique* blinnPhong = extensionManager.GetBlinnPhongLight();
+		auto* blinnPhong       = extensionManager.GetBlinnPhongLight();
 
 		auto* transparencyPass = extensionManager.GetWeightedTransparency();
 
@@ -669,7 +669,7 @@ public:
 					.specular = { 1.f, 1.f, 1.f, 1.f }
 				};
 
-				BlinnPhongLightTechnique* blinnPhong = extensionManager.GetBlinnPhongLight();
+				auto* blinnPhong = extensionManager.GetBlinnPhongLight();
 
 				tealMatIndex = blinnPhong->AddMaterial(renderer, teal);
 			}
@@ -694,7 +694,7 @@ public:
 		{
 			if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
 			{
-				BlinnPhongLightTechnique* blinnPhong = extensionManager.GetBlinnPhongLight();
+				auto* blinnPhong = extensionManager.GetBlinnPhongLight();
 
 				blinnPhong->RemoveMaterial(tealMatIndex);
 

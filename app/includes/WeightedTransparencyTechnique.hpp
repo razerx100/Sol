@@ -8,10 +8,12 @@
 
 namespace Sol
 {
-template<class ExternalRenderPassImpl_t>
+template<class ExternalRenderPassImpl_t, class ExternalBufferImpl_t, class ExternalTextureImpl_t>
 class WeightedTransparencyTechnique : public GraphicsTechniqueExtensionBase
 {
 	using ExternalRenderPass_t = ExternalRenderPass<ExternalRenderPassImpl_t>;
+	using ExternalBuffer_t     = ExternalBuffer<ExternalBufferImpl_t>;
+	using ExternalTexture_t    = ExternalTexture<ExternalTextureImpl_t>;
 
 public:
 	struct RenderTargetBindingData
@@ -71,7 +73,7 @@ public:
 	void SetFixedDescriptors(Renderer_t& renderer)
 	{
 		UpdateCPUBufferDescriptor(
-			s_rtBindingDataBufferIndex, m_renderTargetBindingDataExtBuffer->BufferSize(),
+			s_rtBindingDataBufferIndex, m_renderTargetBindingDataExtBuffer.BufferSize(),
 			renderer
 		);
 	}
@@ -195,8 +197,8 @@ public:
 				ExternalBufferType::CPUVisibleUniform
 			);
 
-			m_renderTargetBindingDataExtBuffer = resourceFactory.GetExternalBufferSP(
-				extBufferIndex
+			m_renderTargetBindingDataExtBuffer.SetBufferImpl(
+				resourceFactory.GetExternalBufferSP(extBufferIndex)
 			);
 
 			const auto extBufferIndexU32 = static_cast<std::uint32_t>(extBufferIndex);
@@ -205,7 +207,7 @@ public:
 				= extBufferIndexU32;
 			m_externalBufferIndices[bufferIndex] = extBufferIndexU32;
 
-			m_renderTargetBindingDataExtBuffer->Create(sizeof(RenderTargetBindingData));
+			m_renderTargetBindingDataExtBuffer.Create(sizeof(RenderTargetBindingData));
 		}
 
 		// Accumulation Render Target
@@ -214,8 +216,8 @@ public:
 
 			m_accumulationTextureIndex = static_cast<std::uint32_t>(accumulationTextureIndex);
 
-			m_accumulationRenderTarget = resourceFactory.GetExternalTextureSP(
-				accumulationTextureIndex
+			m_accumulationRenderTarget.SetTextureImpl(
+				resourceFactory.GetExternalTextureSP(accumulationTextureIndex)
 			);
 		}
 
@@ -225,20 +227,22 @@ public:
 
 			m_revealageTextureIndex = static_cast<std::uint32_t>(revealageTextureIndex);
 
-			m_revealageRenderTarget = resourceFactory.GetExternalTextureSP(revealageTextureIndex);
+			m_revealageRenderTarget.SetTextureImpl(
+				resourceFactory.GetExternalTextureSP(revealageTextureIndex)
+			);
 		}
 	}
 
 	template<class Renderer_t>
 	void ResizeRenderTargets(std::uint32_t width, std::uint32_t height, Renderer_t& renderer)
 	{
-		m_accumulationRenderTarget->Create(
+		m_accumulationRenderTarget.Create(
 			width, height, ExternalFormat::R16G16B16A16_FLOAT,
 			ExternalTexture2DType::RenderTarget,
 			ExternalTextureCreationFlags{ .sampleTexture = true }
 		);
 
-		m_revealageRenderTarget->Create(
+		m_revealageRenderTarget.Create(
 			width, height, ExternalFormat::R16_FLOAT, ExternalTexture2DType::RenderTarget,
 			ExternalTextureCreationFlags{ .sampleTexture = true }
 		);
@@ -344,24 +348,24 @@ private:
 			m_bindingData.revealageRTBindingIndex
 				= renderer.BindExternalTexture(m_revealageTextureIndex);
 
-			std::uint8_t* bindingDataCpuStart = m_renderTargetBindingDataExtBuffer->CPUHandle();
+			std::uint8_t* bindingDataCpuStart = m_renderTargetBindingDataExtBuffer.CPUHandle();
 
 			memcpy(bindingDataCpuStart, &m_bindingData, sizeof(RenderTargetBindingData));
 		}
 	}
 
 private:
-	std::shared_ptr<ExternalTexture> m_accumulationRenderTarget;
-	std::shared_ptr<ExternalTexture> m_revealageRenderTarget;
-	std::shared_ptr<ExternalBuffer>  m_renderTargetBindingDataExtBuffer;
-	ExternalRenderPass_t             m_transparencyPass;
-	ExternalRenderPass_t             m_postProcessingPass;
-	std::uint32_t                    m_transparencyPassIndex;
-	std::uint32_t                    m_accumulationTextureIndex;
-	std::uint32_t                    m_revealageTextureIndex;
-	RenderTargetBindingData          m_bindingData;
-	std::uint32_t                    m_accumulationBarrierIndex;
-	std::uint32_t                    m_revealageBarrierIndex;
+	ExternalTexture_t       m_accumulationRenderTarget;
+	ExternalTexture_t       m_revealageRenderTarget;
+	ExternalBuffer_t        m_renderTargetBindingDataExtBuffer;
+	ExternalRenderPass_t    m_transparencyPass;
+	ExternalRenderPass_t    m_postProcessingPass;
+	std::uint32_t           m_transparencyPassIndex;
+	std::uint32_t           m_accumulationTextureIndex;
+	std::uint32_t           m_revealageTextureIndex;
+	RenderTargetBindingData m_bindingData;
+	std::uint32_t           m_accumulationBarrierIndex;
+	std::uint32_t           m_revealageBarrierIndex;
 
 	static constexpr std::uint32_t s_rtBindingDataBufferIndex = 0u;
 

@@ -39,18 +39,18 @@ protected:
 protected:
 	[[nodiscard]]
 	static NewBufferInfo_t GetNewBufferSize(
-		const ExternalBuffer& buffer, size_t strideSize, size_t elementCount,
+		size_t currentBufferSize, size_t strideSize, size_t elementCount,
 		size_t instanceCount = 1u, size_t extraAllocationCount = 0u
 	) noexcept;
 
 	template<typename T>
 	[[nodiscard]]
 	static NewBufferInfo_t GetNewBufferSize(
-		const std::vector<T>& vec, const ExternalBuffer& buffer, size_t instanceCount = 1u,
+		const std::vector<T>& vec, size_t currentBufferSize, size_t instanceCount = 1u,
 		size_t extraAllocationCount = 0u
 	) noexcept {
 		return GetNewBufferSize(
-			buffer, sizeof(T), std::size(vec), instanceCount, extraAllocationCount
+			currentBufferSize, sizeof(T), std::size(vec), instanceCount, extraAllocationCount
 		);
 	}
 

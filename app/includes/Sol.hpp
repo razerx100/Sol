@@ -55,6 +55,20 @@ class Sol
 	{ using type = Gaia::D3DExternalRenderPass; };
 
 	template<RendererModule rendererModule>
+	struct ExternalBufferImplConditional { using type = Terra::VkExternalBuffer; };
+
+	template<>
+	struct ExternalBufferImplConditional<RendererModule::Gaia>
+	{ using type = Gaia::D3DExternalBuffer; };
+
+	template<RendererModule rendererModule>
+	struct ExternalTextureImplConditional { using type = Terra::VkExternalTexture; };
+
+	template<>
+	struct ExternalTextureImplConditional<RendererModule::Gaia>
+	{ using type = Gaia::D3DExternalTexture; };
+
+	template<RendererModule rendererModule>
 	struct RendererModuleConditional { using type = RendererVK_t; };
 
 	template<>
@@ -63,17 +77,25 @@ class Sol
 	template<InputModule inputModule>
 	struct InputModuleConditional { using type = Pluto::InputManager; };
 
-	using Renderer_t          = typename RendererModuleConditional<rendererModule>::type;
+	using Renderer_t            = typename RendererModuleConditional<rendererModule>::type;
 
-	using Window_t            = typename WindowModuleConditional<windowModule>::type;
+	using Window_t              = typename WindowModuleConditional<windowModule>::type;
 
-	using InputManager_t      = typename InputModuleConditional<inputModule>::type;
+	using InputManager_t        = typename InputModuleConditional<inputModule>::type;
 
-	using RenderPassImpl_t    = typename RenderPassImplConditional<rendererModule>::type;
+	using RenderPassImpl_t      = typename RenderPassImplConditional<rendererModule>::type;
 
-	using RenderPassManager_t = RenderPassManager<RenderPassImpl_t>;
+	using ExternalBufferImpl_t  = typename ExternalBufferImplConditional<rendererModule>::type;
 
-	using ExtensionManager_t  = ExtensionManager<RenderPassImpl_t>;
+	using ExternalTextureImpl_t = typename ExternalTextureImplConditional<rendererModule>::type;
+
+	using RenderPassManager_t = RenderPassManager<
+		RenderPassImpl_t, ExternalBufferImpl_t, ExternalTextureImpl_t
+	>;
+
+	using ExtensionManager_t = ExtensionManager<
+		RenderPassImpl_t, ExternalBufferImpl_t, ExternalTextureImpl_t
+	>;
 
 public:
 	Sol(const std::string& appName, ConfigManager&& configManager)
