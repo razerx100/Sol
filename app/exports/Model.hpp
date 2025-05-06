@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <optional>
 
 #include <DirectXMath.h>
 
@@ -411,6 +412,8 @@ public:
 	{
 		return m_modelIndicesInBundle;
 	}
+	[[nodiscard]]
+	size_t GetModelCount() const noexcept { return std::size(m_modelIndicesInBundle); }
 
 private:
 	std::vector<std::uint32_t> m_modelIndicesInBundle;
@@ -438,12 +441,37 @@ class ModelBundle
 {
 public:
 	using ModelContainer_t    = std::vector<std::shared_ptr<Model>>;
-	using PipelineContainer_t = std::vector<std::shared_ptr<PipelineModelBundle>>;
+	using PipelineContainer_t = std::vector<PipelineModelBundle>;
 
 public:
 	ModelBundle() : m_models{}, m_pipelines{}, m_meshBundleIndex{ 0u } {}
 
 	void SetMeshBundleIndex(std::uint32_t index) noexcept { m_meshBundleIndex = index; }
+
+	[[nodiscard]]
+	std::optional<size_t> FindLocalPipelineIndex(std::uint32_t pipelineIndex) const noexcept
+	{
+		std::optional<size_t> oLocalIndex{};
+
+		const size_t pipelineCount = GetPipelineCount();
+
+		size_t pipelineLocalIndex  = std::numeric_limits<size_t>::max();
+
+		// Can replace this search with an unordered_map but I don't think there will be too
+		// many pipelines, so gonna keep it a linear search for now.
+		for (size_t index = 0u; index < pipelineCount; ++index)
+			if (m_pipelines[index].GetPipelineIndex() == pipelineIndex)
+			{
+				pipelineLocalIndex = index;
+
+				break;
+			}
+
+		if (pipelineLocalIndex != std::numeric_limits<size_t>::max())
+			oLocalIndex = pipelineLocalIndex;
+
+		return oLocalIndex;
+	}
 
 	[[nodiscard]]
 	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
@@ -458,6 +486,11 @@ public:
 	{
 		return std::forward_like<decltype(self)>(self.m_models);
 	}
+
+	[[nodiscard]]
+	size_t GetModelCount() const noexcept { return std::size(m_models); }
+	[[nodiscard]]
+	size_t GetPipelineCount() const noexcept { return std::size(m_pipelines); }
 
 private:
 	ModelContainer_t    m_models;

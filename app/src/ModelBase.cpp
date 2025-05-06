@@ -30,7 +30,7 @@ ModelBundleBase& ModelBundleBase::AddModel(
 
 	const size_t pipelineLocalIndex = GetLocalPipelineIndex(pipelineIndex);
 
-	pipelines[pipelineLocalIndex]->AddModelIndex(
+	pipelines[pipelineLocalIndex].AddModelIndex(
 		static_cast<std::uint32_t>(std::size(models))
 	);
 
@@ -41,24 +41,16 @@ ModelBundleBase& ModelBundleBase::AddModel(
 
 size_t ModelBundleBase::GetLocalPipelineIndex(std::uint32_t pipelineIndex)
 {
-	PipelineContainer_t& pipelines = m_modelBundle->GetPipelineBundles();
-
-	const size_t pipelineCount = std::size(pipelines);
-
 	size_t pipelineLocalIndex  = std::numeric_limits<size_t>::max();
 
-	// Can replace this search with an unordered_map but I don't think there will be too
-	// many pipelines, so gonna keep it a linear search for now.
-	for (size_t index = 0u; index < pipelineCount; ++index)
-		if (pipelines[index]->GetPipelineIndex() == pipelineIndex)
-		{
-			pipelineLocalIndex = index;
+	std::optional<size_t> oPipelineLocalIndex = m_modelBundle->FindLocalPipelineIndex(
+		pipelineIndex
+	);
 
-			break;
-		}
-
-	if (pipelineLocalIndex == std::numeric_limits<size_t>::max())
+	if (!oPipelineLocalIndex)
 		pipelineLocalIndex = AddPipeline(pipelineIndex);
+	else
+		pipelineLocalIndex = *oPipelineLocalIndex;
 
 	return pipelineLocalIndex;
 }
@@ -69,9 +61,9 @@ std::uint32_t ModelBundleBase::AddPipeline(std::uint32_t pipelineIndex) noexcept
 
 	const auto pipelineIndexInBundle = static_cast<std::uint32_t>(std::size(pipelines));
 
-	auto pipeline = std::make_shared<PipelineModelBundle>();
+	auto pipeline = PipelineModelBundle{};
 
-	pipeline->SetPipelineIndex(pipelineIndex);
+	pipeline.SetPipelineIndex(pipelineIndex);
 
 	pipelines.emplace_back(std::move(pipeline));
 
@@ -91,7 +83,7 @@ void ModelBundleBase::ChangeModelPipeline(
 
 	for (size_t index = 0u; index < pipelineCount; ++index)
 	{
-		const size_t currentPipelineIndex = pipelines[index]->GetPipelineIndex();
+		const size_t currentPipelineIndex = pipelines[index].GetPipelineIndex();
 
 		if (currentPipelineIndex == oldPipelineIndex)
 			oldPipelineIndexInBundle = index;
@@ -106,8 +98,8 @@ void ModelBundleBase::ChangeModelPipeline(
 			break;
 	}
 
-	pipelines[oldPipelineIndexInBundle]->RemoveModelIndex(modelIndexInBundle);
-	pipelines[newPipelineIndexInBundle]->AddModelIndex(modelIndexInBundle);
+	pipelines[oldPipelineIndexInBundle].RemoveModelIndex(modelIndexInBundle);
+	pipelines[newPipelineIndexInBundle].AddModelIndex(modelIndexInBundle);
 }
 
 void ModelBundleBase::SetMeshBundle(
@@ -209,7 +201,7 @@ void ModelBundleBase::ChangeMeshBundle(
 				oneMeshMaterialDetails.pipelineIndex
 			);
 
-			pipelines[pipelineLocalIndex]->AddModelIndex(
+			pipelines[pipelineLocalIndex].AddModelIndex(
 				static_cast<std::uint32_t>(modelIndex)
 			);
 
