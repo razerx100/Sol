@@ -5,6 +5,7 @@
 #include <RenderPassManager.hpp>
 
 #include <ModelBase.hpp>
+#include <ModelContainer.hpp>
 #include <BasicMeshBundles.hpp>
 #include <CameraManagerSol.hpp>
 #include <DirectXColors.h>
@@ -13,6 +14,7 @@
 #include <SceneMaterialProcessor.hpp>
 #include <AllocationLiterals.hpp>
 #include <SolScene.hpp>
+#include <RendererUtility.hpp>
 
 namespace ExampleApp
 {
@@ -34,8 +36,9 @@ public:
 	template<class ExtensionManager_t, class RenderPassManager_t>
 	App(
 		ExtensionManager_t& extensionManager, RenderPassManager_t& renderPassManager,
-		std::uint32_t frameCount
-	) {
+		std::uint32_t frameCount, std::shared_ptr<ModelContainer> modelContainerArg
+	) : modelContainer{ std::move(modelContainerArg) }
+	{
 		extensionManager.SetBlinnPhongLight(frameCount);
 		extensionManager.SetWeightedTransparency();
 
@@ -139,14 +142,17 @@ public:
 
 		cubeLightBundle = std::make_unique<ModelBundleBase>();
 
-		cubeLightBundle->AddModel(nonLightPSOIndex, 0.1f);
+		cubeLightBundle->SetModelContainer(modelContainer);
+
+		const size_t lightModelLocalIndex = cubeLightBundle->AddModel(
+			nonLightPSOIndex, 0.1f
+		);
 
 		constexpr BlinnPhongLightType lightType = BlinnPhongLightType::Spotlight;
 
-		std::shared_ptr<Model> lightModel = cubeLightBundle->GetModel(0u);
-
 		std::uint32_t lightIndex = blinnPhong->AddLight(
-			renderer, LightSource{ std::move(lightModel) }, lightType
+			renderer, LightSource{ cubeLightBundle->GetIndexInContainer(lightModelLocalIndex) },
+			lightType
 		);
 
 		std::uint32_t lightIndex1 = blinnPhong->AddLight(
@@ -241,7 +247,7 @@ public:
 
 		{
 			{
-				Model& model1 = *cubeLightBundle->GetModel(0u);
+				Model& model1 = cubeLightBundle->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 
@@ -262,11 +268,14 @@ public:
 		{
 			cubeBundle1 = std::make_unique<ModelBundleBase>();
 
-			cubeBundle1->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
+			cubeBundle1->SetModelContainer(modelContainer);
+
+			cubeBundle1->AddModel(lightPSOIndex, 0.45f);
+			cubeBundle1->AddModel(lightPSOIndex, 0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				Model& model1 = *cubeBundle1->GetModel(0u);
+				Model& model1 = cubeBundle1->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 
@@ -282,7 +291,7 @@ public:
 			}
 
 			{
-				Model& model2 = *cubeBundle1->GetModel(1u);
+				Model& model2 = cubeBundle1->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 
@@ -309,12 +318,14 @@ public:
 		{
 			quadBundleT = std::make_unique<ModelBundleBase>();
 
-			quadBundleT->AddModel(lightTransparentPSOIndex, 0.45f)
-				.AddModel(lightTransparentPSOIndex, 0.45f);
+			quadBundleT->SetModelContainer(modelContainer);
+
+			quadBundleT->AddModel(lightTransparentPSOIndex, 0.45f);
+			quadBundleT->AddModel(lightTransparentPSOIndex, 0.45f);
 
 			// We have only a single mesh in the bundle.
 			{
-				Model& model1 = *quadBundleT->GetModel(0u);
+				Model& model1 = quadBundleT->GetModel(0u);
 
 				model1.SetMeshIndex(1u);
 
@@ -330,7 +341,7 @@ public:
 			}
 
 			{
-				Model& model2 = *quadBundleT->GetModel(1u);
+				Model& model2 = quadBundleT->GetModel(1u);
 
 				model2.SetMeshIndex(1u);
 
@@ -355,6 +366,8 @@ public:
 
 	{
 		assimpModelBundle1 = std::make_unique<ModelBundleBase>();
+
+		assimpModelBundle1->SetModelContainer(modelContainer);
 
 		assimpModelBundle1->SetMeshBundle(assimpMeshBundleIndex, 0.5f, testScene);
 		assimpModelBundle1->MoveTowardsZ(0u, -1.f);
@@ -482,11 +495,14 @@ public:
 			{
 				cubeBundle2 = std::make_unique<ModelBundleBase>();
 
-				cubeBundle2->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
+				cubeBundle2->SetModelContainer(modelContainer);
+
+				cubeBundle2->AddModel(lightPSOIndex, 0.45f);
+				cubeBundle2->AddModel(lightPSOIndex, 0.45f);
 
 				// We have only a single mesh in the bundle.
 				{
-					Model& model1 = *cubeBundle2->GetModel(0u);
+					Model& model1 = cubeBundle2->GetModel(0u);
 
 					model1.SetMeshIndex(0u);
 
@@ -498,7 +514,7 @@ public:
 				}
 
 				{
-					Model& model2 = *cubeBundle2->GetModel(1u);
+					Model& model2 = cubeBundle2->GetModel(1u);
 
 					model2.SetMeshIndex(0u);
 
@@ -525,8 +541,7 @@ public:
 		{
 			if (cubeBundleIndex2 != std::numeric_limits<std::uint32_t>::max())
 			{
-				renderer.RemoveModelBundle(cubeBundleIndex2);
-
+				RendererUtility::RemoveModelBundle(renderer, modelContainer, cubeBundleIndex2);
 				renderPassManager.RemoveModelBundle(cubeBundleIndex2);
 
 				cubeBundleIndex2 = std::numeric_limits<std::uint32_t>::max();
@@ -540,11 +555,14 @@ public:
 			{
 				cubeBundle3 = std::make_unique<ModelBundleBase>();
 
-				cubeBundle3->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
+				cubeBundle3->SetModelContainer(modelContainer);
+
+				cubeBundle3->AddModel(lightPSOIndex, 0.45f);
+				cubeBundle3->AddModel(lightPSOIndex, 0.45f);
 
 				// We have only a single mesh in the bundle.
 				{
-					Model& model1 = *cubeBundle3->GetModel(0u);
+					Model& model1 = cubeBundle3->GetModel(0u);
 
 					model1.SetMeshIndex(0u);
 
@@ -560,7 +578,7 @@ public:
 				}
 
 				{
-					Model& model2 = *cubeBundle3->GetModel(1u);
+					Model& model2 = cubeBundle3->GetModel(1u);
 
 					model2.SetMeshIndex(0u);
 
@@ -587,7 +605,7 @@ public:
 		{
 			if (cubeBundleIndex3 != std::numeric_limits<std::uint32_t>::max())
 			{
-				renderer.RemoveModelBundle(cubeBundleIndex3);
+				RendererUtility::RemoveModelBundle(renderer, modelContainer, cubeBundleIndex3);
 				renderPassManager.RemoveModelBundle(cubeBundleIndex3);
 
 				cubeBundleIndex3 = std::numeric_limits<std::uint32_t>::max();
@@ -601,11 +619,14 @@ public:
 			{
 				cubeBundle4 = std::make_unique<ModelBundleBase>();
 
-				cubeBundle4->AddModel(lightPSOIndex, 0.45f).AddModel(lightPSOIndex, 0.45f);
+				cubeBundle4->SetModelContainer(modelContainer);
+
+				cubeBundle4->AddModel(lightPSOIndex, 0.45f);
+				cubeBundle4->AddModel(lightPSOIndex, 0.45f);
 
 				// We have only a single mesh in the bundle.
 				{
-					Model& model1 = *cubeBundle4->GetModel(0u);
+					Model& model1 = cubeBundle4->GetModel(0u);
 
 					model1.SetMeshIndex(0u);
 
@@ -621,7 +642,7 @@ public:
 				}
 
 				{
-					Model& model2 = *cubeBundle4->GetModel(1u);
+					Model& model2 = cubeBundle4->GetModel(1u);
 
 					model2.SetMeshIndex(0u);
 
@@ -648,7 +669,7 @@ public:
 		{
 			if (cubeBundleIndex4 != std::numeric_limits<std::uint32_t>::max())
 			{
-				renderer.RemoveModelBundle(cubeBundleIndex4);
+				RendererUtility::RemoveModelBundle(renderer, modelContainer, cubeBundleIndex4);
 				renderPassManager.RemoveModelBundle(cubeBundleIndex4);
 
 				cubeBundleIndex4 = std::numeric_limits<std::uint32_t>::max();
@@ -684,7 +705,7 @@ public:
 				if (tealMatIndex != std::numeric_limits<std::uint32_t>::max())
 					index = tealMatIndex;
 
-				Model& model1 = *cubeBundle2->GetModel(0u);
+				Model& model1 = cubeBundle2->GetModel(0u);
 
 				model1.GetMaterial().SetMaterialIndex(index);
 			}
@@ -728,7 +749,7 @@ public:
 
 			if (bundle1Exists && sphereExists)
 			{
-				Model& model1 = *cubeBundle1->GetModel(0u);
+				Model& model1 = cubeBundle1->GetModel(0u);
 
 				model1.SetMeshIndex(0u);
 
@@ -739,7 +760,7 @@ public:
 				modelMaterial.SetDiffuseUVInfo(UVInfo{});
 				modelMaterial.SetSpecularUVInfo(UVInfo{});
 
-				Model& model2 = *cubeBundle1->GetModel(1u);
+				Model& model2 = cubeBundle1->GetModel(1u);
 
 				model2.SetMeshIndex(0u);
 
@@ -774,7 +795,7 @@ public:
 		{
 			if (secondTextureIndex != std::numeric_limits<size_t>::max())
 			{
-				Model& model1 = *cubeBundle1->GetModel(0u);
+				Model& model1 = cubeBundle1->GetModel(0u);
 
 				ModelMaterial& modelMaterial = model1.GetMaterial();
 
@@ -797,6 +818,7 @@ private:
 	}
 
 private:
+	std::shared_ptr<ModelContainer> modelContainer{};
 	SolScene testScene{};
 	std::uint32_t testMeshBundleIndex   = std::numeric_limits<std::uint32_t>::max();
 	std::uint32_t assimpMeshBundleIndex = std::numeric_limits<std::uint32_t>::max();
@@ -836,7 +858,8 @@ public:
 	App& operator=(const App&) = delete;
 
 	App(App&& other) noexcept
-		: testScene{ std::move(other.testScene) },
+		: modelContainer{ std::move(other.modelContainer) },
+		testScene{ std::move(other.testScene) },
 		testMeshBundleIndex{ other.testMeshBundleIndex },
 		assimpMeshBundleIndex{ other.assimpMeshBundleIndex },
 		sphereMeshBundleIndex{ other.sphereMeshBundleIndex },
@@ -873,6 +896,7 @@ public:
 
 	App& operator=(App&& other) noexcept
 	{
+		modelContainer        = std::move(other.modelContainer);
 		testScene             = std::move(other.testScene);
 		testMeshBundleIndex   = other.testMeshBundleIndex;
 		assimpMeshBundleIndex = other.assimpMeshBundleIndex;

@@ -8,6 +8,7 @@
 #include <BlinnPhongLightTechnique.hpp>
 #include <SceneProcessor.hpp>
 #include <TextureAtlas.hpp>
+#include <SolMeshUtility.hpp>
 
 namespace Sol
 {

@@ -14,6 +14,7 @@
 #include <ExtensionManager.hpp>
 #include <RenderPassManager.hpp>
 #include <CameraManagerSol.hpp>
+#include <ModelContainer.hpp>
 
 #ifdef SOL_WIN32
 #include <WinWindow.hpp>
@@ -97,6 +98,8 @@ class Sol
 		RenderPassImpl_t, ExternalBufferImpl_t, ExternalTextureImpl_t
 	>;
 
+	using ModelContainer_t   = std::shared_ptr<ModelContainer>;
+
 public:
 	Sol(const std::string& appName, ConfigManager&& configManager)
 		: m_appName{ appName },
@@ -106,6 +109,7 @@ public:
 		m_inputManager{ CreateInputManager() },
 		m_window{ CreateWindowModule(s_width, s_height, appName) },
 		m_cameraManager{},
+		m_modelContainer{ std::make_shared<ModelContainer>() },
 		m_renderer{
 			CreateRenderer(
 				appName, s_width, s_height, s_frameCount,
@@ -114,7 +118,7 @@ public:
 		},
 		m_extensionManager{},
 		m_renderPassManager{ m_configManager.GetRenderEngineType() },
-		m_app{ m_extensionManager, m_renderPassManager, s_frameCount }
+		m_app{ m_extensionManager, m_renderPassManager, s_frameCount, m_modelContainer }
 	{
 		// Input Manager
 		m_inputManager.AddGamepadSupport(1u);
@@ -132,10 +136,13 @@ public:
 		// Renderer
 		m_renderer.SetShaderPath(L"resources/shaders/");
 
+		m_renderer.SetModelContainer(m_modelContainer);
+
 		m_renderPassManager.CreateResources(
 			m_renderer.GetExternalResourceManager().GetResourceFactory()
 		);
 
+		m_extensionManager.SetModelContainer(m_modelContainer);
 		m_extensionManager.SetBuffers(m_renderer);
 		m_extensionManager.SetAllExtensions(m_renderer);
 
@@ -146,7 +153,9 @@ public:
 		// And before any other textures have been bound.
 		AddDefaultTexture();
 
-		m_renderPassManager.SetupRenderPassesFromRenderer(m_renderer, m_cameraManager);
+		m_renderPassManager.SetupRenderPassesFromRenderer(
+			m_renderer, m_cameraManager, m_modelContainer
+		);
 		// Resize to create all the textures. The queues should be not running now.
 		m_renderPassManager.Resize(m_renderer, m_cameraManager);
 
@@ -357,6 +366,7 @@ private:
 	InputManager_t              m_inputManager;
 	Window_t                    m_window;
 	CameraManager               m_cameraManager;
+	ModelContainer_t            m_modelContainer;
 	Renderer_t                  m_renderer;
 	RenderPassManager_t         m_renderPassManager;
 	ExtensionManager_t          m_extensionManager;
@@ -374,6 +384,7 @@ public:
 		m_inputManager{ std::move(other.m_inputManager) },
 		m_window{ std::move(other.m_window) },
 		m_cameraManager{ std::move(other.m_cameraManager) },
+		m_modelContainer{ std::move(other.m_modelContainer) },
 		m_renderer{ std::move(other.m_renderer) },
 		m_renderPassManager{ std::move(other.m_renderPassManager) },
 		m_extensionManager{ std::move(other.m_extensionManager) },
@@ -392,6 +403,7 @@ public:
 		m_inputManager      = std::move(other.m_inputManager);
 		m_window            = std::move(other.m_window);
 		m_cameraManager     = std::move(other.m_cameraManager);
+		m_modelContainer    = std::move(other.m_modelContainer);
 		m_renderer          = std::move(other.m_renderer);
 		m_renderPassManager = std::move(other.m_renderPassManager);
 		m_extensionManager  = std::move(other.m_extensionManager);

@@ -5,15 +5,13 @@
 #include <array>
 
 #include <SolMeshUtility.hpp>
-#include <Model.hpp>
+#include <ModelBundle.hpp>
+#include <ModelContainer.hpp>
 
 namespace Sol
 {
 class ModelBundleBase
 {
-	using ModelContainer_t    = ModelBundle::ModelContainer_t;
-	using PipelineContainer_t = ModelBundle::PipelineContainer_t;
-
 public:
 	ModelBundleBase()
 		: m_modelNodeData{}, m_modelBundle{ std::make_shared<ModelBundle>() }
@@ -22,10 +20,8 @@ public:
 		: m_modelNodeData{}, m_modelBundle{ std::move(modelBundle) }
 	{}
 
-	ModelBundleBase& AddModel(std::uint32_t pipelineIndex, float scale) noexcept;
-	ModelBundleBase& AddModel(
-		std::uint32_t pipelineIndex, std::shared_ptr<Model> model
-	) noexcept;
+	std::uint32_t AddModel(std::uint32_t pipelineIndex, float scale) noexcept;
+	std::uint32_t AddModel(std::uint32_t pipelineIndex, Model&& model) noexcept;
 
 	void ChangeModelPipeline(
 		std::uint32_t modelIndexInBundle, std::uint32_t oldPipelineIndex,
@@ -37,7 +33,10 @@ public:
 		m_modelBundle->SetMeshBundleIndex(index);
 	}
 
-	std::uint32_t AddPipeline(std::uint32_t pipelineIndex) noexcept;
+	void SetModelContainer(std::shared_ptr<ModelContainer> modelContainer) noexcept
+	{
+		m_modelBundle->SetModelContainer(std::move(modelContainer));
+	}
 
 	// Because of circular inclusion, can't include the BlinnPhoneTechnique header in this header.
 	// So, have to do some template stuff to figure that out.
@@ -143,22 +142,9 @@ public:
 	void MoveModel(size_t nodeIndex, const DirectX::XMFLOAT3& offset) noexcept;
 
 	[[nodiscard]]
-	auto&& GetModels(this auto&& self) noexcept
-	{
-		return std::forward_like<decltype(self)>(self.m_modelBundle->GetModels());
-	}
-	[[nodiscard]]
-	auto&& GetPipelines(this auto&& self) noexcept
-	{
-		return std::forward_like<decltype(self)>(self.m_modelBundle->GetPipelineBundles());
-	}
-
-	[[nodiscard]]
 	auto&& GetModel(this auto&& self, size_t index) noexcept
 	{
-		auto&& models = std::forward_like<decltype(self)>(self.GetModels());
-
-		return std::forward_like<decltype(self)>(models[index]);
+		return std::forward_like<decltype(self)>(self.m_modelBundle->GetModel(index));
 	}
 	[[nodiscard]]
 	std::uint32_t GetMeshBundleIndex() const noexcept
@@ -167,14 +153,19 @@ public:
 	}
 
 	[[nodiscard]]
+	size_t GetModelCount() const noexcept { return m_modelBundle->GetModelCount(); }
+
+	[[nodiscard]]
+	std::uint32_t GetIndexInContainer(size_t localIndex) noexcept
+	{
+		return m_modelBundle->GetIndexInContainer(localIndex);
+	}
+
+	[[nodiscard]]
 	std::shared_ptr<ModelBundle> GetModelBundle() const noexcept { return m_modelBundle; }
 
 private:
 	void SetModels(float modelScale, const std::vector<SceneNodeData>& sceneNodeData);
-
-	// Will add a new one if not available.
-	[[nodiscard]]
-	size_t GetLocalPipelineIndex(std::uint32_t pipelineIndex);
 
 	static void SetMaterial(
 		ModelMaterial& material, const MeshMaterialDetails& materialDetails

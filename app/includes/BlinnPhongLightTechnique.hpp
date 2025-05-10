@@ -7,6 +7,7 @@
 #include <ReusableExtBuffer.hpp>
 #include <ExternalBindingIndices.hpp>
 #include <ConversionUtilities.hpp>
+#include <ModelContainer.hpp>
 
 namespace Sol
 {
@@ -60,8 +61,8 @@ class BlinnPhongLightTechnique : public GraphicsTechniqueExtensionBase
 public:
 	BlinnPhongLightTechnique(std::uint32_t frameCount)
 		: GraphicsTechniqueExtensionBase{}, m_lightCountExtBuffer{}, m_lightInfoExtBuffer{},
-		m_materials{}, m_lights{}, m_lightStatus{}, m_lightInfoInstanceSize{ 0u },
-		m_frameCount{ frameCount }
+		m_materials{}, m_lights{}, m_modelContainer{}, m_lightStatus{},
+		m_lightInfoInstanceSize{ 0u }, m_frameCount{ frameCount }
 	{
 		constexpr size_t bufferBindingCount = 3u;
 
@@ -93,6 +94,11 @@ public:
 				.type         = ExternalBufferType::CPUVisibleSSBO
 			}
 		};
+	}
+
+	void SetModelContainer(std::shared_ptr<ModelContainer> modelContainer) noexcept
+	{
+		m_modelContainer = std::move(modelContainer);
 	}
 
 	template<class Renderer_t>
@@ -238,6 +244,8 @@ public:
 		const size_t lightInfoInstanceOffset = m_lightInfoInstanceSize * frameIndex;
 		size_t activeLightIndex              = 0u;
 
+		const Callisto::ReusableVector<Model>& models = m_modelContainer->GetModels();
+
 		for (size_t index = 0u; index < std::size(lights); ++index)
 		{
 			if (m_lightStatus[index])
@@ -248,7 +256,10 @@ public:
 
 				const LightData lightData
 				{
-					.lightPosition = light.GetPosition(),
+					.lightPosition
+						= light.HasModel() ?
+							models[light.GetModelIndexInContainer()].GetModelOffset()
+							: light.GetPosition(),
 					.properties    = lightInfo.properties
 				};
 
@@ -444,6 +455,7 @@ private:
 	ExternalBuffer_t                    m_lightInfoExtBuffer;
 	ReusableCPUExtBuffer_t              m_materials;
 	Callisto::ReusableVector<LightInfo> m_lights;
+	std::shared_ptr<ModelContainer>     m_modelContainer;
 	std::vector<bool>                   m_lightStatus;
 	size_t                              m_lightInfoInstanceSize;
 	std::uint32_t                       m_frameCount;
@@ -471,6 +483,7 @@ public:
 		m_lightInfoExtBuffer{ std::move(other.m_lightInfoExtBuffer) },
 		m_materials{ std::move(other.m_materials) },
 		m_lights{ std::move(other.m_lights) },
+		m_modelContainer{ std::move(other.m_modelContainer) },
 		m_lightStatus{ std::move(other.m_lightStatus) },
 		m_lightInfoInstanceSize{ other.m_lightInfoInstanceSize },
 		m_frameCount{ other.m_frameCount }
@@ -482,6 +495,7 @@ public:
 		m_lightInfoExtBuffer    = std::move(other.m_lightInfoExtBuffer);
 		m_materials             = std::move(other.m_materials);
 		m_lights                = std::move(other.m_lights);
+		m_modelContainer        = std::move(other.m_modelContainer);
 		m_lightStatus           = std::move(other.m_lightStatus);
 		m_lightInfoInstanceSize = other.m_lightInfoInstanceSize;
 		m_frameCount            = other.m_frameCount;

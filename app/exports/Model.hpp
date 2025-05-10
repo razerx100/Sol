@@ -168,9 +168,9 @@ public:
 	void SetModelOffset(const DirectX::XMFLOAT3& offset) noexcept { m_modelOffset = offset; }
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept { return m_modelMatrix; }
+	const DirectX::XMMATRIX& GetModelMatrix() const noexcept { return m_modelMatrix; }
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept { return m_modelOffset; }
+	const DirectX::XMFLOAT3& GetModelOffset() const noexcept { return m_modelOffset; }
 	[[nodiscard]]
 	float GetModelScale() const noexcept { return m_modelScale; }
 
@@ -255,11 +255,11 @@ public:
 	[[nodiscard]]
 	std::uint32_t GetDiffuseIndex() const noexcept { return m_diffuseIndex; }
 	[[nodiscard]]
-	UVInfo GetDiffuseUVInfo() const noexcept { return m_diffuseUVInfo; }
+	const UVInfo& GetDiffuseUVInfo() const noexcept { return m_diffuseUVInfo; }
 	[[nodiscard]]
 	std::uint32_t GetSpecularIndex() const noexcept { return m_specularIndex; }
 	[[nodiscard]]
-	UVInfo GetSpecularUVInfo() const noexcept { return m_specularUVInfo; }
+	const UVInfo& GetSpecularUVInfo() const noexcept { return m_specularUVInfo; }
 
 private:
 	std::uint32_t m_materialIndex;
@@ -274,8 +274,7 @@ class Model
 {
 public:
 	Model()
-		: m_transform{}, m_material{}, m_meshIndex{ 0u }, m_modelIndexInBuffer{ 0u },
-		m_visible{ true }
+		: m_transform{}, m_material{}, m_meshIndex{ 0u }, m_visible{ true }
 	{}
 	Model(float scale) : Model{}
 	{
@@ -292,12 +291,12 @@ public:
 	void SetVisibility(bool value) noexcept { m_visible = value; }
 
 	[[nodiscard]]
-	DirectX::XMMATRIX GetModelMatrix() const noexcept
+	const DirectX::XMMATRIX& GetModelMatrix() const noexcept
 	{
 		return m_transform.GetModelMatrix();
 	}
 	[[nodiscard]]
-	DirectX::XMFLOAT3 GetModelOffset() const noexcept
+	const DirectX::XMFLOAT3& GetModelOffset() const noexcept
 	{
 		return m_transform.GetModelOffset();
 	}
@@ -313,30 +312,20 @@ public:
 	[[nodiscard]]
 	bool IsVisible() const noexcept { return m_visible; }
 
-	// This will be set from the renderers. Didn't want to set it from the consuming classes
-	// but since every renderer will have model buffer index, this would be better.
-	void SetModelIndexInBuffer(std::uint32_t index) noexcept
-	{
-		m_modelIndexInBuffer = index;
-	}
-
-	[[nodiscard]]
-	std::uint32_t GetModelIndexInBuffer() const noexcept { return m_modelIndexInBuffer; }
-
 	[[nodiscard]]
 	std::uint32_t GetDiffuseIndex() const noexcept
 	{
 		return m_material.GetDiffuseIndex();
 	}
 	[[nodiscard]]
-	UVInfo GetDiffuseUVInfo() const noexcept { return m_material.GetDiffuseUVInfo(); }
+	const UVInfo& GetDiffuseUVInfo() const noexcept { return m_material.GetDiffuseUVInfo(); }
 	[[nodiscard]]
 	std::uint32_t GetSpecularIndex() const noexcept
 	{
 		return m_material.GetSpecularIndex();
 	}
 	[[nodiscard]]
-	UVInfo GetSpecularUVInfo() const noexcept { return m_material.GetSpecularUVInfo(); }
+	const UVInfo& GetSpecularUVInfo() const noexcept { return m_material.GetSpecularUVInfo(); }
 
 	[[nodiscard]]
 	auto&& GetTransform(this auto&& self) noexcept
@@ -361,7 +350,6 @@ private:
 	ModelMaterial  m_material;
 
 	std::uint32_t m_meshIndex;
-	std::uint32_t m_modelIndexInBuffer;
 	bool          m_visible;
 
 public:
@@ -372,145 +360,14 @@ public:
 		: m_transform{ std::move(other.m_transform) },
 		m_material{ std::move(other.m_material) },
 		m_meshIndex{ other.m_meshIndex },
-		m_modelIndexInBuffer{ other.m_modelIndexInBuffer },
 		m_visible{ other.m_visible }
 	{}
 	Model& operator=(Model&& other) noexcept
 	{
-		m_transform          = std::move(other.m_transform);
-		m_material           = std::move(other.m_material);
-		m_meshIndex          = other.m_meshIndex;
-		m_modelIndexInBuffer = other.m_modelIndexInBuffer;
-		m_visible            = other.m_visible;
-
-		return *this;
-	}
-};
-
-// Should contain all the models of a Model Bundle which have a certain pipeline.
-class PipelineModelBundle
-{
-public:
-	PipelineModelBundle() : m_modelIndicesInBundle{}, m_pipelineIndex{ 0u } {}
-
-	void SetPipelineIndex(std::uint32_t index) noexcept { m_pipelineIndex = index; }
-
-	void AddModelIndex(std::uint32_t indexInBundle) noexcept
-	{
-		m_modelIndicesInBundle.emplace_back(indexInBundle);
-	}
-
-	void RemoveModelIndex(std::uint32_t indexInBundle) noexcept
-	{
-		std::erase(m_modelIndicesInBundle, indexInBundle);
-	}
-
-	[[nodiscard]]
-	std::uint32_t GetPipelineIndex() const noexcept { return m_pipelineIndex; }
-	[[nodiscard]]
-	const std::vector<std::uint32_t>& GetModelIndicesInBundle() const noexcept
-	{
-		return m_modelIndicesInBundle;
-	}
-	[[nodiscard]]
-	size_t GetModelCount() const noexcept { return std::size(m_modelIndicesInBundle); }
-
-private:
-	std::vector<std::uint32_t> m_modelIndicesInBundle;
-	std::uint32_t              m_pipelineIndex;
-
-public:
-	PipelineModelBundle(const PipelineModelBundle&) = delete;
-	PipelineModelBundle& operator=(const PipelineModelBundle&) = delete;
-
-	PipelineModelBundle(PipelineModelBundle&& other) noexcept
-		: m_modelIndicesInBundle{ std::move(other.m_modelIndicesInBundle) },
-		m_pipelineIndex{ other.m_pipelineIndex }
-	{}
-	PipelineModelBundle& operator=(PipelineModelBundle&& other) noexcept
-	{
-		m_modelIndicesInBundle = std::move(other.m_modelIndicesInBundle);
-		m_pipelineIndex        = other.m_pipelineIndex;
-
-		return *this;
-	}
-};
-
-// Should typically have a complex model with multiple models.
-class ModelBundle
-{
-public:
-	using ModelContainer_t    = std::vector<std::shared_ptr<Model>>;
-	using PipelineContainer_t = std::vector<PipelineModelBundle>;
-
-public:
-	ModelBundle() : m_models{}, m_pipelines{}, m_meshBundleIndex{ 0u } {}
-
-	void SetMeshBundleIndex(std::uint32_t index) noexcept { m_meshBundleIndex = index; }
-
-	[[nodiscard]]
-	std::optional<size_t> FindLocalPipelineIndex(std::uint32_t pipelineIndex) const noexcept
-	{
-		std::optional<size_t> oLocalIndex{};
-
-		const size_t pipelineCount = GetPipelineCount();
-
-		size_t pipelineLocalIndex  = std::numeric_limits<size_t>::max();
-
-		// Can replace this search with an unordered_map but I don't think there will be too
-		// many pipelines, so gonna keep it a linear search for now.
-		for (size_t index = 0u; index < pipelineCount; ++index)
-			if (m_pipelines[index].GetPipelineIndex() == pipelineIndex)
-			{
-				pipelineLocalIndex = index;
-
-				break;
-			}
-
-		if (pipelineLocalIndex != std::numeric_limits<size_t>::max())
-			oLocalIndex = pipelineLocalIndex;
-
-		return oLocalIndex;
-	}
-
-	[[nodiscard]]
-	std::uint32_t GetMeshBundleIndex() const noexcept { return m_meshBundleIndex; }
-
-	[[nodiscard]]
-	auto&& GetPipelineBundles(this auto&& self) noexcept
-	{
-		return std::forward_like<decltype(self)>(self.m_pipelines);
-	}
-	[[nodiscard]]
-	auto&& GetModels(this auto&& self) noexcept
-	{
-		return std::forward_like<decltype(self)>(self.m_models);
-	}
-
-	[[nodiscard]]
-	size_t GetModelCount() const noexcept { return std::size(m_models); }
-	[[nodiscard]]
-	size_t GetPipelineCount() const noexcept { return std::size(m_pipelines); }
-
-private:
-	ModelContainer_t    m_models;
-	PipelineContainer_t m_pipelines;
-	std::uint32_t       m_meshBundleIndex;
-
-public:
-	ModelBundle(const ModelBundle&) = delete;
-	ModelBundle& operator=(const ModelBundle&) = delete;
-
-	ModelBundle(ModelBundle&& other) noexcept
-		: m_models{ std::move(other.m_models) },
-		m_pipelines{ std::move(other.m_pipelines) },
-		m_meshBundleIndex{ other.m_meshBundleIndex }
-	{}
-	ModelBundle& operator=(ModelBundle&& other) noexcept
-	{
-		m_models          = std::move(other.m_models);
-		m_pipelines       = std::move(other.m_pipelines);
-		m_meshBundleIndex = other.m_meshBundleIndex;
+		m_transform = std::move(other.m_transform);
+		m_material  = std::move(other.m_material);
+		m_meshIndex = other.m_meshIndex;
+		m_visible   = other.m_visible;
 
 		return *this;
 	}

@@ -81,12 +81,14 @@ public:
 	}
 
 	template<class Renderer_t>
-	void SetupRenderPassesFromRenderer(Renderer_t& renderer, CameraManager& cameraManager)
-	{
+	void SetupRenderPassesFromRenderer(
+		Renderer_t& renderer, CameraManager& cameraManager,
+		std::shared_ptr<ModelContainer> modelContainer
+	) {
 		SetupCameras(cameraManager);
 		// Need to setup here, as adding meshes/models require the descriptor heaps/buffer to be
 		// created first.
-		SetupRenderTargetQuad(renderer);
+		SetupRenderTargetQuad(renderer, std::move(modelContainer));
 
 		const bool hasTransparencyPass = m_transparencyExt != nullptr;
 
@@ -197,7 +199,7 @@ public:
 		// modelBundle can add their instance of the quad model with their own pipeline.
 		// And we also must add the model bundle to the renderer before adding them to the render
 		// passes.
-		if (!std::empty(m_renderTargetQuadModelBundle.GetModels()))
+		if (m_renderTargetQuadModelBundle.GetModelCount())
 			m_renderTargetQuadModelBundleIndex = renderer.AddModelBundle(
 				m_renderTargetQuadModelBundle.GetModelBundle()
 			);
@@ -320,8 +322,9 @@ private:
 	}
 
 	template<class Renderer_t>
-	void SetupRenderTargetQuad(Renderer_t& renderer)
-	{
+	void SetupRenderTargetQuad(
+		Renderer_t& renderer, std::shared_ptr<ModelContainer> modelContainer
+	) {
 		// For some passes we would just want to combine or do some operation on an already
 		// rendered texture. So, we wouldn't want to draw anything but we still need to draw
 		// something to invoke the fragment shaders. So, we will bind the necessary render
@@ -338,6 +341,8 @@ private:
 		m_quadMeshBundleIndex = renderer.AddMeshBundle(
 			quadMesh.GenerateTemporaryData(m_graphicsPipelineManager.IsMeshShaderPipeline())
 		);
+
+		m_renderTargetQuadModelBundle.SetModelContainer(std::move(modelContainer));
 
 		m_renderTargetQuadModelBundle.SetMeshBundleIndex(m_quadMeshBundleIndex);
 	}

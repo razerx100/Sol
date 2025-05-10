@@ -35,6 +35,12 @@ public:
 		m_weightedTransparency = std::make_shared<WeightedTransparency_t>();
 	}
 
+	void SetModelContainer(std::shared_ptr<ModelContainer> modelContainer) noexcept
+	{
+		if (m_blinnPhongLight)
+			m_blinnPhongLight->SetModelContainer(std::move(modelContainer));
+	}
+
 	void UpdateCPUData(size_t frameIndex) noexcept
 	{
 		if (m_blinnPhongLight)
